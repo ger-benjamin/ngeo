@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Popup</title>
+    <title>JSDoc: Class: Popup <small>service:ngeoCreatePopup</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Popup</h1>
+    <h1 class="page-title">Class: Popup <small>service:ngeoCreatePopup</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2>
-        Popup
+        <h2 id="Popup">
+            <span class="ancestors">ngeo.</span>Popup
         </h2>
         
     
@@ -51,6 +51,10 @@
 <div class="description">
     <p>Provides a factory to create a popup in the page.
 The factory returns a ngeo.Popup object.</p>
+<pre class="prettyprint source"><code>var popup = ngeoCreatePopup();
+popup.setTitle(&quot;A title&quot;);
+popup.setContent(&quot;Some content&quot;);
+popup.setOpen(true);</code></pre>
 </div>
 
 
@@ -92,7 +96,7 @@ The factory returns a ngeo.Popup object.</p>
             <td class="type">
             
                 
-<span class="param-type">angular.$compile</span>
+<span class="param-type"><a href="https://docs.angularjs.org/api/ng/service/$compile">angular.$compile</a></span>
 
 
             
@@ -115,7 +119,7 @@ The factory returns a ngeo.Popup object.</p>
             <td class="type">
             
                 
-<span class="param-type">angular.Scope</span>
+<span class="param-type"><a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span>
 
 
             
@@ -166,7 +170,7 @@ The factory returns a ngeo.Popup object.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line29">line 29</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -189,14 +193,6 @@ The factory returns a ngeo.Popup object.</p>
 
 
 
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>var popup = ngeoCreatePopup();
-popup.setTitle("A title");
-popup.setContent("Some content");
-popup.setOpen(true);</code></pre>
 
 
 
@@ -274,7 +270,7 @@ popup.setOpen(true);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line73">line 73</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line74">line 74</a>
     </li></ul></dd>
     
 
@@ -356,7 +352,7 @@ popup.setOpen(true);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line56">line 56</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line57">line 57</a>
     </li></ul></dd>
     
 
@@ -511,7 +507,7 @@ is because the content may be trusted using <code>$sce.trustAsHtml</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line94">line 94</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line95">line 95</a>
     </li></ul></dd>
     
 
@@ -642,7 +638,7 @@ is because the content may be trusted using <code>$sce.trustAsHtml</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line65">line 65</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line66">line 66</a>
     </li></ul></dd>
     
 
@@ -773,7 +769,7 @@ is because the content may be trusted using <code>$sce.trustAsHtml</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line83">line 83</a>
+        <a href="src_services_popup.js.html">src/services/popup.js</a>, <a href="src_services_popup.js.html#line84">line 84</a>
     </li></ul></dd>
     
 
@@ -815,13 +811,13 @@ is because the content may be trusted using <code>$sce.trustAsHtml</code>.</p>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h2>gmf</h2><h3>Classes</h3><ul><li><a href="gmf.LocationchooserController.html">LocationchooserController</a></li><li><a href="gmf.MapController.html">MapController</a></li><li><a href="gmf.SearchController.html">SearchController</a></li></ul><h2>gmf.source</h2><h3>Classes</h3><ul><li><a href="gmf.source.AsitVD.html">AsitVD</a></li></ul><h2>ngeo</h2><h3>Classes</h3><ul><li><a href="ngeo.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeo.BackgroundLayerMgr.html">BackgroundLayerMgr</a></li><li><a href="ngeo.BtnGroupController.html">BtnGroupController</a></li><li><a href="ngeo.FeatureOverlay.html">FeatureOverlay</a></li><li><a href="ngeo.FeatureOverlayMgr.html">FeatureOverlayMgr</a></li><li><a href="ngeo.LayertreeController.html">LayertreeController</a></li><li><a href="ngeo.Location.html">Location</a></li><li><a href="ngeo.MeasureEvent.html">MeasureEvent</a></li><li><a href="ngeo.Popup.html">Popup</a></li><li><a href="ngeo.Print.html">Print</a></li><li><a href="ngeo.PrintUtils.html">PrintUtils</a></li><li><a href="ngeo.profile.html">profile</a></li><li><a href="ngeo.ScaleselectorController.html">ScaleselectorController</a></li></ul><h2>ngeo.format</h2><h3>Classes</h3><ul><li><a href="ngeo.format.FeatureHash.html">FeatureHash</a></li></ul><h2>ngeo.interaction</h2><h3>Classes</h3><ul><li><a href="ngeo.interaction.DrawAzimut.html">DrawAzimut</a></li><li><a href="ngeo.interaction.Measure.html">Measure</a></li><li><a href="ngeo.interaction.MeasureArea.html">MeasureArea</a></li><li><a href="ngeo.interaction.MeasureAzimut.html">MeasureAzimut</a></li><li><a href="ngeo.interaction.MeasureLength.html">MeasureLength</a></li></ul><h2>ngeo.MeasureEvent</h2><h3>Events</h3><ul><li><a href="ngeo.MeasureEvent.html#event:measureend">measureend</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h2>gmf</h2><h3>Directives</h3><ul><li><a href="gmf.locationchooserDirective.html">locationchooserDirective</a></li><li><a href="gmf.mapDirective.html">mapDirective</a></li><li><a href="gmf.searchDirective.html">searchDirective</a></li></ul><h3>Controllers</h3><ul><li><a href="gmf.LocationchooserController.html">LocationchooserController</a></li><li><a href="gmf.MapController.html">MapController</a></li><li><a href="gmf.SearchController.html">SearchController</a></li></ul><h3>Types</h3><ul><li><a href="gmf.html#ExportFeatures">ExportFeatures</a></li></ul><h3>Enumerations</h3><ul><li><a href="gmf.html#ExportFormat">ExportFormat</a></li></ul><h2>gmf.source</h2><h3>Classes</h3><ul><li><a href="gmf.source.AsitVD.html">AsitVD</a></li><li><a href="gmf.source.Swisstopo.html">Swisstopo</a></li></ul><h2>ngeo</h2><h3>Directives</h3><ul><li><a href="ngeo.btnDirective.html">btnDirective</a></li><li><a href="ngeo.btngroupDirective.html">btngroupDirective</a></li><li><a href="ngeo.controlDirective.html">controlDirective</a></li><li><a href="ngeo.desktopGeolocationDirective.html">desktopGeolocationDirective</a></li><li><a href="ngeo.filereaderDirective.html">filereaderDirective</a></li><li><a href="ngeo.layertreeDirective.html">layertreeDirective</a></li><li><a href="ngeo.mapDirective.html">mapDirective</a></li><li><a href="ngeo.mobileGeolocationDirective.html">mobileGeolocationDirective</a></li><li><a href="ngeo.modalDirective.html">modalDirective</a></li><li><a href="ngeo.popupDirective.html">popupDirective</a></li><li><a href="ngeo.profileDirective.html">profileDirective</a></li><li><a href="ngeo.recenterDirective.html">recenterDirective</a></li><li><a href="ngeo.resizemapDirective.html">resizemapDirective</a></li><li><a href="ngeo.scaleselectorDirective.html">scaleselectorDirective</a></li><li><a href="ngeo.searchDirective.html">searchDirective</a></li><li><a href="ngeo.sortableDirective.html">sortableDirective</a></li></ul><h3>Services</h3><ul><li><a href="ngeo.BackgroundLayerMgr.html">BackgroundLayerMgr</a></li><li><a href="ngeo.CreateGeoJSONBloodhound.html">CreateGeoJSONBloodhound</a></li><li><a href="ngeo.createPrintServiceFactory.html">createPrintServiceFactory</a></li><li><a href="ngeo.Debounce.html">Debounce</a></li><li><a href="ngeo.DecorateGeolocation.html">DecorateGeolocation</a></li><li><a href="ngeo.DecorateInteraction.html">DecorateInteraction</a></li><li><a href="ngeo.DecorateLayer.html">DecorateLayer</a></li><li><a href="ngeo.FeatureOverlayMgr.html">FeatureOverlayMgr</a></li><li><a href="ngeo.getBrowserLanguageFactory.html">getBrowserLanguageFactory</a></li><li><a href="ngeo.Location.html">Location</a></li><li><a href="ngeo.Popup.html">Popup</a></li><li><a href="ngeo.PrintUtils.html">PrintUtils</a></li><li><a href="ngeo.SyncArrays.html">SyncArrays</a></li><li><a href="ngeo.ToolActivateMgr.html">ToolActivateMgr</a></li></ul><h3>Controllers</h3><ul><li><a href="ngeo.BtnGroupController.html">BtnGroupController</a></li><li><a href="ngeo.DesktopGeolocationController.html">DesktopGeolocationController</a></li><li><a href="ngeo.LayertreeController.html">LayertreeController</a></li><li><a href="ngeo.MobileGeolocationController.html">MobileGeolocationController</a></li><li><a href="ngeo.ScaleselectorController.html">ScaleselectorController</a></li></ul><h3>Classes</h3><ul><li><a href="ngeo.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeo.FeatureOverlay.html">FeatureOverlay</a></li><li><a href="ngeo.MeasureEvent.html">MeasureEvent</a></li><li><a href="ngeo.Print.html">Print</a></li><li><a href="ngeo.profile.html">profile</a></li><li><a href="ngeo.ToolActivate.html">ToolActivate</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.html#CreatePopup">CreatePopup</a></li><li><a href="ngeo.html#CreatePrint">CreatePrint</a></li><li><a href="ngeo.html#FeatureOverlayGroup">FeatureOverlayGroup</a></li><li><a href="ngeo.html#GetBrowserLanguage">GetBrowserLanguage</a></li><li><a href="ngeo.html#MockLocationProvider">MockLocationProvider</a></li><li><a href="ngeo.html#ScaleselectorOptions">ScaleselectorOptions</a></li><li><a href="ngeo.html#SortableOptions">SortableOptions</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.html#BackgroundEventType">BackgroundEventType</a></li><li><a href="ngeo.html#MeasureEventType">MeasureEventType</a></li><li><a href="ngeo.html#PrintStyleType">PrintStyleType</a></li></ul><h2>ngeo.format</h2><h3>Classes</h3><ul><li><a href="ngeo.format.FeatureHash.html">FeatureHash</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.format.html#FeatureHashStyleType">FeatureHashStyleType</a></li></ul><h2>ngeo.interaction</h2><h3>Classes</h3><ul><li><a href="ngeo.interaction.DrawAzimut.html">DrawAzimut</a></li><li><a href="ngeo.interaction.Measure.html">Measure</a></li><li><a href="ngeo.interaction.MeasureArea.html">MeasureArea</a></li><li><a href="ngeo.interaction.MeasureAzimut.html">MeasureAzimut</a></li><li><a href="ngeo.interaction.MeasureLength.html">MeasureLength</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.interaction.html#MeasureBaseOptions">MeasureBaseOptions</a></li></ul><h2>ngeo.MeasureEvent</h2><h3>Events</h3><ul><li><a href="ngeo.MeasureEvent.html#event:measureend">measureend</a></li></ul><h2>ngeox</h2><h3>Interfaces</h3><ul><li><a href="ngeox.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeox.MeasureEvent.html">MeasureEvent</a></li></ul><h3>Types</h3><ul><li><a href="ngeox.html#DesktopGeolocationDirectiveOptions">DesktopGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#MobileGeolocationDirectiveOptions">MobileGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#SearchDirectiveListeners">SearchDirectiveListeners</a></li></ul><h2>ngeox.format</h2><h3>Types</h3><ul><li><a href="ngeox.format.html#FeatureHashOptions">FeatureHashOptions</a></li></ul><h2>ngeox.interaction</h2><h3>Types</h3><ul><li><a href="ngeox.interaction.html#MeasureOptions">MeasureOptions</a></li></ul><h2>ngeox.profile</h2><h3>Types</h3><ul><li><a href="ngeox.profile.html#ElevationExtractor">ElevationExtractor</a></li><li><a href="ngeox.profile.html#PoiExtractor">PoiExtractor</a></li><li><a href="ngeox.profile.html#ProfileFormatter">ProfileFormatter</a></li><li><a href="ngeox.profile.html#ProfileOptions">ProfileOptions</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
 </footer>
 
 <script> prettyPrint(); </script>
