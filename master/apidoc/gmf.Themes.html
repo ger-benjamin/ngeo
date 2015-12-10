@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Swisstopo</title>
+    <title>JSDoc: Class: Themes <small>service:gmfThemes</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Swisstopo</h1>
+    <h1 class="page-title">Class: Themes <small>service:gmfThemes</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="Swisstopo">
-            <span class="ancestors">gmf.source.</span>Swisstopo
+        <h2 id="Themes">
+            <span class="ancestors">gmf.</span>Themes
         </h2>
         
     
@@ -42,17 +42,11 @@
 
     
 
-    <h4 class="name" id="Swisstopo"><span class="type-signature"></span>new Swisstopo<span class="signature">(options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Themes"><span class="type-signature"></span>new Themes<span class="signature">($http, treeUrl, isThemePrivateUrl)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>Layer source for the Swisstopo tile server.
-WARNING: This tile server is not publicly available: you have to be
-         registered by Swisstopo to use the service.</p>
-</div>
 
 
 
@@ -87,13 +81,13 @@ WARNING: This tile server is not publicly available: you have to be
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>$http</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">gmfx.source.SwisstopoOptions</span>
+<span class="param-type"><a href="https://docs.angularjs.org/api/ng/service/$http">angular.$http</a></span>
 
 
             
@@ -103,7 +97,53 @@ WARNING: This tile server is not publicly available: you have to be
 
             
 
-            <td class="description last"><p>WMTS options.</p></td>
+            <td class="description last"><p>Angular http service.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>treeUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>URL to &quot;themes&quot; web service.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isThemePrivateUrl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>URL to check if theme is public.</p></td>
         </tr>
 
     
@@ -144,19 +184,12 @@ WARNING: This tile server is not publicly available: you have to be
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_source_swisstoposource.js.html">contribs/gmf/src/source/swisstoposource.js</a>, <a href="contribs_gmf_src_source_swisstoposource.js.html#line42">line 42</a>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
     
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="https://api3.geo.admin.ch/services/sdiservices.html#wmts">https://api3.geo.admin.ch/services/sdiservices.html#wmts</a></li>
-        </ul>
-    </dd>
     
 
     
@@ -187,7 +220,7 @@ WARNING: This tile server is not publicly available: you have to be
 
 
     <ul>
-        <li><a href="http://openlayers.org/en/master/apidoc/ol.source.WMTS.html">ol.source.WMTS</a></li>
+        <li>goog.events.EventTarget</li>
     </ul>
 
 
@@ -203,6 +236,661 @@ WARNING: This tile server is not publicly available: you have to be
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getBgLayers"><span class="type-signature"></span>getBgLayers<span class="signature">()</span><span class="type-signature"> &rarr; {angular.$q.Promise}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Get background layers.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line105">line 105</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Promise.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">angular.$q.Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getThemeObject"><span class="type-signature"></span>getThemeObject<span class="signature">(themeName)</span><span class="type-signature"> &rarr; {angular.$q.Promise}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Get a theme object by its name.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>themeName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Theme name.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line133">line 133</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Promise.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">angular.$q.Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getThemesObject"><span class="type-signature"></span>getThemesObject<span class="signature">()</span><span class="type-signature"> &rarr; {angular.$q.Promise}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Get an array of theme objects.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line151">line 151</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Promise.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">angular.$q.Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isThemePrivate"><span class="type-signature"></span>isThemePrivate<span class="signature">(themeId)</span><span class="type-signature"> &rarr; {angular.$q.Promise}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>themeId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The theme id to send in the request.
+checks if the theme is protected or not.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line191">line 191</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Promise.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">angular.$q.Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="loadThemes"><span class="type-signature"></span>loadThemes<span class="signature">(roleId<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>roleId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The role id to send in the request.
+Load themes from the &quot;themes&quot; service.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_services_themesservice.js.html">contribs/gmf/src/services/themesservice.js</a>, <a href="contribs_gmf_src_services_themesservice.js.html#line170">line 170</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     
