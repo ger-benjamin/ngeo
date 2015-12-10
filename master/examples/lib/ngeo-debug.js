@@ -19396,12 +19396,14 @@ ol.proj.get = function(projectionLike) {
 ol.proj.equivalent = function(projection1, projection2) {
   if (projection1 === projection2) {
     return true;
-  } else if (projection1.getCode() === projection2.getCode()) {
-    return projection1.getUnits() === projection2.getUnits();
+  }
+  var equalUnits = projection1.getUnits() === projection2.getUnits();
+  if (projection1.getCode() === projection2.getCode()) {
+    return equalUnits;
   } else {
     var transformFn = ol.proj.getTransformFromProjections(
         projection1, projection2);
-    return transformFn === ol.proj.cloneTransform;
+    return transformFn === ol.proj.cloneTransform && equalUnits;
   }
 };
 
@@ -58461,11 +58463,10 @@ ol.render.canvas.Immediate.prototype.drawAsync = function(zIndex, callback) {
  * the current fill and stroke styles.
  *
  * @param {ol.geom.Circle} circleGeometry Circle geometry.
- * @param {ol.Feature} feature Feature,
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawCircleGeometry =
-    function(circleGeometry, feature) {
+    function(circleGeometry) {
   if (!ol.extent.intersects(this.extent_, circleGeometry.getExtent())) {
     return;
   }
@@ -58560,11 +58561,10 @@ ol.render.canvas.Immediate.prototype.drawGeometryCollectionGeometry =
  * the current style.
  *
  * @param {ol.geom.Point|ol.render.Feature} pointGeometry Point geometry.
- * @param {ol.Feature|ol.render.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawPointGeometry =
-    function(pointGeometry, feature) {
+    function(pointGeometry) {
   var flatCoordinates = pointGeometry.getFlatCoordinates();
   var stride = pointGeometry.getStride();
   if (this.image_) {
@@ -58582,11 +58582,10 @@ ol.render.canvas.Immediate.prototype.drawPointGeometry =
  *
  * @param {ol.geom.MultiPoint|ol.render.Feature} multiPointGeometry MultiPoint
  *     geometry.
- * @param {ol.Feature|ol.render.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawMultiPointGeometry =
-    function(multiPointGeometry, feature) {
+    function(multiPointGeometry) {
   var flatCoordinates = multiPointGeometry.getFlatCoordinates();
   var stride = multiPointGeometry.getStride();
   if (this.image_) {
@@ -58604,11 +58603,10 @@ ol.render.canvas.Immediate.prototype.drawMultiPointGeometry =
  *
  * @param {ol.geom.LineString|ol.render.Feature} lineStringGeometry Line
  *     string geometry.
- * @param {ol.Feature|ol.render.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawLineStringGeometry =
-    function(lineStringGeometry, feature) {
+    function(lineStringGeometry) {
   if (!ol.extent.intersects(this.extent_, lineStringGeometry.getExtent())) {
     return;
   }
@@ -58634,11 +58632,10 @@ ol.render.canvas.Immediate.prototype.drawLineStringGeometry =
  *
  * @param {ol.geom.MultiLineString|ol.render.Feature} multiLineStringGeometry
  *     MultiLineString geometry.
- * @param {ol.Feature|ol.render.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawMultiLineStringGeometry =
-    function(multiLineStringGeometry, feature) {
+    function(multiLineStringGeometry) {
   var geometryExtent = multiLineStringGeometry.getExtent();
   if (!ol.extent.intersects(this.extent_, geometryExtent)) {
     return;
@@ -58671,11 +58668,10 @@ ol.render.canvas.Immediate.prototype.drawMultiLineStringGeometry =
  *
  * @param {ol.geom.Polygon|ol.render.Feature} polygonGeometry Polygon
  *     geometry.
- * @param {ol.Feature|ol.render.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawPolygonGeometry =
-    function(polygonGeometry, feature) {
+    function(polygonGeometry) {
   if (!ol.extent.intersects(this.extent_, polygonGeometry.getExtent())) {
     return;
   }
@@ -58708,11 +58704,10 @@ ol.render.canvas.Immediate.prototype.drawPolygonGeometry =
  * Render MultiPolygon geometry into the canvas.  Rendering is immediate and
  * uses the current style.
  * @param {ol.geom.MultiPolygon} multiPolygonGeometry MultiPolygon geometry.
- * @param {ol.Feature} feature Feature.
  * @api
  */
 ol.render.canvas.Immediate.prototype.drawMultiPolygonGeometry =
-    function(multiPolygonGeometry, feature) {
+    function(multiPolygonGeometry) {
   if (!ol.extent.intersects(this.extent_, multiPolygonGeometry.getExtent())) {
     return;
   }
@@ -69337,6 +69332,212 @@ goog.debug.entryPointRegistry.register(
           transformer(goog.net.XhrIo.prototype.onReadyStateChangeEntryPoint_);
     });
 
+goog.provide('ol.TileLoadFunctionType');
+goog.provide('ol.TileVectorLoadFunctionType');
+
+
+/**
+ * A function that takes an {@link ol.Tile} for the tile and a
+ * `{string}` for the url as arguments.
+ *
+ * @typedef {function(ol.Tile, string)}
+ * @api
+ */
+ol.TileLoadFunctionType;
+
+
+/**
+ * A function that is called with a tile url for the features to load and
+ * a callback that takes the loaded features as argument.
+ *
+ * @typedef {function(string, function(Array.<ol.Feature>))}
+ * @api
+ */
+ol.TileVectorLoadFunctionType;
+
+goog.provide('ol.VectorTile');
+
+goog.require('ol.Tile');
+goog.require('ol.TileCoord');
+goog.require('ol.TileLoadFunctionType');
+goog.require('ol.TileState');
+goog.require('ol.proj.Projection');
+
+
+/**
+ * @typedef {{
+ *     dirty: boolean,
+ *     renderedRenderOrder: (null|function(ol.Feature, ol.Feature):number),
+ *     renderedRevision: number,
+ *     replayGroup: ol.render.IReplayGroup}}
+ */
+ol.TileReplayState;
+
+
+
+/**
+ * @constructor
+ * @extends {ol.Tile}
+ * @param {ol.TileCoord} tileCoord Tile coordinate.
+ * @param {ol.TileState} state State.
+ * @param {string} src Data source url.
+ * @param {ol.format.Feature} format Feature format.
+ * @param {ol.TileLoadFunctionType} tileLoadFunction Tile load function.
+ * @param {ol.proj.Projection} projection Feature projection.
+ */
+ol.VectorTile =
+    function(tileCoord, state, src, format, tileLoadFunction, projection) {
+
+  goog.base(this, tileCoord, state);
+
+  /**
+   * @private
+   * @type {ol.format.Feature}
+   */
+  this.format_ = format;
+
+  /**
+   * @private
+   * @type {Array.<ol.Feature>}
+   */
+  this.features_ = null;
+
+  /**
+   * @private
+   * @type {ol.FeatureLoader}
+   */
+  this.loader_;
+
+  /**
+   * @private
+   * @type {ol.proj.Projection}
+   */
+  this.projection_ = projection;
+
+  /**
+   * @private
+   * @type {ol.TileReplayState}
+   */
+  this.replayState_ = {
+    dirty: false,
+    renderedRenderOrder: null,
+    renderedRevision: -1,
+    replayGroup: null
+  };
+
+  /**
+   * @private
+   * @type {ol.TileLoadFunctionType}
+   */
+  this.tileLoadFunction_ = tileLoadFunction;
+
+  /**
+   * @private
+   * @type {string}
+   */
+  this.url_ = src;
+
+};
+goog.inherits(ol.VectorTile, ol.Tile);
+
+
+/**
+ * @inheritDoc
+ */
+ol.VectorTile.prototype.disposeInternal = function() {
+  goog.base(this, 'disposeInternal');
+};
+
+
+/**
+ * Get the feature format assigned for reading this tile's features.
+ * @return {ol.format.Feature} Feature format.
+ * @api
+ */
+ol.VectorTile.prototype.getFormat = function() {
+  return this.format_;
+};
+
+
+/**
+ * @return {Array.<ol.Feature>} Features.
+ */
+ol.VectorTile.prototype.getFeatures = function() {
+  return this.features_;
+};
+
+
+/**
+ * @return {ol.TileReplayState}
+ */
+ol.VectorTile.prototype.getReplayState = function() {
+  return this.replayState_;
+};
+
+
+/**
+ * @inheritDoc
+ */
+ol.VectorTile.prototype.getKey = function() {
+  return this.url_;
+};
+
+
+/**
+ * @return {ol.proj.Projection} Feature projection.
+ */
+ol.VectorTile.prototype.getProjection = function() {
+  return this.projection_;
+};
+
+
+/**
+ * Load the tile.
+ */
+ol.VectorTile.prototype.load = function() {
+  if (this.state == ol.TileState.IDLE) {
+    this.setState(ol.TileState.LOADING);
+    this.tileLoadFunction_(this, this.url_);
+    this.loader_(null, NaN, this.projection_);
+  }
+};
+
+
+/**
+ * @param {Array.<ol.Feature>} features Features.
+ */
+ol.VectorTile.prototype.setFeatures = function(features) {
+  this.features_ = features;
+  this.setState(ol.TileState.LOADED);
+};
+
+
+/**
+ * @param {ol.proj.Projection} projection Feature projection.
+ */
+ol.VectorTile.prototype.setProjection = function(projection) {
+  this.projection_ = projection;
+};
+
+
+/**
+ * @param {ol.TileState} tileState Tile state.
+ */
+ol.VectorTile.prototype.setState = function(tileState) {
+  this.state = tileState;
+  this.changed();
+};
+
+
+/**
+ * Set the feature loader for reading this tile's features.
+ * @param {ol.FeatureLoader} loader Feature loader.
+ * @api
+ */
+ol.VectorTile.prototype.setLoader = function(loader) {
+  this.loader_ = loader;
+};
+
 goog.provide('ol.format.FormatType');
 
 
@@ -70381,7 +70582,11 @@ goog.require('goog.net.EventType');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.XhrIo.ResponseType');
 goog.require('ol.TileState');
+goog.require('ol.VectorTile');
 goog.require('ol.format.FormatType');
+goog.require('ol.proj');
+goog.require('ol.proj.Projection');
+goog.require('ol.proj.Units');
 goog.require('ol.xml');
 
 
@@ -70473,13 +70678,18 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, failure) {
                   goog.asserts.fail('unexpected format type');
                 }
                 if (source) {
-                  var features = format.readFeatures(source,
-                      {featureProjection: projection});
-                  if (ol.ENABLE_VECTOR_TILE && success.length == 2) {
-                    success.call(this, features, format.readProjection(source));
-                  } else {
-                    success.call(this, features);
+                  if (ol.ENABLE_VECTOR_TILE && this instanceof ol.VectorTile) {
+                    var dataUnits = format.readProjection(source).getUnits();
+                    if (dataUnits === ol.proj.Units.TILE_PIXELS) {
+                      projection = new ol.proj.Projection({
+                        code: projection.getCode(),
+                        units: dataUnits
+                      });
+                      this.setProjection(projection);
+                    }
                   }
+                  success.call(this, format.readFeatures(source,
+                      {featureProjection: projection}));
                 } else {
                   goog.asserts.fail('undefined or null source');
                 }
@@ -70511,11 +70721,9 @@ ol.featureloader.tile = function(url, format) {
   return ol.featureloader.loadFeaturesXhr(url, format,
       /**
        * @param {Array.<ol.Feature>} features The loaded features.
-       * @param {ol.proj.Projection} projection Data projection.
        * @this {ol.VectorTile}
        */
-      function(features, projection) {
-        this.setProjection(projection);
+      function(features) {
         this.setFeatures(features);
       },
       /**
@@ -73724,209 +73932,6 @@ ol.renderer.canvas.VectorLayer.prototype.renderFeature =
   return loading;
 };
 
-goog.provide('ol.TileLoadFunctionType');
-goog.provide('ol.TileVectorLoadFunctionType');
-
-
-/**
- * A function that takes an {@link ol.Tile} for the tile and a
- * `{string}` for the url as arguments.
- *
- * @typedef {function(ol.Tile, string)}
- * @api
- */
-ol.TileLoadFunctionType;
-
-
-/**
- * A function that is called with a tile url for the features to load and
- * a callback that takes the loaded features as argument.
- *
- * @typedef {function(string, function(Array.<ol.Feature>))}
- * @api
- */
-ol.TileVectorLoadFunctionType;
-
-goog.provide('ol.VectorTile');
-
-goog.require('ol.Tile');
-goog.require('ol.TileCoord');
-goog.require('ol.TileLoadFunctionType');
-goog.require('ol.TileState');
-
-
-/**
- * @typedef {{
- *     dirty: boolean,
- *     renderedRenderOrder: (null|function(ol.Feature, ol.Feature):number),
- *     renderedRevision: number,
- *     replayGroup: ol.render.IReplayGroup}}
- */
-ol.TileReplayState;
-
-
-
-/**
- * @constructor
- * @extends {ol.Tile}
- * @param {ol.TileCoord} tileCoord Tile coordinate.
- * @param {ol.TileState} state State.
- * @param {string} src Data source url.
- * @param {ol.format.Feature} format Feature format.
- * @param {ol.TileLoadFunctionType} tileLoadFunction Tile load function.
- */
-ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
-
-  goog.base(this, tileCoord, state);
-
-  /**
-   * @private
-   * @type {ol.format.Feature}
-   */
-  this.format_ = format;
-
-  /**
-   * @private
-   * @type {Array.<ol.Feature>}
-   */
-  this.features_ = null;
-
-  /**
-   * @private
-   * @type {ol.FeatureLoader}
-   */
-  this.loader_;
-
-  /**
-   * @private
-   * @type {ol.proj.Projection}
-   */
-  this.projection_ = null;
-
-  /**
-   * @private
-   * @type {ol.TileReplayState}
-   */
-  this.replayState_ = {
-    dirty: false,
-    renderedRenderOrder: null,
-    renderedRevision: -1,
-    replayGroup: null
-  };
-
-  /**
-   * @private
-   * @type {ol.TileLoadFunctionType}
-   */
-  this.tileLoadFunction_ = tileLoadFunction;
-
-  /**
-   * @private
-   * @type {string}
-   */
-  this.url_ = src;
-
-};
-goog.inherits(ol.VectorTile, ol.Tile);
-
-
-/**
- * @inheritDoc
- */
-ol.VectorTile.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
-};
-
-
-/**
- * Get the feature format assigned for reading this tile's features.
- * @return {ol.format.Feature} Feature format.
- * @api
- */
-ol.VectorTile.prototype.getFormat = function() {
-  return this.format_;
-};
-
-
-/**
- * @return {Array.<ol.Feature>} Features.
- */
-ol.VectorTile.prototype.getFeatures = function() {
-  return this.features_;
-};
-
-
-/**
- * @return {ol.TileReplayState}
- */
-ol.VectorTile.prototype.getReplayState = function() {
-  return this.replayState_;
-};
-
-
-/**
- * @inheritDoc
- */
-ol.VectorTile.prototype.getKey = function() {
-  return this.url_;
-};
-
-
-/**
- * @return {ol.proj.Projection} Projection.
- */
-ol.VectorTile.prototype.getProjection = function() {
-  return this.projection_;
-};
-
-
-/**
- * Load the tile.
- */
-ol.VectorTile.prototype.load = function() {
-  if (this.state == ol.TileState.IDLE) {
-    this.setState(ol.TileState.LOADING);
-    this.tileLoadFunction_(this, this.url_);
-    this.loader_(null, NaN, null);
-  }
-};
-
-
-/**
- * @param {Array.<ol.Feature>} features Features.
- */
-ol.VectorTile.prototype.setFeatures = function(features) {
-  this.features_ = features;
-  this.setState(ol.TileState.LOADED);
-};
-
-
-/**
- * @param {ol.proj.Projection} projection Projection.
- */
-ol.VectorTile.prototype.setProjection = function(projection) {
-  this.projection_ = projection;
-};
-
-
-/**
- * @param {ol.TileState} tileState Tile state.
- */
-ol.VectorTile.prototype.setState = function(tileState) {
-  this.state = tileState;
-  this.changed();
-};
-
-
-/**
- * Set the feature loader for reading this tile's features.
- * @param {ol.FeatureLoader} loader Feature loader.
- * @api
- */
-ol.VectorTile.prototype.setLoader = function(loader) {
-  this.loader_ = loader;
-};
-
 goog.provide('ol.TileUrlFunction');
 goog.provide('ol.TileUrlFunctionType');
 
@@ -74345,7 +74350,7 @@ ol.source.VectorTile = function(options) {
   /**
    * @protected
    * @type {function(new: ol.VectorTile, ol.TileCoord, ol.TileState, string,
-   *        ol.format.Feature, ol.TileLoadFunctionType)}
+   *        ol.format.Feature, ol.TileLoadFunctionType, ol.proj.Projection)}
    */
   this.tileClass = options.tileClass ? options.tileClass : ol.VectorTile;
 
@@ -74372,8 +74377,7 @@ ol.source.VectorTile.prototype.getTile =
         tileCoord,
         tileUrl !== undefined ? ol.TileState.IDLE : ol.TileState.EMPTY,
         tileUrl !== undefined ? tileUrl : '',
-        this.format_,
-        this.tileLoadFunction);
+        this.format_, this.tileLoadFunction, projection);
     goog.events.listen(tile, goog.events.EventType.CHANGE,
         this.handleTileChange, false, this);
 
@@ -113012,12 +113016,12 @@ ol.interaction.Select.prototype.setMap = function(map) {
   var currentMap = this.getMap();
   var selectedFeatures =
       this.featureOverlay_.getSource().getFeaturesCollection();
-  if (!goog.isNull(currentMap)) {
+  if (currentMap) {
     selectedFeatures.forEach(currentMap.unskipFeature, currentMap);
   }
   goog.base(this, 'setMap', map);
   this.featureOverlay_.setMap(map);
-  if (!goog.isNull(map)) {
+  if (map) {
     selectedFeatures.forEach(map.skipFeature, map);
   }
 };
@@ -113048,7 +113052,7 @@ ol.interaction.Select.prototype.addFeature_ = function(evt) {
   var map = this.getMap();
   goog.asserts.assertInstanceof(feature, ol.Feature,
       'feature should be an ol.Feature');
-  if (!goog.isNull(map)) {
+  if (map) {
     map.skipFeature(feature);
   }
 };
@@ -113063,7 +113067,7 @@ ol.interaction.Select.prototype.removeFeature_ = function(evt) {
   var map = this.getMap();
   goog.asserts.assertInstanceof(feature, ol.Feature,
       'feature should be an ol.Feature');
-  if (!goog.isNull(map)) {
+  if (map) {
     map.unskipFeature(feature);
   }
 };
@@ -114301,6 +114305,54 @@ goog.provide('ol.raster.Pixel');
  * @api
  */
 ol.raster.Pixel;
+
+goog.provide('ol.render');
+
+goog.require('goog.vec.Mat4');
+goog.require('ol.render.canvas.Immediate');
+goog.require('ol.vec.Mat4');
+
+
+/**
+ * Binds a Canvas Immediate API to a canvas context, to allow drawing geometries
+ * to the context's canvas.
+ *
+ * The units for geometry coordinates are css pixels relative to the top left
+ * corner of the canvas element.
+ * ```js
+ * var canvas = document.createElement('canvas');
+ * var render = ol.render.toContext(canvas.getContext('2d'),
+ *     { size: [100, 100] });
+ * render.setFillStrokeStyle(new ol.style.Fill({ color: blue }));
+ * render.drawPolygonGeometry(
+ *     new ol.geom.Polygon([[[0, 0], [100, 100], [100, 0], [0, 0]]]));
+ * ```
+ *
+ * Note that {@link ol.render.canvas.Immediate#drawAsync} and
+ * {@link ol.render.canvas.Immediate#drawFeature} cannot be used.
+ *
+ * @param {CanvasRenderingContext2D} context Canvas context.
+ * @param {olx.render.ToContextOptions=} opt_options Options.
+ * @return {ol.render.canvas.Immediate} Canvas Immediate.
+ * @api
+ */
+ol.render.toContext = function(context, opt_options) {
+  var canvas = context.canvas;
+  var options = opt_options ? opt_options : {};
+  var pixelRatio = options.pixelRatio || ol.has.DEVICE_PIXEL_RATIO;
+  var size = options.size;
+  if (size) {
+    canvas.width = size[0] * pixelRatio;
+    canvas.height = size[1] * pixelRatio;
+    canvas.style.width = size[0] + 'px';
+    canvas.style.height = size[1] + 'px';
+  }
+  var extent = [0, 0, canvas.width, canvas.height];
+  var transform = ol.vec.Mat4.makeTransform2D(goog.vec.Mat4.createNumber(),
+      0, 0, pixelRatio, pixelRatio, 0, 0, 0);
+  return new ol.render.canvas.Immediate(context, pixelRatio, extent, transform,
+      0);
+};
 
 goog.provide('ol.reproj.Tile');
 goog.provide('ol.reproj.TileFunctionType');
@@ -119367,7 +119419,7 @@ ol.source.WMTS = function(options) {
 
   /**
    * @private
-   * @type {Object}
+   * @type {!Object}
    */
   this.dimensions_ = options.dimensions !== undefined ? options.dimensions : {};
 
@@ -119511,7 +119563,7 @@ goog.inherits(ol.source.WMTS, ol.source.TileImage);
  * Get the dimensions, i.e. those passed to the constructor through the
  * "dimensions" option, and possibly updated using the updateDimensions
  * method.
- * @return {Object} Dimensions.
+ * @return {!Object} Dimensions.
  * @api
  */
 ol.source.WMTS.prototype.getDimensions = function() {
@@ -121607,12 +121659,11 @@ ngeo.BtnGroupController = function($scope) {
  * @param {number} index Index of the button in buttons array.
  */
 ngeo.BtnGroupController.prototype.activate = function(index) {
-  goog.array.forEach(this.buttons_,
-      function(s, i) {
-        if (i != index) {
-          s(this.scope_, false);
-        }
-      }, this);
+  this.buttons_.forEach(function(s, i) {
+    if (i != index) {
+      s(this.scope_, false);
+    }
+  }, this);
 };
 
 
@@ -121748,6 +121799,550 @@ ngeo.controlDirective = function() {
 
 ngeoModule.directive('ngeoControl', ngeo.controlDirective);
 
+goog.provide('ngeo.DecorateGeolocation');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+
+
+/**
+ * Provides a function that adds a "tracking" property (using
+ * `Object.defineProperty`) to the `ol.Geolocation` instance, making it
+ * possible to activate/deactivate the tracking mode.
+ *
+ * @example
+ * <input type="checkbox" ngModel="geolocation.tracking" />
+ *
+ * @typedef {function(ol.Geolocation)}
+ * @ngdoc service
+ * @ngname ngeoDecorateGeolocation
+ */
+ngeo.DecorateGeolocation;
+
+
+/**
+ * @param {ol.Geolocation} geolocation Geolocation to decorate.
+ * @ngInject
+ */
+ngeo.decorateGeolocation = function(geolocation) {
+  goog.asserts.assertInstanceof(geolocation, ol.Geolocation);
+
+  Object.defineProperty(geolocation, 'tracking', {
+    get: function() {
+      return geolocation.getTracking();
+    },
+    set: function(val) {
+      geolocation.setTracking(val);
+    }
+  });
+};
+
+
+ngeoModule.value('ngeoDecorateGeolocation', ngeo.decorateGeolocation);
+
+goog.provide('ngeo.FeatureOverlay');
+goog.provide('ngeo.FeatureOverlayMgr');
+
+goog.require('goog.object');
+goog.require('ngeo');
+goog.require('ol.Collection');
+goog.require('ol.CollectionEvent');
+goog.require('ol.CollectionEventType');
+goog.require('ol.Feature');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+goog.require('ol.style.Style');
+goog.require('ol.style.StyleFunction');
+
+
+/**
+ * @typedef {{
+ *  styleFunction: ol.style.StyleFunction,
+ *  features: Object.<string, ol.Feature>
+ * }}
+ */
+ngeo.FeatureOverlayGroup;
+
+
+
+/**
+ * Provides a service that wraps an "unmanaged" vector layer,
+ * used as a shared vector layer accross the application.
+ *
+ * Example:
+ *
+ * The application's main component/controller initializes the feature
+ * overlay manager with the map:
+ *
+ *     ngeoFeatureOverlayMgr.init(map);
+ *
+ * Once initialized, components of the application can use the manager to
+ * create a feature overlay, configuring it with specific styles:
+ *
+ *     var featureOverlay = ngeoFeatureOverlayMgr.getFeatureOverlay();
+ *     featureOverlay.setStyle(myStyle);
+ *     featureOverlay.addFeature(myFeature);
+ *
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoFeatureOverlayMgr
+ */
+ngeo.FeatureOverlayMgr = function() {
+
+  /**
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.featureUidToGroupIndex_ = {};
+
+  /**
+   * @type {Array.<ngeo.FeatureOverlayGroup>}
+   * @private
+   */
+  this.groups_ = [];
+
+  /**
+   * @type {ol.source.Vector}
+   * @private
+   */
+  this.source_ = new ol.source.Vector({
+    useSpatialIndex: false
+  });
+
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.layer_ = new ol.layer.Vector({
+    source: this.source_,
+    style: goog.bind(this.styleFunction_, this),
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+};
+
+
+/**
+ * @param {ol.Feature} feature The feature to add.
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.addFeature = function(feature, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var featureUid = goog.getUid(feature).toString();
+  this.featureUidToGroupIndex_[featureUid] = groupIndex;
+  this.groups_[groupIndex].features[featureUid] = feature;
+  this.source_.addFeature(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature The feature to add.
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.removeFeature = function(feature, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var featureUid = goog.getUid(feature).toString();
+  delete this.featureUidToGroupIndex_[featureUid];
+  delete this.groups_[groupIndex].features[featureUid];
+  this.source_.removeFeature(feature);
+};
+
+
+/**
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.clear = function(groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var group = this.groups_[groupIndex];
+  for (var featureUid in group.features) {
+    this.removeFeature(group.features[featureUid], groupIndex);
+  }
+  goog.asserts.assert(goog.object.isEmpty(group.features));
+};
+
+
+/**
+ * @return {ol.layer.Vector} The vector layer used internally.
+ */
+ngeo.FeatureOverlayMgr.prototype.getLayer = function() {
+  return this.layer_;
+};
+
+
+/**
+ * @return {ngeo.FeatureOverlay} Feature overlay.
+ */
+ngeo.FeatureOverlayMgr.prototype.getFeatureOverlay = function() {
+  var groupIndex = this.groups_.length;
+  this.groups_.push({
+    styleFunction: ol.style.defaultStyleFunction,
+    features: {}
+  });
+  return new ngeo.FeatureOverlay(this, groupIndex);
+};
+
+
+/**
+ * @param {ol.Map} map Map.
+ */
+ngeo.FeatureOverlayMgr.prototype.init = function(map) {
+  this.layer_.setMap(map);
+};
+
+
+/**
+ * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction} style
+ * Style.
+ * @param {number} groupIndex Group index.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.setStyle = function(style, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  this.groups_[groupIndex].styleFunction = goog.isNull(style) ?
+      ol.style.defaultStyleFunction : ol.style.createStyleFunction(style);
+};
+
+
+/**
+ * @param {ol.Feature|ol.render.Feature} feature Feature.
+ * @param {number} resolution Resolution.
+ * @return {Array.<ol.style.Style>|ol.style.Style} Styles.
+ * @private
+ */
+ngeo.FeatureOverlayMgr.prototype.styleFunction_ =
+    function(feature, resolution) {
+  var featureUid = goog.getUid(feature).toString();
+  goog.asserts.assert(featureUid in this.featureUidToGroupIndex_);
+  var groupIndex = this.featureUidToGroupIndex_[featureUid];
+  var group = this.groups_[groupIndex];
+  return group.styleFunction(feature, resolution);
+};
+
+
+
+/**
+ * @constructor
+ * @param {ngeo.FeatureOverlayMgr} manager The feature overlay manager.
+ * @param {number} index This feature overlay's index.
+ */
+ngeo.FeatureOverlay = function(manager, index) {
+
+  /**
+   * @type {ngeo.FeatureOverlayMgr}
+   * @private
+   */
+  this.manager_ = manager;
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.index_ = index;
+};
+
+
+/**
+ * Add a feature to the feature overlay.
+ * @param {ol.Feature} feature The feature to add.
+ */
+ngeo.FeatureOverlay.prototype.addFeature = function(feature) {
+  this.manager_.addFeature(feature, this.index_);
+};
+
+
+/**
+ * Remove a feature from the feature overlay.
+ * @param {ol.Feature} feature The feature to add.
+ */
+ngeo.FeatureOverlay.prototype.removeFeature = function(feature) {
+  this.manager_.removeFeature(feature, this.index_);
+};
+
+
+/**
+ * Remove all the features from the feature overlay.
+ */
+ngeo.FeatureOverlay.prototype.clear = function() {
+  this.manager_.clear(this.index_);
+};
+
+
+/**
+ * Configure this feature overlay with a feature collection. Features added
+ * to the collection are also added to the overlay. Same for removal. If you
+ * configure the feature overlay with a feature collection you will use the
+ * collection to add and remove features instead of using the overlay's
+ * `addFeature`, `removeFeature` and `clear` functions.
+ * @param {ol.Collection.<ol.Feature>} features Feature collection.
+ */
+ngeo.FeatureOverlay.prototype.setFeatures = function(features) {
+  if (!goog.isNull(this.features_)) {
+    this.features_.clear();
+    goog.events.unlisten(this.features_, ol.CollectionEventType.ADD,
+        this.handleFeatureAdd_, false, this);
+    goog.events.unlisten(this.features_, ol.CollectionEventType.REMOVE,
+        this.handleFeatureRemove_, false, this);
+  }
+  if (!goog.isNull(features)) {
+    features.forEach(function(feature) {
+      this.addFeature(feature);
+    }, this);
+    goog.events.listen(features, ol.CollectionEventType.ADD,
+        this.handleFeatureAdd_, false, this);
+    goog.events.listen(features, ol.CollectionEventType.REMOVE,
+        this.handleFeatureRemove_, false, this);
+  }
+  this.features_ = features;
+};
+
+
+/**
+ * Set a style for the feature overlay.
+ * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction} style
+ * Style.
+ */
+ngeo.FeatureOverlay.prototype.setStyle = function(style) {
+  this.manager_.setStyle(style, this.index_);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Feature collection event.
+ * @private
+ */
+ngeo.FeatureOverlay.prototype.handleFeatureAdd_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.addFeature(feature);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Feature collection event.
+ * @private
+ */
+ngeo.FeatureOverlay.prototype.handleFeatureRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature(feature);
+};
+
+
+ngeoModule.service('ngeoFeatureOverlayMgr', ngeo.FeatureOverlayMgr);
+
+goog.provide('ngeo.DesktopGeolocationController');
+goog.provide('ngeo.desktopGeolocationDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.DecorateGeolocation');
+goog.require('ngeo.FeatureOverlay');
+goog.require('ngeo.FeatureOverlayMgr');
+goog.require('ol.Feature');
+goog.require('ol.Geolocation');
+goog.require('ol.Map');
+goog.require('ol.geom.Point');
+goog.require('ol.proj');
+
+
+/**
+ * Provide a "desktop geolocation" directive.
+ *
+ * @example
+ * <button ngeo-desktop-geolocation=""
+ *   ngeo-desktop-geolocation-map="ctrl.map"
+ *   ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
+ * </button>
+ *
+ * @return {angular.Directive} The Directive Definition Object.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDesktopGeolocation
+ */
+ngeo.desktopGeolocationDirective = function() {
+  return {
+    restrict: 'A',
+    scope: {
+      'getDesktopMapFn': '&ngeoDesktopGeolocationMap',
+      'getDesktopGeolocationOptionsFn': '&ngeoDesktopGeolocationOptions'
+    },
+    controller: 'NgeoDesktopGeolocationController',
+    controllerAs: 'ctrl'
+  };
+};
+
+
+ngeoModule.directive('ngeoDesktopGeolocation',
+    ngeo.desktopGeolocationDirective);
+
+
+
+/**
+ * @constructor
+ * @param {angular.Scope} $scope The directive's scope.
+ * @param {angular.JQLite} $element Element.
+
+ * @param {ngeo.DecorateGeolocation} ngeoDecorateGeolocation Decorate
+ *     Geolocation service.
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
+ *     overlay manager service.
+ * @export
+ * @ngInject
+ * @ngdoc controller
+ * @ngname NgeoDesktopGeolocationController
+ */
+ngeo.DesktopGeolocationController = function($scope, $element,
+    ngeoDecorateGeolocation, ngeoFeatureOverlayMgr) {
+
+  $element.on('click', goog.bind(this.toggle, this));
+
+  var map = $scope['getDesktopMapFn']();
+  goog.asserts.assertInstanceof(map, ol.Map);
+
+  /**
+   * @type {!ol.Map}
+   * @private
+   */
+  this.map_ = map;
+
+  var options = $scope['getDesktopGeolocationOptionsFn']() || {};
+  goog.asserts.assertObject(options);
+
+  /**
+   * @type {ngeo.FeatureOverlay}
+   * @private
+   */
+  this.featureOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+
+  /**
+   * @type {ol.Geolocation}
+   * @private
+   */
+  this.geolocation_ = new ol.Geolocation({
+    projection: map.getView().getProjection()
+  });
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.positionFeature_ = new ol.Feature(new ol.geom.Point([0, 0]));
+
+  if (options.positionFeatureStyle) {
+    this.positionFeature_.setStyle(options.positionFeatureStyle);
+  }
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.accuracyFeature_ = new ol.Feature();
+
+  if (options.accuracyFeatureStyle) {
+    this.accuracyFeature_.setStyle(options.accuracyFeatureStyle);
+  }
+
+  /**
+   * @type {number|undefined}
+   * @private
+   */
+  this.zoom_ = options.zoom;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.active_ = false;
+
+  goog.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.ACCURACY_GEOMETRY),
+      function() {
+        this.accuracyFeature_.setGeometry(
+            this.geolocation_.getAccuracyGeometry());
+      },
+      false,
+      this);
+
+  goog.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.POSITION),
+      function(e) {
+        this.setPosition_(e);
+      },
+      false,
+      this);
+
+  ngeoDecorateGeolocation(this.geolocation_);
+};
+
+
+/**
+ * @export
+ */
+ngeo.DesktopGeolocationController.prototype.toggle = function() {
+  if (this.active_) {
+    this.deactivate_();
+  } else {
+    this.activate_();
+  }
+};
+
+
+/**
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.activate_ = function() {
+  this.featureOverlay_.addFeature(this.positionFeature_);
+  this.featureOverlay_.addFeature(this.accuracyFeature_);
+  this.geolocation_.setTracking(true);
+  this.active_ = true;
+};
+
+
+/**
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.deactivate_ = function() {
+  this.featureOverlay_.clear();
+  this.active_ = false;
+};
+
+
+/**
+ * @param {ol.ObjectEvent} event Event.
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
+  var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
+  var point = /** @type {ol.geom.Point} */
+      (this.positionFeature_.getGeometry());
+
+  point.setCoordinates(position);
+  this.map_.getView().setCenter(position);
+
+  if (this.zoom_ !== undefined) {
+    this.map_.getView().setZoom(this.zoom_);
+  }
+
+  this.geolocation_.setTracking(false);
+};
+
+
+ngeoModule.controller('NgeoDesktopGeolocationController',
+    ngeo.DesktopGeolocationController);
+
 goog.provide('ngeo.filereaderDirective');
 
 goog.require('ngeo');
@@ -121816,15 +122411,25 @@ goog.provide('ngeo.layertreeDirective');
 goog.require('ngeo');
 
 
+/**
+ * Unique template path for the layertree;
+ * @type {string|undefined}
+ */
+ngeo.layertreeTemplateUrlValue = undefined;
+
+
 ngeoModule.value('ngeoLayertreeTemplateUrl',
     /**
      * @param {angular.JQLite} element Element.
      * @param {angular.Attributes} attrs Attributes.
      */
     function(element, attrs) {
-      var templateUrl = attrs['ngeoLayertreeTemplateurl'];
-      return templateUrl !== undefined ? templateUrl :
-          ngeo.baseTemplateUrl + '/layertree.html';
+      if (!goog.isDef(ngeo.layertreeTemplateUrlValue)) {
+        var templateUrl = attrs['ngeoLayertreeTemplateurl'];
+        ngeo.layertreeTemplateUrlValue = templateUrl !== undefined ?
+            templateUrl : ngeo.baseTemplateUrl + '/layertree.html';
+      }
+      return ngeo.layertreeTemplateUrlValue;
     });
 
 
@@ -122001,10 +122606,14 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
       ($scope.$eval(nodelayerExpr, {'node': this.node}));
 
   /**
-   * @type {ol.Map}
-   * @private
+   * @type {angular.Scope}
    */
-  this.map_ = map;
+  this.scope = $scope;
+
+  /**
+   * @type {angular.JQLite}
+   */
+  this.element = $element;
 
   /**
    * @type {number}
@@ -122030,6 +122639,10 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
   $scope['uid'] = this.uid;
   $scope['depth'] = this.depth;
 
+  if (!goog.isNull(this.layer)) {
+    $scope['layer'] = this.layer;
+  }
+
   $scope['layertreeCtrl'] = this;
 
 };
@@ -122042,7 +122655,7 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
  */
 ngeo.LayertreeController.prototype.getSetActive = function(val) {
   var layer = this.layer;
-  var map = this.map_;
+  var map = this.map;
   goog.asserts.assert(!goog.isNull(this.layer));
   if (goog.isDef(val)) {
     if (!val) {
@@ -122099,6 +122712,205 @@ ngeo.mapDirective = function() {
 };
 
 ngeoModule.directive('ngeoMap', ngeo.mapDirective);
+
+goog.provide('ngeo.MobileGeolocationController');
+goog.provide('ngeo.mobileGeolocationDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.DecorateGeolocation');
+goog.require('ngeo.FeatureOverlay');
+goog.require('ngeo.FeatureOverlayMgr');
+goog.require('ol.Feature');
+goog.require('ol.Geolocation');
+goog.require('ol.Map');
+goog.require('ol.geom.Point');
+goog.require('ol.proj');
+
+
+/**
+ * Provide a "mobile geolocation" directive.
+ *
+ * @example
+ * <button ngeo-mobile-geolocation=""
+ *   ngeo-mobile-geolocation-map="ctrl.map"
+ *   ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
+ * </button>
+ *
+ * @return {angular.Directive} The Directive Definition Object.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoMobileGeolocation
+ */
+ngeo.mobileGeolocationDirective = function() {
+  return {
+    restrict: 'A',
+    scope: {
+      'getMobileMapFn': '&ngeoMobileGeolocationMap',
+      'getMobileGeolocationOptionsFn': '&ngeoMobileGeolocationOptions'
+    },
+    controller: 'NgeoMobileGeolocationController',
+    controllerAs: 'ctrl'
+  };
+};
+
+
+ngeoModule.directive('ngeoMobileGeolocation', ngeo.mobileGeolocationDirective);
+
+
+
+/**
+ * @constructor
+ * @param {angular.Scope} $scope The directive's scope.
+ * @param {angular.JQLite} $element Element.
+ * @param {ngeo.DecorateGeolocation} ngeoDecorateGeolocation Decorate
+ *     Geolocation service.
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
+ *     overlay manager service.
+ * @export
+ * @ngInject
+ * @ngdoc controller
+ * @ngname NgeoMobileGeolocationController
+ */
+ngeo.MobileGeolocationController = function($scope, $element,
+    ngeoDecorateGeolocation, ngeoFeatureOverlayMgr) {
+
+  $element.on('click', goog.bind(this.toggleTracking, this));
+
+  var map = $scope['getMobileMapFn']();
+  goog.asserts.assertInstanceof(map, ol.Map);
+
+  /**
+   * @type {!ol.Map}
+   * @private
+   */
+  this.map_ = map;
+
+  var options = $scope['getMobileGeolocationOptionsFn']() || {};
+  goog.asserts.assertObject(options);
+
+  /**
+   * @type {ngeo.FeatureOverlay}
+   * @private
+   */
+  this.featureOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+
+  /**
+   * @type {ol.Geolocation}
+   * @private
+   */
+  this.geolocation_ = new ol.Geolocation({
+    projection: map.getView().getProjection()
+  });
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.positionFeature_ = new ol.Feature(new ol.geom.Point([0, 0]));
+
+  if (options.positionFeatureStyle) {
+    this.positionFeature_.setStyle(options.positionFeatureStyle);
+  }
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.accuracyFeature_ = new ol.Feature();
+
+  if (options.accuracyFeatureStyle) {
+    this.accuracyFeature_.setStyle(options.accuracyFeatureStyle);
+  }
+
+  /**
+   * @type {number|undefined}
+   * @private
+   */
+  this.zoom_ = options.zoom;
+
+  goog.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.ACCURACY_GEOMETRY),
+      function() {
+        this.accuracyFeature_.setGeometry(
+            this.geolocation_.getAccuracyGeometry());
+      },
+      false,
+      this);
+
+  goog.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.POSITION),
+      function(e) {
+        this.setPosition_(e);
+      },
+      false,
+      this);
+
+  ngeoDecorateGeolocation(this.geolocation_);
+};
+
+
+/**
+ * @export
+ */
+ngeo.MobileGeolocationController.prototype.toggleTracking = function() {
+  if (this.geolocation_.getTracking()) {
+    // if map center is different than geolocation position, then track again
+    var currentPosition = this.geolocation_.getPosition();
+    var center = this.map_.getView().getCenter();
+    if (currentPosition[0] === center[0] &&
+        currentPosition[1] === center[1]) {
+      this.untrack_();
+    } else {
+      this.untrack_();
+      this.track_();
+    }
+  } else {
+    this.track_();
+  }
+};
+
+
+/**
+ * @private
+ */
+ngeo.MobileGeolocationController.prototype.track_ = function() {
+  this.featureOverlay_.addFeature(this.positionFeature_);
+  this.featureOverlay_.addFeature(this.accuracyFeature_);
+  this.geolocation_.setTracking(true);
+};
+
+
+/**
+ * @private
+ */
+ngeo.MobileGeolocationController.prototype.untrack_ = function() {
+  this.featureOverlay_.clear();
+  this.geolocation_.setTracking(false);
+};
+
+
+/**
+ * @param {ol.ObjectEvent} event Event.
+ * @private
+ */
+ngeo.MobileGeolocationController.prototype.setPosition_ = function(event) {
+  var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
+  var point = /** @type {ol.geom.Point} */
+      (this.positionFeature_.getGeometry());
+
+  point.setCoordinates(position);
+  this.map_.getView().setCenter(position);
+
+  if (this.zoom_ !== undefined) {
+    this.map_.getView().setZoom(this.zoom_);
+  }
+};
+
+
+ngeoModule.controller('NgeoMobileGeolocationController',
+    ngeo.MobileGeolocationController);
 
 goog.provide('ngeo.modalDirective');
 
@@ -122616,8 +123428,8 @@ ngeo.ScaleselectorController = function($scope, $element, $attrs) {
       ($scope.$eval(scalesExpr));
   goog.asserts.assert(goog.isDef(this['scales']));
 
-  var zoomLevels = goog.array.map(goog.object.getKeys(this['scales']), Number);
-  goog.array.sort(zoomLevels);
+  var zoomLevels = Object.keys(this['scales']).map(Number);
+  zoomLevels.sort();
 
   /**
    * @type {Array.<number>}
@@ -126543,7 +127355,6 @@ ngeoModule.service('ngeoBackgroundLayerMgr', ngeo.BackgroundLayerMgr);
 
 goog.provide('ngeo.CreateGeoJSONBloodhound');
 
-goog.require('goog.array');
 goog.require('ngeo');
 goog.require('ol.format.GeoJSON');
 
@@ -126616,7 +127427,7 @@ ngeo.createGeoJSONBloodhound = function(url, opt_filter, opt_featureProjection,
         if (goog.isDef(opt_filter)) {
           featureCollection = /** @type {GeoJSONFeatureCollection} */ ({
             type: 'FeatureCollection',
-            features: goog.array.filter(featureCollection.features, opt_filter)
+            features: featureCollection.features.filter(opt_filter)
           });
         }
 
@@ -126693,47 +127504,6 @@ ngeo.debounceServiceFactory = function($timeout) {
 
 
 ngeoModule.factory('ngeoDebounce', ngeo.debounceServiceFactory);
-
-goog.provide('ngeo.DecorateGeolocation');
-
-goog.require('goog.asserts');
-goog.require('ngeo');
-
-
-/**
- * Provides a function that adds a "tracking" property (using
- * `Object.defineProperty`) to the `ol.Geolocation` instance, making it
- * possible to activate/deactivate the tracking mode.
- *
- * @example
- * <input type="checkbox" ngModel="geolocation.tracking" />
- *
- * @typedef {function(ol.Geolocation)}
- * @ngdoc service
- * @ngname ngeoDecorateGeolocation
- */
-ngeo.DecorateGeolocation;
-
-
-/**
- * @param {ol.Geolocation} geolocation Geolocation to decorate.
- * @ngInject
- */
-ngeo.decorateGeolocation = function(geolocation) {
-  goog.asserts.assertInstanceof(geolocation, ol.Geolocation);
-
-  Object.defineProperty(geolocation, 'tracking', {
-    get: function() {
-      return geolocation.getTracking();
-    },
-    set: function(val) {
-      geolocation.setTracking(val);
-    }
-  });
-};
-
-
-ngeoModule.value('ngeoDecorateGeolocation', ngeo.decorateGeolocation);
 
 goog.provide('ngeo.DecorateInteraction');
 
@@ -126842,308 +127612,6 @@ ngeo.decorateLayer = function(layer) {
 
 ngeoModule.value('ngeoDecorateLayer', ngeo.decorateLayer);
 
-goog.provide('ngeo.FeatureOverlay');
-goog.provide('ngeo.FeatureOverlayMgr');
-
-goog.require('goog.object');
-goog.require('ngeo');
-goog.require('ol.Collection');
-goog.require('ol.CollectionEvent');
-goog.require('ol.CollectionEventType');
-goog.require('ol.Feature');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-goog.require('ol.style.Style');
-goog.require('ol.style.StyleFunction');
-
-
-/**
- * @typedef {{
- *  styleFunction: ol.style.StyleFunction,
- *  features: Object.<string, ol.Feature>
- * }}
- */
-ngeo.FeatureOverlayGroup;
-
-
-
-/**
- * Provides a service that wraps an "unmanaged" vector layer,
- * used as a shared vector layer accross the application.
- *
- * Example:
- *
- * The application's main component/controller initializes the feature
- * overlay manager with the map:
- *
- *     ngeoFeatureOverlayMgr.init(map);
- *
- * Once initialized, components of the application can use the manager to
- * create a feature overlay, configuring it with specific styles:
- *
- *     var featureOverlay = ngeoFeatureOverlayMgr.getFeatureOverlay();
- *     featureOverlay.setStyle(myStyle);
- *     featureOverlay.addFeature(myFeature);
- *
- * @constructor
- * @ngdoc service
- * @ngname ngeoFeatureOverlayMgr
- */
-ngeo.FeatureOverlayMgr = function() {
-
-  /**
-   * @type {Object.<string, number>}
-   * @private
-   */
-  this.featureUidToGroupIndex_ = {};
-
-  /**
-   * @type {Array.<ngeo.FeatureOverlayGroup>}
-   * @private
-   */
-  this.groups_ = [];
-
-  /**
-   * @type {ol.source.Vector}
-   * @private
-   */
-  this.source_ = new ol.source.Vector({
-    useSpatialIndex: false
-  });
-
-  /**
-   * @type {ol.layer.Vector}
-   * @private
-   */
-  this.layer_ = new ol.layer.Vector({
-    source: this.source_,
-    style: goog.bind(this.styleFunction_, this),
-    updateWhileAnimating: true,
-    updateWhileInteracting: true
-  });
-
-};
-
-
-/**
- * @param {ol.Feature} feature The feature to add.
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.addFeature = function(feature, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var featureUid = goog.getUid(feature).toString();
-  this.featureUidToGroupIndex_[featureUid] = groupIndex;
-  this.groups_[groupIndex].features[featureUid] = feature;
-  this.source_.addFeature(feature);
-};
-
-
-/**
- * @param {ol.Feature} feature The feature to add.
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.removeFeature = function(feature, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var featureUid = goog.getUid(feature).toString();
-  delete this.featureUidToGroupIndex_[featureUid];
-  delete this.groups_[groupIndex].features[featureUid];
-  this.source_.removeFeature(feature);
-};
-
-
-/**
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.clear = function(groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var group = this.groups_[groupIndex];
-  for (var featureUid in group.features) {
-    this.removeFeature(group.features[featureUid], groupIndex);
-  }
-  goog.asserts.assert(goog.object.isEmpty(group.features));
-};
-
-
-/**
- * @return {ol.layer.Vector} The vector layer used internally.
- */
-ngeo.FeatureOverlayMgr.prototype.getLayer = function() {
-  return this.layer_;
-};
-
-
-/**
- * @return {ngeo.FeatureOverlay} Feature overlay.
- */
-ngeo.FeatureOverlayMgr.prototype.getFeatureOverlay = function() {
-  var groupIndex = this.groups_.length;
-  this.groups_.push({
-    styleFunction: ol.style.defaultStyleFunction,
-    features: {}
-  });
-  return new ngeo.FeatureOverlay(this, groupIndex);
-};
-
-
-/**
- * @param {ol.Map} map Map.
- */
-ngeo.FeatureOverlayMgr.prototype.init = function(map) {
-  this.layer_.setMap(map);
-};
-
-
-/**
- * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction} style
- * Style.
- * @param {number} groupIndex Group index.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.setStyle = function(style, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  this.groups_[groupIndex].styleFunction = goog.isNull(style) ?
-      ol.style.defaultStyleFunction : ol.style.createStyleFunction(style);
-};
-
-
-/**
- * @param {ol.Feature|ol.render.Feature} feature Feature.
- * @param {number} resolution Resolution.
- * @return {Array.<ol.style.Style>|ol.style.Style} Styles.
- * @private
- */
-ngeo.FeatureOverlayMgr.prototype.styleFunction_ =
-    function(feature, resolution) {
-  var featureUid = goog.getUid(feature).toString();
-  goog.asserts.assert(featureUid in this.featureUidToGroupIndex_);
-  var groupIndex = this.featureUidToGroupIndex_[featureUid];
-  var group = this.groups_[groupIndex];
-  return group.styleFunction(feature, resolution);
-};
-
-
-
-/**
- * @constructor
- * @param {ngeo.FeatureOverlayMgr} manager The feature overlay manager.
- * @param {number} index This feature overlay's index.
- */
-ngeo.FeatureOverlay = function(manager, index) {
-
-  /**
-   * @type {ngeo.FeatureOverlayMgr}
-   * @private
-   */
-  this.manager_ = manager;
-
-  /**
-   * @type {ol.Collection.<ol.Feature>}
-   * @private
-   */
-  this.features_ = null;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.index_ = index;
-};
-
-
-/**
- * Add a feature to the feature overlay.
- * @param {ol.Feature} feature The feature to add.
- */
-ngeo.FeatureOverlay.prototype.addFeature = function(feature) {
-  this.manager_.addFeature(feature, this.index_);
-};
-
-
-/**
- * Remove a feature from the feature overlay.
- * @param {ol.Feature} feature The feature to add.
- */
-ngeo.FeatureOverlay.prototype.removeFeature = function(feature) {
-  this.manager_.removeFeature(feature, this.index_);
-};
-
-
-/**
- * Remove all the features from the feature overlay.
- */
-ngeo.FeatureOverlay.prototype.clear = function() {
-  this.manager_.clear(this.index_);
-};
-
-
-/**
- * Configure this feature overlay with a feature collection. Features added
- * to the collection are also added to the overlay. Same for removal. If you
- * configure the feature overlay with a feature collection you will use the
- * collection to add and remove features instead of using the overlay's
- * `addFeature`, `removeFeature` and `clear` functions.
- * @param {ol.Collection.<ol.Feature>} features Feature collection.
- */
-ngeo.FeatureOverlay.prototype.setFeatures = function(features) {
-  if (!goog.isNull(this.features_)) {
-    this.features_.clear();
-    goog.events.unlisten(this.features_, ol.CollectionEventType.ADD,
-        this.handleFeatureAdd_, false, this);
-    goog.events.unlisten(this.features_, ol.CollectionEventType.REMOVE,
-        this.handleFeatureRemove_, false, this);
-  }
-  if (!goog.isNull(features)) {
-    features.forEach(function(feature) {
-      this.addFeature(feature);
-    }, this);
-    goog.events.listen(features, ol.CollectionEventType.ADD,
-        this.handleFeatureAdd_, false, this);
-    goog.events.listen(features, ol.CollectionEventType.REMOVE,
-        this.handleFeatureRemove_, false, this);
-  }
-  this.features_ = features;
-};
-
-
-/**
- * Set a style for the feature overlay.
- * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction} style
- * Style.
- */
-ngeo.FeatureOverlay.prototype.setStyle = function(style) {
-  this.manager_.setStyle(style, this.index_);
-};
-
-
-/**
- * @param {ol.CollectionEvent} evt Feature collection event.
- * @private
- */
-ngeo.FeatureOverlay.prototype.handleFeatureAdd_ = function(evt) {
-  var feature = /** @type {ol.Feature} */ (evt.element);
-  this.addFeature(feature);
-};
-
-
-/**
- * @param {ol.CollectionEvent} evt Feature collection event.
- * @private
- */
-ngeo.FeatureOverlay.prototype.handleFeatureRemove_ = function(evt) {
-  var feature = /** @type {ol.Feature} */ (evt.element);
-  this.removeFeature(feature);
-};
-
-
-ngeoModule.service('ngeoFeatureOverlayMgr', ngeo.FeatureOverlayMgr);
-
 goog.provide('ngeo.GetBrowserLanguage');
 
 goog.require('ngeo');
@@ -127181,24 +127649,280 @@ ngeo.getBrowserLanguageFactory = function($window) {
         if (!goog.isArray(browserLanguages)) {
           browserLanguages = [browserLanguages];
         }
-        browserLanguages = goog.array.map(browserLanguages, function(item) {
+        browserLanguages = browserLanguages.map(function(item) {
           return item.substring(0, 2);
         });
         // remove duplicated language codes
-        browserLanguages = goog.array.filter(browserLanguages,
-            function(item, index, arr) {
-              return arr.indexOf(item) == index;
-            });
-        var supportedLanguages = goog.array.filter(browserLanguages,
-            function(item) {
-              return availableLanguages.indexOf(item) != -1;
-            });
+        browserLanguages = browserLanguages.filter(function(item, index, arr) {
+          return arr.indexOf(item) == index;
+        });
+        var supportedLanguages = browserLanguages.filter(function(item) {
+          return availableLanguages.indexOf(item) != -1;
+        });
         return supportedLanguages[0];
       });
 };
 
 
 ngeoModule.factory('ngeoGetBrowserLanguage', ngeo.getBrowserLanguageFactory);
+
+goog.provide('ngeo.LayerHelper');
+
+goog.require('ngeo');
+goog.require('ol.Collection');
+goog.require('ol.format.WMTSCapabilities');
+goog.require('ol.layer.Group');
+goog.require('ol.layer.Image');
+goog.require('ol.layer.Tile');
+goog.require('ol.source.ImageWMS');
+goog.require('ol.source.WMTS');
+
+
+
+/**
+ * Provides helpers fonctions that helps you to create and manage layers.
+ *
+ * @param {angular.$http} $http Angular http service.
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoLayerHelper
+ * @ngInject
+ */
+ngeo.LayerHelper = function($http) {
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.initialized_ = false;
+
+  /**
+   * @type {ol.Map}
+   * @private
+   */
+  this.map_ = null;
+
+  /**
+   * @type {angular.$http}
+   * @private
+   */
+  this.http_ = $http;
+};
+
+
+/**
+ * Init the service.
+ * @param {!ol.Map} map
+ * @export
+ */
+ngeo.LayerHelper.prototype.init = function(map) {
+  if (!this.initialized_) {
+    this.map_ = map;
+    this.initialized_ = true;
+  }
+};
+
+
+/**
+ * Create and return a basic WMS layer with only a source URL and a dot
+ * separated layers names (see ol.source.ImageWMS).
+ * @param {string} sourceUrl The source url.
+ * @param {string} sourceLayersName A dot separated names string.
+ * @return {ol.layer.Image}
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceUrl,
+    sourceLayersName) {
+  var layer = new ol.layer.Image({
+    source: new ol.source.ImageWMS({
+      url: sourceUrl,
+      params: {'LAYERS': sourceLayersName}
+    })
+  });
+  return layer;
+};
+
+
+/**
+ * Create and return a WMTS layer. The layer source will be configured by
+ * the capabilities that are loaded from the given capabilitiesUrl.
+ * @param {string} capabilitiesUrl The getCapabilities url.
+ * @param {string} layerName The name of te layer.
+ * @return {ol.layer.Tile}
+ * @export
+ */
+ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
+    capabilitiesUrl, layerName) {
+  var parser = new ol.format.WMTSCapabilities();
+  var layer = new ol.layer.Tile();
+  this.http_.get(capabilitiesUrl).success(function(response) {
+    var result = parser.read(response);
+    var options = ol.source.WMTS.optionsFromCapabilities(result,
+        {layer: layerName, requestEncoding: 'REST'});
+    layer.setSource(new ol.source.WMTS(options));
+  }).error(function(response) {
+    //TODO handle error
+  });
+  return layer;
+};
+
+
+/**
+ * Create and return an ol.layer.Group. You can pass a collection of layers to
+ * directly add them to the group.
+ * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
+ * the returned Group.
+ * @return {ol.layer.Group}
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
+  var group = new ol.layer.Group();
+  if (goog.isDefAndNotNull(opt_layers)) {
+    group.setLayers(opt_layers);
+  }
+  return group;
+};
+
+
+/**
+ * Get the position of the layer in the map's layers array or -1 if the layer
+ * is not found.
+ * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
+ * @param {ol.layer.Base} layer The concerned layer.
+ * @return {number} index or -1 if not found.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getLayerIndex = function(layer) {
+  var i, n;
+  var layers = this.map_.getLayers().getArray();
+  var layerName = this.getLayerName(layer);
+  if (goog.isDefAndNotNull(layerName)) {
+    for (i = 0; i < layers.length; i++) {
+      n = this.getLayerName(layers[i]);
+      if (n === layerName) {
+        return i;
+      }
+    }
+  }
+  return -1;
+};
+
+
+/**
+ * Retrieve the name of the given layer or null if no name is found.
+ * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
+ * @param {ol.layer.Base} layer The concerned layer.
+ * @return {string} layer name or null;
+ * @export
+ */
+ngeo.LayerHelper.prototype.getLayerName = function(layer) {
+  var layerName, layerSource;
+  if (layer instanceof ol.layer.Image) {
+    layerSource = /** @type {ol.source.ImageWMS} */ (layer.getSource());
+    layerName = layerSource.getParams()['LAYERS'];
+  } else if (layer instanceof ol.layer.Tile) {
+    layerSource = layer.getSource();
+    if (layerSource instanceof ol.source.WMTS) {
+      layerName = layerSource.getLayer();
+    }
+  }
+  return layerName || null;
+};
+
+
+/**
+ * Add the given layer on the map is it doesn't already exists.
+ * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
+ * @param {ol.layer.Base} layer The concerned layer.
+ * @return {boolean} true if added, false else.
+ * @export
+ */
+ngeo.LayerHelper.prototype.addLayerToMap = function(layer) {
+  var added = false;
+  var layerIndex = this.getLayerIndex(layer);
+  if (layerIndex < 0) {
+    this.map_.addLayer(layer);
+    added = true;
+  }
+  return added;
+};
+
+
+/**
+ * Remove the given from the map if it exists.
+ * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
+ * @param {ol.layer.Base} layer The concerned layer.
+ * @return {boolean} true if removed, false else.
+ * @export
+ */
+ngeo.LayerHelper.prototype.removeLayerFromMap = function(layer) {
+  var removed = false;
+  var layerToRemove;
+  var layerIndex = this.getLayerIndex(layer);
+  if (layerIndex >= 0) {
+    layerToRemove = this.map_.getLayers().getArray()[layerIndex];
+    this.map_.removeLayer(layerToRemove);
+    removed = true;
+  }
+  return removed;
+};
+
+
+/**
+ * Add or remove some layers from the map.
+ * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
+ * @param {Array.<ol.layer.Base>} layers An array of layers.
+ * @param {boolean} add True to add the layers, False to remove them.
+ * @export
+ */
+ngeo.LayerHelper.prototype.moveInOutLayers = function(layers, add) {
+  var i, layer;
+  for (i = 0; i < layers.length; i++) {
+    layer = layers[i];
+    if (add) {
+      this.addLayerToMap(layer);
+    } else {
+      this.removeLayerFromMap(layer);
+    }
+  }
+};
+
+
+/**
+ * Get an array of all layer in a group. the group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @return {Array.<ol.layer.Base>}
+ * @export
+ */
+ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
+  return this.getFlatLayers_(layer, []);
+};
+
+
+/**
+ * Get an array of all layer in a group. the group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @param {Array.<ol.layer.Base>} array An array to add layers.
+ * @return {Array.<ol.layer.Base>}
+ * @private
+ */
+ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
+  if (layer instanceof ol.layer.Group) {
+    var sublayers = layer.getLayers();
+    sublayers.forEach(function(l) {
+      this.getFlatLayers_(l, array);
+    }, this);
+  } else {
+    if (array.indexOf(layer) < 0) {
+      array.push(layer);
+    }
+  }
+  return array;
+};
+
+ngeoModule.service('ngeoLayerHelper', ngeo.LayerHelper);
 
 goog.provide('ngeo.Location');
 goog.provide('ngeo.MockLocationProvider');
@@ -127749,7 +128473,7 @@ ngeo.Print.prototype.encodeMap_ = function(map, scale, object) {
   goog.asserts.assert(!goog.isNull(layersCollection));
   var layers = layersCollection.getArray().slice().reverse();
 
-  goog.array.forEach(layers,
+  layers.forEach(
       /**
        * @param {ol.layer.Layer} layer Layer.
        * @param {number} idx Index.
@@ -127824,9 +128548,9 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
   var customParams = {'TRANSPARENT': true};
   goog.object.extend(customParams, params);
 
-  goog.object.remove(customParams, 'LAYERS');
-  goog.object.remove(customParams, 'FORMAT');
-  goog.object.remove(customParams, 'VERSION');
+  delete customParams['LAYERS'];
+  delete customParams['FORMAT'];
+  delete customParams['VERSION'];
 
   var object = /** @type {MapFishPrintWmsLayer} */ ({
     baseURL: ngeo.Print.getAbsoluteUrl_(url),
@@ -127903,7 +128627,7 @@ ngeo.Print.prototype.encodeTileWmtsLayer_ = function(arr, layer) {
   }
 
   var dimensions = source.getDimensions();
-  var dimensionKeys = goog.object.getKeys(dimensions);
+  var dimensionKeys = Object.keys(dimensions);
 
   var object = /** @type {MapFishPrintWmtsLayer} */ ({
     baseURL: this.getWmtsUrl_(source),
@@ -128976,6 +129700,7 @@ goog.require('ol.proj.Projection');
 goog.require('ol.proj.ProjectionLike');
 goog.require('ol.proj.Units');
 goog.require('ol.proj.common');
+goog.require('ol.render');
 goog.require('ol.render.Event');
 goog.require('ol.render.EventType');
 goog.require('ol.render.Feature');
@@ -136681,6 +137406,10 @@ goog.exportProperty(
     ol.render.canvas.Immediate.prototype,
     'setTextStyle',
     ol.render.canvas.Immediate.prototype.setTextStyle);
+
+goog.exportSymbol(
+    'ol.render.toContext',
+    ol.render.toContext);
 
 goog.exportProperty(
     ol.render.webgl.Immediate.prototype,
