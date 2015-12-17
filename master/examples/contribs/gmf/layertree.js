@@ -47,7 +47,7 @@ app.MainController = function($http) {
    * @type {string}
    * @export
    */
-  this.wmsUrl = 'http://geomapfish-demo.camptocamp.net/1.6/wsgi/mapserv_proxy';
+  this.wmsUrl = 'https://geomapfish-demo.camptocamp.net/1.6/wsgi/mapserv_proxy';
 
   /**
    * @type {Object|undefined}

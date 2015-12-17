@@ -122469,7 +122469,8 @@ ngeoModule.value('ngeoLayertreeTemplateUrl',
  * By default the directive uses "layertree.html" as its templateUrl. This
  * can be changed by redefining the "ngeoLayertreeTemplateUrl" value (using
  * app.module.value('ngeoLayertreeTemplateUrl', 'path/layertree.html'), or
- * by adding an "ngeo-layertree-templateurl" attribute to the element.
+ * by adding an "ngeo-layertree-templateurl" attribute to the element. Once
+ * defined, the templateUrl will ever be used.
  *
  * Example:
  *
@@ -122828,6 +122829,21 @@ ngeo.MobileGeolocationController = function($scope, $element,
    */
   this.zoom_ = options.zoom;
 
+  /**
+   * Whether to recenter the map at the position it gets updated
+   * @type {boolean}
+   * @private
+   */
+  this.follow_ = false;
+
+  /**
+   * A flag used to determine whether the view was changed by me or something
+   * else. In the latter case, stop following.
+   * @type {boolean}
+   * @private
+   */
+  this.viewChangedByMe_ = false;
+
   goog.events.listen(
       this.geolocation_,
       ol.Object.getChangeEventType(ol.GeolocationProperty.ACCURACY_GEOMETRY),
@@ -122844,6 +122860,29 @@ ngeo.MobileGeolocationController = function($scope, $element,
       function(e) {
         this.setPosition_(e);
       },
+      false,
+      this);
+
+  var view = map.getView();
+
+  goog.events.listen(
+      view,
+      ol.Object.getChangeEventType(ol.ViewProperty.CENTER),
+      this.handleViewChange_,
+      false,
+      this);
+
+  goog.events.listen(
+      view,
+      ol.Object.getChangeEventType(ol.ViewProperty.RESOLUTION),
+      this.handleViewChange_,
+      false,
+      this);
+
+  goog.events.listen(
+      view,
+      ol.Object.getChangeEventType(ol.ViewProperty.ROTATION),
+      this.handleViewChange_,
       false,
       this);
 
@@ -122878,6 +122917,7 @@ ngeo.MobileGeolocationController.prototype.toggleTracking = function() {
 ngeo.MobileGeolocationController.prototype.track_ = function() {
   this.featureOverlay_.addFeature(this.positionFeature_);
   this.featureOverlay_.addFeature(this.accuracyFeature_);
+  this.follow_ = true;
   this.geolocation_.setTracking(true);
 };
 
@@ -122887,6 +122927,7 @@ ngeo.MobileGeolocationController.prototype.track_ = function() {
  */
 ngeo.MobileGeolocationController.prototype.untrack_ = function() {
   this.featureOverlay_.clear();
+  this.follow_ = false;
   this.geolocation_.setTracking(false);
 };
 
@@ -122901,10 +122942,25 @@ ngeo.MobileGeolocationController.prototype.setPosition_ = function(event) {
       (this.positionFeature_.getGeometry());
 
   point.setCoordinates(position);
-  this.map_.getView().setCenter(position);
 
-  if (this.zoom_ !== undefined) {
-    this.map_.getView().setZoom(this.zoom_);
+  if (this.follow_) {
+    this.viewChangedByMe_ = true;
+    this.map_.getView().setCenter(position);
+    if (this.zoom_ !== undefined) {
+      this.map_.getView().setZoom(this.zoom_);
+    }
+    this.viewChangedByMe_ = false;
+  }
+};
+
+
+/**
+ * @param {ol.ObjectEvent} event Event.
+ * @private
+ */
+ngeo.MobileGeolocationController.prototype.handleViewChange_ = function(event) {
+  if (this.follow_ && !this.viewChangedByMe_) {
+    this.follow_ = false;
   }
 };
 
@@ -127682,13 +127738,14 @@ goog.require('ol.source.WMTS');
 /**
  * Provides helpers fonctions that helps you to create and manage layers.
  *
+ * @param {angular.$q} $q Angular promises/deferred service.
  * @param {angular.$http} $http Angular http service.
  * @constructor
  * @ngdoc service
  * @ngname ngeoLayerHelper
  * @ngInject
  */
-ngeo.LayerHelper = function($http) {
+ngeo.LayerHelper = function($q, $http) {
 
   /**
    * @type {boolean}
@@ -127701,6 +127758,12 @@ ngeo.LayerHelper = function($http) {
    * @private
    */
   this.map_ = null;
+
+  /**
+   * @type {angular.$q}
+   * @private
+   */
+  this.q_ = $q;
 
   /**
    * @type {angular.$http}
@@ -127744,26 +127807,40 @@ ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceUrl,
 
 
 /**
- * Create and return a WMTS layer. The layer source will be configured by
- * the capabilities that are loaded from the given capabilitiesUrl.
+ * Create and return a promise that provides a WMTS layer with source on
+ * success, none else.
+ * The WMTS layer source will be configured by the capabilities that are
+ * loaded from the given capabilitiesUrl.
  * @param {string} capabilitiesUrl The getCapabilities url.
  * @param {string} layerName The name of te layer.
- * @return {ol.layer.Tile}
+ * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
+ *     none else.
  * @export
  */
 ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
     capabilitiesUrl, layerName) {
   var parser = new ol.format.WMTSCapabilities();
   var layer = new ol.layer.Tile();
-  this.http_.get(capabilitiesUrl).success(function(response) {
-    var result = parser.read(response);
-    var options = ol.source.WMTS.optionsFromCapabilities(result,
-        {layer: layerName, requestEncoding: 'REST'});
-    layer.setSource(new ol.source.WMTS(options));
-  }).error(function(response) {
-    //TODO handle error
+  var deferred = this.q_.defer();
+
+  this.http_.get(capabilitiesUrl).then(function(response) {
+    var result;
+    if (response.data) {
+      result = parser.read(response.data);
+    }
+    if (goog.isDef(result)) {
+      var options = ol.source.WMTS.optionsFromCapabilities(result,
+          {layer: layerName, requestEncoding: 'REST'});
+      layer.setSource(new ol.source.WMTS(options));
+      deferred.resolve(layer);
+    } else {
+      deferred.resolve();
+    }
+  }, function(response) {
+    deferred.resolve();
   });
-  return layer;
+
+  return deferred.promise;
 };
 
 
@@ -127771,7 +127848,7 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
  * Create and return an ol.layer.Group. You can pass a collection of layers to
  * directly add them to the group.
  * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
- * the returned Group.
+ * returned Group.
  * @return {ol.layer.Group}
  * @export
  */
@@ -127788,13 +127865,14 @@ ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
  * Get the position of the layer in the map's layers array or -1 if the layer
  * is not found.
  * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
- * @param {ol.layer.Base} layer The concerned layer.
+ * @param {ol.layer.Layer} layer The concerned layer.
  * @return {number} index or -1 if not found.
  * @export
  */
 ngeo.LayerHelper.prototype.getLayerIndex = function(layer) {
   var i, n;
-  var layers = this.map_.getLayers().getArray();
+  var layers = /** @type {Array.<ol.layer.Layer>} */
+      (this.map_.getLayers().getArray());
   var layerName = this.getLayerName(layer);
   if (goog.isDefAndNotNull(layerName)) {
     for (i = 0; i < layers.length; i++) {
@@ -127811,7 +127889,7 @@ ngeo.LayerHelper.prototype.getLayerIndex = function(layer) {
 /**
  * Retrieve the name of the given layer or null if no name is found.
  * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
- * @param {ol.layer.Base} layer The concerned layer.
+ * @param {ol.layer.Layer} layer The concerned layer.
  * @return {string} layer name or null;
  * @export
  */
@@ -127831,18 +127909,21 @@ ngeo.LayerHelper.prototype.getLayerName = function(layer) {
 
 
 /**
- * Add the given layer on the map is it doesn't already exists.
+ * Add the given layer on the map is it doesn't already exists andif the layer
+ * has a source.
  * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
- * @param {ol.layer.Base} layer The concerned layer.
+ * @param {ol.layer.Layer} layer The concerned layer.
  * @return {boolean} true if added, false else.
  * @export
  */
 ngeo.LayerHelper.prototype.addLayerToMap = function(layer) {
   var added = false;
-  var layerIndex = this.getLayerIndex(layer);
-  if (layerIndex < 0) {
-    this.map_.addLayer(layer);
-    added = true;
+  if (goog.isDefAndNotNull(layer.getSource())) {
+    var layerIndex = this.getLayerIndex(layer);
+    if (layerIndex < 0) {
+      this.map_.addLayer(layer);
+      added = true;
+    }
   }
   return added;
 };
@@ -127851,7 +127932,7 @@ ngeo.LayerHelper.prototype.addLayerToMap = function(layer) {
 /**
  * Remove the given from the map if it exists.
  * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
- * @param {ol.layer.Base} layer The concerned layer.
+ * @param {ol.layer.Layer} layer The concerned layer.
  * @return {boolean} true if removed, false else.
  * @export
  */
@@ -127871,7 +127952,7 @@ ngeo.LayerHelper.prototype.removeLayerFromMap = function(layer) {
 /**
  * Add or remove some layers from the map.
  * Experimental. Tested only with ol.layer.Image and ol.layer.Tile.
- * @param {Array.<ol.layer.Base>} layers An array of layers.
+ * @param {Array.<ol.layer.Layer>} layers An array of layers.
  * @param {boolean} add True to add the layers, False to remove them.
  * @export
  */
@@ -127892,7 +127973,7 @@ ngeo.LayerHelper.prototype.moveInOutLayers = function(layers, add) {
  * Get an array of all layer in a group. the group can contain multiple levels
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @return {Array.<ol.layer.Base>}
+ * @return {Array.<ol.layer.Layer>}
  * @export
  */
 ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
@@ -127905,7 +127986,7 @@ ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
  * @param {Array.<ol.layer.Base>} array An array to add layers.
- * @return {Array.<ol.layer.Base>}
+ * @return {Array.<ol.layer.Layer>}
  * @private
  */
 ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {

@@ -4,13 +4,8 @@
     <title translate>Mobile Application</title>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="../../build/mobile.css" type="text/css">
-    <style>
-    #desc {
-      display: none;
-    }
-    </style>
   </head>
   <body ng-class="{'nav-is-visible': mainCtrl.navIsVisible(),
                    'nav-left-is-visible': mainCtrl.leftNavIsVisible(),
@@ -92,7 +87,6 @@
         </ul>
       </div>
     </nav>
-    <p id="desc">This example is a mobile application based on ngeo and gmf components.</p>
     <script src="../../build/mobile.js"></script>
     <script src="../../../../lib/watchwatchers.js"></script>
     <script>

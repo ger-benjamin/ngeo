@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Measure</title>
+    <title>JSDoc: Class: AbstractMobileController</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Measure</h1>
+    <h1 class="page-title">Class: AbstractMobileController</h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="Measure">
-            <span class="ancestors">ngeo.interaction.</span>Measure
+        <h2 id="AbstractMobileController">
+            <span class="ancestors">gmf.</span>AbstractMobileController
         </h2>
         
     
@@ -42,15 +42,11 @@
 
     
 
-    <h4 class="name" id="Measure"><span class="type-signature"></span>new Measure<span class="signature">(opt_options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AbstractMobileController"><span class="type-signature"></span>new AbstractMobileController<span class="signature">(ngeoFeatureOverlayMgr, serverVars)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>Interaction that allows measuring (length, area, ...).</p>
-</div>
 
 
 
@@ -73,8 +69,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -87,33 +81,47 @@
 
         <tr>
             
-                <td class="name"><code>opt_options</code></td>
+                <td class="name"><code>ngeoFeatureOverlayMgr</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ngeo.interaction.html#MeasureBaseOptions">ngeo.interaction.MeasureBaseOptions</a></span>
+<span class="param-type"><a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last"><p>The ngeo feature
+    overlay manager service.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverVars</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
             
 
             
 
-            <td class="description last"><p>Options</p></td>
+            <td class="description last"><p>vars from GMF</p></td>
         </tr>
 
     
@@ -154,7 +162,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line80">line 80</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -184,17 +192,6 @@
     </div>
 
     
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="http://openlayers.org/en/master/apidoc/ol.interaction.Interaction.html">ol.interaction.Interaction</a></li>
-    </ul>
-
-
-    
 
     
 
@@ -209,14 +206,10 @@
 
         
             
-<h4 class="name" id="continueMsg"><span class="type-signature">(nullable) </span>continueMsg<span class="type-signature"> :Element</span></h4>
+<h4 class="name" id="leftNavVisible"><span class="type-signature"></span>leftNavVisible<span class="type-signature"> :boolean</span></h4>
 
 
 
-
-<div class="description">
-    <p>Message to show after the first point is clicked.</p>
-</div>
 
 
 
@@ -224,7 +217,7 @@
     <ul>
         <li>
             
-<span class="param-type">Element</span>
+<span class="param-type">boolean</span>
 
 
         </li>
@@ -263,7 +256,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line131">line 131</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line62">line 62</a>
     </li></ul></dd>
     
 
@@ -281,139 +274,10 @@
 
         
             
-<h4 class="name" id="getDrawInteraction"><span class="type-signature">(protected) </span>getDrawInteraction<span class="type-signature"></span></h4>
+<h4 class="name" id="map"><span class="type-signature"></span>map<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span></h4>
 
 
 
-
-<div class="description">
-    <p>Creates the draw interaction.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line282">line 282</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="handleMeasure"><span class="type-signature">(protected) </span>handleMeasure<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Function implemented in inherited classes to compute measurement, determine
-where to place the tooltip and determine which help message to display.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line436">line 436</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="sketchFeature"><span class="type-signature">(protected) </span>sketchFeature<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>The sketch feature.</p>
-</div>
 
 
 
@@ -421,7 +285,7 @@ where to place the tooltip and determine which help message to display.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
 
 
         </li>
@@ -460,7 +324,7 @@ where to place the tooltip and determine which help message to display.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line125">line 125</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line97">line 97</a>
     </li></ul></dd>
     
 
@@ -478,14 +342,10 @@ where to place the tooltip and determine which help message to display.</p>
 
         
             
-<h4 class="name" id="startMsg"><span class="type-signature"></span>startMsg<span class="type-signature"> :Element</span></h4>
+<h4 class="name" id="mobileGeolocationOptions"><span class="type-signature"></span>mobileGeolocationOptions<span class="type-signature"> :<a href="ngeox.html#MobileGeolocationDirectiveOptions">ngeox.MobileGeolocationDirectiveOptions</a></span></h4>
 
 
 
-
-<div class="description">
-    <p>The message to show when user is about to start drawing.</p>
-</div>
 
 
 
@@ -493,7 +353,7 @@ where to place the tooltip and determine which help message to display.</p>
     <ul>
         <li>
             
-<span class="param-type">Element</span>
+<span class="param-type"><a href="ngeox.html#MobileGeolocationDirectiveOptions">ngeox.MobileGeolocationDirectiveOptions</a></span>
 
 
         </li>
@@ -532,7 +392,143 @@ where to place the tooltip and determine which help message to display.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line137">line 137</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="rightNavVisible"><span class="type-signature"></span>rightNavVisible<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line68">line 68</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="searchDatasources"><span class="type-signature"></span>searchDatasources<span class="type-signature"> :Array.&lt;gmfx.SearchDirectiveDatasource></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;gmfx.SearchDirectiveDatasource></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line49">line 49</a>
     </li></ul></dd>
     
 
@@ -559,15 +555,14 @@ where to place the tooltip and determine which help message to display.</p>
 
     
 
-    <h4 class="name" id=".getFormattedArea"><span class="type-signature">(static) </span>getFormattedArea<span class="signature">(polygon, projection)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="hideNav"><span class="type-signature"></span>hideNav<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Calculate the area of the passed polygon and return a formatted string
-of the area.</p>
+    <p>Hide both navigation menus.</p>
 </div>
 
 
@@ -576,78 +571,6 @@ of the area.</p>
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>polygon</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.geom.Polygon.html">ol.geom.Polygon</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Polygon.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>projection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.proj.Projection.html">ol.proj.Projection</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Projection of the polygon coords.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -683,7 +606,85 @@ of the area.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line205">line 205</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="leftNavIsVisible"><span class="type-signature"></span>leftNavIsVisible<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line158">line 158</a>
     </li></ul></dd>
     
 
@@ -710,7 +711,8 @@ of the area.</p>
 
         
 <div class="param-desc">
-    <p>Formatted string of the area.</p>
+    <p>Return true if the left navigation menus is visible,
+otherwise false.</p>
 </div>
 
 
@@ -721,7 +723,7 @@ of the area.</p>
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -736,95 +738,18 @@ of the area.</p>
 
     
 
-    <h4 class="name" id=".getFormattedLength"><span class="type-signature">(static) </span>getFormattedLength<span class="signature">(lineString, projection)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="navIsVisible"><span class="type-signature"></span>navIsVisible<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
 
-<div class="description">
-    <p>Calculate the length of the passed line string and return a formatted
-string of the length.</p>
-</div>
 
 
 
 
 
 
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>lineString</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.geom.LineString.html">ol.geom.LineString</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Line string.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>projection</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.proj.Projection.html">ol.proj.Projection</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Projection of the line string coords.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -860,7 +785,7 @@ string of the length.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line228">line 228</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line148">line 148</a>
     </li></ul></dd>
     
 
@@ -887,7 +812,8 @@ string of the length.</p>
 
         
 <div class="param-desc">
-    <p>Formatted string of length.</p>
+    <p>Return true if one of the navigation menus is visible,
+otherwise false.</p>
 </div>
 
 
@@ -898,7 +824,7 @@ string of the length.</p>
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -913,15 +839,11 @@ string of the length.</p>
 
     
 
-    <h4 class="name" id="getTooltipElement"><span class="type-signature"></span>getTooltipElement<span class="signature">()</span><span class="type-signature"> &rarr; {Element}</span></h4>
+    <h4 class="name" id="rightNavIsVisible"><span class="type-signature"></span>rightNavIsVisible<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
 
-
-<div class="description">
-    <p>Get a reference to the tooltip element.</p>
-</div>
 
 
 
@@ -964,7 +886,7 @@ string of the length.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line443">line 443</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line168">line 168</a>
     </li></ul></dd>
     
 
@@ -990,6 +912,11 @@ string of the length.</p>
 <h5>Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Return true if the right navigation menus is visible,
+otherwise false.</p>
+</div>
+
 
 
 <dl>
@@ -998,7 +925,7 @@ string of the length.</p>
     </dt>
     <dd>
         
-<span class="param-type">Element</span>
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -1013,7 +940,7 @@ string of the length.</p>
 
     
 
-    <h4 class="name" id="setMap"><span class="type-signature"></span>setMap<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="toggleLeftNavVisibility"><span class="type-signature"></span>toggleLeftNavVisibility<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
@@ -1060,7 +987,85 @@ string of the length.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_ol-ext_interaction_measure.js.html">src/ol-ext/interaction/measure.js</a>, <a href="src_ol-ext_interaction_measure.js.html#line288">line 288</a>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="toggleRightNavVisibility"><span class="type-signature"></span>toggleRightNavVisibility<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_controllers_abstractmobile.js.html">contribs/gmf/src/controllers/abstractmobile.js</a>, <a href="contribs_gmf_src_controllers_abstractmobile.js.html#line129">line 129</a>
     </li></ul></dd>
     
 
