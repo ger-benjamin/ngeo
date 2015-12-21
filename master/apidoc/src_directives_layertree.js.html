@@ -32,25 +32,15 @@ goog.provide('ngeo.layertreeDirective');
 goog.require('ngeo');
 
 
-/**
- * Unique template path for the layertree;
- * @type {string|undefined}
- */
-ngeo.layertreeTemplateUrlValue = undefined;
-
-
 ngeoModule.value('ngeoLayertreeTemplateUrl',
     /**
      * @param {angular.JQLite} element Element.
      * @param {angular.Attributes} attrs Attributes.
      */
     function(element, attrs) {
-      if (!goog.isDef(ngeo.layertreeTemplateUrlValue)) {
-        var templateUrl = attrs['ngeoLayertreeTemplateurl'];
-        ngeo.layertreeTemplateUrlValue = templateUrl !== undefined ?
-            templateUrl : ngeo.baseTemplateUrl + '/layertree.html';
-      }
-      return ngeo.layertreeTemplateUrlValue;
+      var templateUrl = attrs['ngeoLayertreeTemplateurl'];
+      return templateUrl !== undefined ? templateUrl :
+          ngeo.baseTemplateUrl + '/layertree.html';
     });
 
 
@@ -90,8 +80,7 @@ ngeoModule.value('ngeoLayertreeTemplateUrl',
  * By default the directive uses "layertree.html" as its templateUrl. This
  * can be changed by redefining the "ngeoLayertreeTemplateUrl" value (using
  * app.module.value('ngeoLayertreeTemplateUrl', 'path/layertree.html'), or
- * by adding an "ngeo-layertree-templateurl" attribute to the element. Once
- * defined, the templateUrl will ever be used.
+ * by adding an "ngeo-layertree-templateurl" attribute to the element.
  *
  * Example:
  *

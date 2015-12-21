@@ -53,10 +53,13 @@ app.MainController = function($http) {
    * @type {Object|undefined}
    * @export
    */
-  this.themes = undefined;
+  this.source = undefined;
 
   $http.get('data/themes.json').success(angular.bind(this, function(data) {
-    this.themes = data;
+    var themes = data['themes'];
+    if (themes) {
+      this.source = themes[3];
+    }
   }));
 
 };

@@ -55,20 +55,33 @@ gmfModule.value('gmfLayertreeTemplate',
     });
 
 
+// Overrides the path to the layertree template (used by each nodes, except
+// the root node that path is defined in the gmfLayertreeTemplate value.
+ngeoModule.value('ngeoLayertreeTemplateUrl',
+    /**
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     */
+    function(element, attrs) {
+      return gmf.baseTemplateUrl + '/layertree.html';
+    });
+
+
 /**
  * This directive creates a layertree based on a c2cgeoportal JSON themes source
  * and a ngeo.Layertree. The default used template can be overrided by setting
  * the constant 'gmf.layertreeTemplate'. The controller used by this
  * directive defines some fonctions for each node that are created by a default
  * template. This default template can be overrided by setting the constant
- * 'gmf.layertreeTemplateUrl'.
+ * 'gmf.layertreeTemplateUrl' but you'll probably needs to adapt the
+ * ngeoLayertreeTemplateUrl value too (to define the children's node template
+ * path).
  *
  * @example
  * &lt;gmf-layertree
  *   gmf-layertree-themes="ctrl.themes"
  *   gmf-layertree-map="ctrl.map"
  *   gmf-layertree-wmsurl="ctrl.wmsUrl"
- *   gmf-layertree-templateurl="path/to/layertree.html">
  * &lt;/gmf-layertree>
  *
  * @param {string|function(!angular.JQLite=, !angular.Attributes=)}
@@ -83,7 +96,7 @@ gmf.layertreeDirective = function(gmfLayertreeTemplate) {
     scope: {
       'getMapFn': '&amp;gmfLayertreeMap',
       'getWmsUrlFn': '&amp;gmfLayertreeWmsurl',
-      'themes': '=gmfLayertreeThemes'
+      'source': '=gmfLayertreeSource'
     },
     controller: 'GmfLayertreeController',
     controllerAs: 'gmfLayertreeCtrl',
@@ -115,12 +128,6 @@ gmf.LayertreeController = function($scope, ngeoLayerHelper) {
    */
   this.map = map;
 
-  /**
-   * @type {string}
-   * @export
-   */
-  this.nodeTemplateUrl = gmf.baseTemplateUrl + '/layertree.html';
-
   var wmsUrl = $scope['getWmsUrlFn']();
   goog.asserts.assert(goog.isString(wmsUrl));
 
@@ -137,13 +144,9 @@ gmf.LayertreeController = function($scope, ngeoLayerHelper) {
   this.layerHelper_ = ngeoLayerHelper;
   this.layerHelper_.init(this.map);
 
-  //FIXME Choose a theme in gmf datasource
-  $scope.$watch('themes', goog.bind(function(newVal) {
-    if (goog.isDef(newVal)) {
-      var themes = newVal['themes'];
-      if (goog.isDef(themes)) {
-        this['tree'] = themes[3];
-      }
+  $scope.$watch('source', goog.bind(function(newVal, oldVal) {
+    if (newVal !== oldVal) {
+      this['tree'] = newVal;
     }
   }, this));
 };
