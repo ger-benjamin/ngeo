@@ -59,12 +59,13 @@
   </head>
   <body ng-controller="MainController as ctrl">
     <gmf-map gmf-map-map="ctrl.map"></gmf-map>
+    <div><span>Theme: <select ng-model="ctrl.source" ng-options="theme.name for theme in ctrl.themes"></select></span></div>
     <gmf-layertree
         gmf-layertree-source="ctrl.source"
-        gmf-layertree-map="ctrl.map"
-        gmf-layertree-wmsurl="ctrl.wmsUrl">
+        gmf-layertree-map="::ctrl.map"
+        gmf-layertree-wmsurl="::ctrl.wmsUrl">
     </gmf-layertree>
-    <p id="desc">This example shows how to use the <code>gmf.Layertree</code> directive with internals and externals WMS layers.</p>
+    <p id="desc">This example shows how to use the <code>gmf.Layertree</code> directive. This layertree needs a source object (that can change) that describes layers like the c2cgeoportal themes service. The wmsurl is used by internals WMS layers but you can use WMS externals layers and WMTS layers too.</p>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/proj4js/2.2.1/proj4.js" type="text/javascript"></script>
     <script src="../../lib/angular.min.js"></script>
     <script src="../../lib/angular-gettext.min.js"></script>

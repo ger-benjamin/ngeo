@@ -69,17 +69,16 @@ ngeoModule.value('ngeoLayertreeTemplateUrl',
 
 /**
  * This directive creates a layertree based on a c2cgeoportal JSON themes source
- * and a ngeo.Layertree. The default used template can be overrided by setting
- * the constant 'gmf.layertreeTemplate'. The controller used by this
- * directive defines some fonctions for each node that are created by a default
- * template. This default template can be overrided by setting the constant
- * 'gmf.layertreeTemplateUrl' but you'll probably needs to adapt the
- * ngeoLayertreeTemplateUrl value too (to define the children's node template
+ * and a ngeo.Layertree. The controller used by this directive defines some
+ * fonctions for each node that are created by a default template. This
+ * default template can be overrided by setting the constant
+ * 'gmf.layertreeTemplateUrl' but you will must adapt the
+ * ngeoLayertreeTemplateUrl value too (to define the children's nodes template
  * path).
  *
  * @example
  * &lt;gmf-layertree
- *   gmf-layertree-themes="ctrl.themes"
+ *   gmf-layertree-source="ctrl.source"
  *   gmf-layertree-map="ctrl.map"
  *   gmf-layertree-wmsurl="ctrl.wmsUrl"
  * &lt;/gmf-layertree>
@@ -94,10 +93,11 @@ ngeoModule.value('ngeoLayertreeTemplateUrl',
 gmf.layertreeDirective = function(gmfLayertreeTemplate) {
   return {
     scope: {
-      'getMapFn': '&amp;gmfLayertreeMap',
+      'map': '=gmfLayertreeMap',
       'getWmsUrlFn': '&amp;gmfLayertreeWmsurl',
-      'source': '=gmfLayertreeSource'
+      'tree': '=gmfLayertreeSource'
     },
+    bindToController: true,
     controller: 'GmfLayertreeController',
     controllerAs: 'gmfLayertreeCtrl',
     template: gmfLayertreeTemplate
@@ -119,16 +119,7 @@ gmfModule.directive('gmfLayertree', gmf.layertreeDirective);
  */
 gmf.LayertreeController = function($scope, ngeoLayerHelper) {
 
-  var map = $scope['getMapFn']();
-  goog.asserts.assertInstanceof(map, ol.Map);
-
-  /**
-   * @type {!ol.Map}
-   * @export
-   */
-  this.map = map;
-
-  var wmsUrl = $scope['getWmsUrlFn']();
+  var wmsUrl = this['getWmsUrlFn']();
   goog.asserts.assert(goog.isString(wmsUrl));
 
   /**
@@ -144,11 +135,11 @@ gmf.LayertreeController = function($scope, ngeoLayerHelper) {
   this.layerHelper_ = ngeoLayerHelper;
   this.layerHelper_.init(this.map);
 
-  $scope.$watch('source', goog.bind(function(newVal, oldVal) {
-    if (newVal !== oldVal) {
-      this['tree'] = newVal;
-    }
-  }, this));
+  /**
+   * @type {Array.&lt;ol.layer.Layer>}
+   * @private
+   */
+  this.existingLayers_ = [];
 };
 
 
@@ -156,49 +147,54 @@ gmf.LayertreeController = function($scope, ngeoLayerHelper) {
  * Create and return a layer corresponding to the ngeo.layerTree's node.
  * Can currently only creates WMS layers (internal or external) and WMTS layers.
  * @param {GmfThemesNode} node Layer tree node.
- * @return {ol.layer.Layer} The OpenLayers layer or group for the node.
+ * @return {ol.layer.Base} The OpenLayers layer or group for the node.
  * @export
  */
 gmf.LayertreeController.prototype.getLayer = function(node) {
-  var wmsUrl = this.wmsUrl_;
-  var layerHelper = this.layerHelper_;
+  var layer;
+  var layerName = node.name;
+  var layerURL = node.url || this.wmsUrl_;
+  var i, children = node.children;
 
-  var makeLayers = function(node) {
-    var i, children = node.children;
+  // If node is a group.
+  if (goog.isDef(children)) {
     var layers = new ol.Collection();
-    if (goog.isDef(children)) {
-      for (i = 0; i &lt; children.length; i++) {
-        layers.push(makeLayers(children[i]));
+    for (i = 0; i &lt; children.length; i++) {
+      layers.push(this.getLayer(children[i]));
+    }
+    return this.layerHelper_.createBasicGroup(layers);
+  }
+
+  // If node describe a layer that was already created.
+  layer = this.layerHelper_.findLayer(this.existingLayers_,
+      this.layerHelper_.makeHelperID(layerURL, layerName));
+  if (goog.isDefAndNotNull(layer)) {
+    return layer;
+  }
+
+  // If node describe a layer that was not already created.
+  if (node.type === 'WMTS') {
+    var newLayer = new ol.layer.Tile();
+    this.layerHelper_.setHelperID(newLayer, layerURL, layerName);
+    var promise = this.layerHelper_.createWMTSLayerFromCapabilitites(layerURL,
+        layerName);
+    promise.then(function(layer) {
+      if (goog.isDef(layer)) {
+        newLayer.setSource(layer.getSource());
       }
-      return layerHelper.createBasicGroup(layers);
-    }
-
-    if (node.type === 'WMTS') {
-      var layerWithoutSource = new ol.layer.Tile();
-      var promise = layerHelper.createWMTSLayerFromCapabilitites(node.url,
-          node.name);
-      promise.then(function(layer) {
-        if (goog.isDef(layer)) {
-          layerWithoutSource.setSource(layer.getSource());
-        }
-      });
-      return layerWithoutSource;
-
-    } else if (node.type === 'external WMS') {
-      return layerHelper.createBasicWMSLayer(node.url, node.name);
-
-    } else {
-      return layerHelper.createBasicWMSLayer(wmsUrl, node.name);
-    }
-  };
-
-  return makeLayers(node);
+    });
+    layer = newLayer;
+  } else {
+    layer = this.layerHelper_.createBasicWMSLayer(layerURL, layerName);
+  }
+  this.existingLayers_.push(layer);
+  return layer;
 };
 
 
 /**
  * Return a 'light' class if the current resolution of the map is out of
- * the  min/max resolution in the node.
+ * the min/max resolution in the node.
  * @param {GmfThemesNode} node Layer tree node.
  * @return {?string} 'light' or null.
  * @export
@@ -224,7 +220,7 @@ gmf.LayertreeController.prototype.getResolutionStyle = function(node) {
  * @export
  */
 gmf.LayertreeController.prototype.toggleActive = function(treeCtrl) {
-  var layer = treeCtrl.scope['layer'];
+  var layer = treeCtrl.layer;
   // Check if the current node state is 'activated'.
   var add = (this.getSetActive(treeCtrl) === 'on') ? false : true;
   // Add/remove layers
@@ -243,7 +239,7 @@ gmf.LayertreeController.prototype.toggleActive = function(treeCtrl) {
 gmf.LayertreeController.prototype.getSetActive = function(treeCtrl) {
   var style;
   var node = treeCtrl.node;
-  var layer = treeCtrl.scope['layer'];
+  var layer = treeCtrl.layer;
 
   if (goog.isDef(node.children)) {
     // Find number of actives layers on the map from this layer group.
@@ -279,7 +275,7 @@ gmf.LayertreeController.prototype.getSetActive = function(treeCtrl) {
  * @export
  */
 gmf.LayertreeController.prototype.getNoSourceStyle = function(treeCtrl) {
-  var layer = treeCtrl.scope['layer'];
+  var layer = treeCtrl.layer;
   if (goog.isDef(layer.getSource)) {
     if (!goog.isDefAndNotNull(layer.getSource())) {
       return 'no-source';
@@ -290,7 +286,7 @@ gmf.LayertreeController.prototype.getNoSourceStyle = function(treeCtrl) {
 
 
 /**
- * Set the resolution of the map with node max or min resolution.
+ * Set the resolution of the map with the max or min resolution of the node.
  * @param {GmfThemesNode} node Layer tree node.
  * @export
  */

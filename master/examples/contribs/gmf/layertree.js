@@ -50,6 +50,12 @@ app.MainController = function($http) {
   this.wmsUrl = 'https://geomapfish-demo.camptocamp.net/1.6/wsgi/mapserv_proxy';
 
   /**
+   * @type {Array.<Object>|undefined}
+   * export
+   */
+  this.themes = undefined;
+
+  /**
    * @type {Object|undefined}
    * @export
    */
@@ -58,11 +64,10 @@ app.MainController = function($http) {
   $http.get('data/themes.json').success(angular.bind(this, function(data) {
     var themes = data['themes'];
     if (themes) {
+      this.themes = themes;
       this.source = themes[3];
     }
   }));
-
 };
-
 
 app.module.controller('MainController', app.MainController);
