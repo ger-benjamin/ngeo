@@ -40,8 +40,7 @@ goog.require('ol.source.WMTS');
 
 
 /**
- * Provides helpers fonctions that helps you to create and manage layers.
- *
+ * Provides help functions that helps you to create and manage layers.
  * @param {angular.$q} $q Angular promises/deferred service.
  * @param {angular.$http} $http Angular http service.
  * @constructor
@@ -50,18 +49,6 @@ goog.require('ol.source.WMTS');
  * @ngInject
  */
 ngeo.LayerHelper = function($q, $http) {
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.initialized_ = false;
-
-  /**
-   * @type {ol.Map}
-   * @private
-   */
-  this.map_ = null;
 
   /**
    * @type {angular.$q}
@@ -74,26 +61,14 @@ ngeo.LayerHelper = function($q, $http) {
    * @private
    */
   this.$http_ = $http;
-
-  /**
-   * @type {string}
-   * @export
-   */
-  this.helperID = 'helperID';
 };
 
 
 /**
- * Init the service.
- * @param {!ol.Map} map
+ * @const {string}
  * @export
  */
-ngeo.LayerHelper.prototype.init = function(map) {
-  if (!this.initialized_) {
-    this.map_ = map;
-    this.initialized_ = true;
-  }
-};
+ngeo.LayerHelper.prototype.helperID = 'helperID';
 
 
 /**
@@ -124,7 +99,7 @@ ngeo.LayerHelper.prototype.makeHelperID = function(layerURL, layerName) {
 /**
  * Create and return a basic WMS layer with only a source URL and a dot
  * separated layers names (see {@link ol.source.ImageWMS}).
- * This layer will be taged by a a helperID.
+ * This layer will be tagged by a a helperID.
  * @param {string} sourceURL The source URL.
  * @param {string} sourceLayersName A dot separated names string.
  * @return {ol.layer.Image}
@@ -148,9 +123,11 @@ ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
  * success, no layer else.
  * The WMTS layer source will be configured by the capabilities that are
  * loaded from the given capabilitiesUrl.
- * This layer will be taged by a a helperID.
+ * The style object described in the capabilities for this layer will be added
+ * as key 'capabilitiesStyles' as param of the new layer.
+ * This layer will be tagged by a helperID.
  * @param {string} capabilitiesURL The getCapabilities url.
- * @param {string} layerName The name of te layer.
+ * @param {string} layerName The name of the layer.
  * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
  *     no layer else.
  * @export
@@ -171,6 +148,14 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
       var options = ol.source.WMTS.optionsFromCapabilities(result,
           {layer: layerName, requestEncoding: 'REST'});
       layer.setSource(new ol.source.WMTS(options));
+
+      // Add styles from capabilities as param of the layer
+      var layers = result['Contents']['Layer'];
+      var l = goog.array.find(layers, function(elt, index, array) {
+        return elt['Identifier'] == layerName;
+      });
+      layer.set('capabilitiesStyles', l['Style']);
+
       deferred.resolve(layer);
     } else {
       deferred.resolve();
@@ -203,19 +188,20 @@ ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
 /**
  * Get the position of the layer in the map's layers array or -1 if the layer
  * can't be found.
- * The layer must be taged by a helperID (return -1 else).
+ * The layer must be tagged by a helperID (return -1 else).
+ * @param {ol.Map} map The concerned map.
  * @param {ol.layer.Layer} layer The concerned layer.
  * @return {number} index or -1 if not found.
  * @export
  */
-ngeo.LayerHelper.prototype.getLayerIndex = function(layer) {
+ngeo.LayerHelper.prototype.getLayerIndex = function(map, layer) {
   var layerId = layer.get(this.helperID);
   if (!goog.isDef(layerId)) {
     return -1;
   }
 
   var i, layers = /** @type {Array.&lt;ol.layer.Layer>} */
-      (this.map_.getLayers().getArray());
+      (map.getLayers().getArray());
   for (i = 0; i &lt; layers.length; i++) {
     if (layers[i].get(this.helperID) === layerId) {
       return i;
@@ -249,17 +235,18 @@ ngeo.LayerHelper.prototype.findLayer = function(layers, layerID) {
 /**
  * Add the given layer on the map if it doesn't already exists and if the layer
  * has a source.
- * The layer must be taged by a helperID.
+ * The layer must be tagged by a helperID.
+ * @param {ol.Map} map The map where add the layer.
  * @param {ol.layer.Layer} layer The concerned layer.
  * @return {boolean} true if added, false else.
  * @export
  */
-ngeo.LayerHelper.prototype.addLayerToMap = function(layer) {
+ngeo.LayerHelper.prototype.addLayerToMap = function(map, layer) {
   var added = false;
-  if (goog.isDefAndNotNull(layer.getSource())) {
-    var layerIndex = this.getLayerIndex(layer);
+  if (layer.getSource()) {
+    var layerIndex = this.getLayerIndex(map, layer);
     if (layerIndex &lt; 0) {
-      this.map_.addLayer(layer);
+      map.addLayer(layer);
       added = true;
     }
   }
@@ -269,18 +256,19 @@ ngeo.LayerHelper.prototype.addLayerToMap = function(layer) {
 
 /**
  * Remove the given layer from the map if it exists.
- * The layer must be taged by a helperID.
+ * The layer must be tagged by a helperID.
+ * @param {ol.Map} map The map on which to remove the layer.
  * @param {ol.layer.Layer} layer The concerned layer.
  * @return {boolean} true if removed, false else.
  * @export
  */
-ngeo.LayerHelper.prototype.removeLayerFromMap = function(layer) {
+ngeo.LayerHelper.prototype.removeLayerFromMap = function(map, layer) {
   var removed = false;
   var layerToRemove;
-  var layerIndex = this.getLayerIndex(layer);
+  var layerIndex = this.getLayerIndex(map, layer);
   if (layerIndex >= 0) {
-    layerToRemove = this.map_.getLayers().getArray()[layerIndex];
-    this.map_.removeLayer(layerToRemove);
+    layerToRemove = map.getLayers().getArray()[layerIndex];
+    map.removeLayer(layerToRemove);
     removed = true;
   }
   return removed;
@@ -289,26 +277,27 @@ ngeo.LayerHelper.prototype.removeLayerFromMap = function(layer) {
 
 /**
  * Add or remove some layers from the map.
- * The layer must be taged by a helperID.
+ * The layer must be tagged by a helperID.
+ * @param {ol.Map} map The concerned map.
  * @param {Array.&lt;ol.layer.Layer>} layers An array of layers.
  * @param {boolean} add True to add the layers, False to remove them.
  * @export
  */
-ngeo.LayerHelper.prototype.moveInOutLayers = function(layers, add) {
+ngeo.LayerHelper.prototype.moveInOutLayers = function(map, layers, add) {
   var i, layer;
   for (i = 0; i &lt; layers.length; i++) {
     layer = layers[i];
     if (add) {
-      this.addLayerToMap(layer);
+      this.addLayerToMap(map, layer);
     } else {
-      this.removeLayerFromMap(layer);
+      this.removeLayerFromMap(map, layer);
     }
   }
 };
 
 
 /**
- * Get an array of all layer in a group. The group can contain multiple levels
+ * Get an array of all layers in a group. The group can contain multiple levels
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
  * @return {Array.&lt;ol.layer.Layer>}
@@ -320,7 +309,7 @@ ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
 
 
 /**
- * Get an array of all layer in a group. The group can contain multiple levels
+ * Get an array of all layers in a group. The group can contain multiple levels
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
  * @param {Array.&lt;ol.layer.Base>} array An array to add layers.
@@ -352,7 +341,7 @@ ngeoModule.service('ngeoLayerHelper', ngeo.LayerHelper);
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h2>gmf</h2><h3>Directives</h3><ul><li><a href="gmf.layertreeDirective.html">layertreeDirective</a></li><li><a href="gmf.locationchooserDirective.html">locationchooserDirective</a></li><li><a href="gmf.mapDirective.html">mapDirective</a></li><li><a href="gmf.searchDirective.html">searchDirective</a></li></ul><h3>Services</h3><ul><li><a href="gmf.Themes.html">Themes</a></li></ul><h3>Controllers</h3><ul><li><a href="gmf.LayertreeController.html">LayertreeController</a></li><li><a href="gmf.LocationchooserController.html">LocationchooserController</a></li><li><a href="gmf.MapController.html">MapController</a></li><li><a href="gmf.SearchController.html">SearchController</a></li></ul><h3>Classes</h3><ul><li><a href="gmf.AbstractMobileController.html">AbstractMobileController</a></li></ul><h3>Types</h3><ul><li><a href="gmf.html#ExportFeatures">ExportFeatures</a></li><li><a href="gmf.html#ThemesResponse">ThemesResponse</a></li></ul><h3>Enumerations</h3><ul><li><a href="gmf.html#ExportFormat">ExportFormat</a></li><li><a href="gmf.html#ThemesEventType">ThemesEventType</a></li></ul><h2>gmf.source</h2><h3>Classes</h3><ul><li><a href="gmf.source.AsitVD.html">AsitVD</a></li><li><a href="gmf.source.Swisstopo.html">Swisstopo</a></li></ul><h2>ngeo</h2><h3>Directives</h3><ul><li><a href="ngeo.btnDirective.html">btnDirective</a></li><li><a href="ngeo.btngroupDirective.html">btngroupDirective</a></li><li><a href="ngeo.controlDirective.html">controlDirective</a></li><li><a href="ngeo.desktopGeolocationDirective.html">desktopGeolocationDirective</a></li><li><a href="ngeo.filereaderDirective.html">filereaderDirective</a></li><li><a href="ngeo.layertreeDirective.html">layertreeDirective</a></li><li><a href="ngeo.mapDirective.html">mapDirective</a></li><li><a href="ngeo.mobileGeolocationDirective.html">mobileGeolocationDirective</a></li><li><a href="ngeo.modalDirective.html">modalDirective</a></li><li><a href="ngeo.popupDirective.html">popupDirective</a></li><li><a href="ngeo.profileDirective.html">profileDirective</a></li><li><a href="ngeo.recenterDirective.html">recenterDirective</a></li><li><a href="ngeo.resizemapDirective.html">resizemapDirective</a></li><li><a href="ngeo.scaleselectorDirective.html">scaleselectorDirective</a></li><li><a href="ngeo.searchDirective.html">searchDirective</a></li><li><a href="ngeo.sortableDirective.html">sortableDirective</a></li></ul><h3>Services</h3><ul><li><a href="ngeo.BackgroundLayerMgr.html">BackgroundLayerMgr</a></li><li><a href="ngeo.CreateGeoJSONBloodhound.html">CreateGeoJSONBloodhound</a></li><li><a href="ngeo.createPrintServiceFactory.html">createPrintServiceFactory</a></li><li><a href="ngeo.Debounce.html">Debounce</a></li><li><a href="ngeo.DecorateGeolocation.html">DecorateGeolocation</a></li><li><a href="ngeo.DecorateInteraction.html">DecorateInteraction</a></li><li><a href="ngeo.DecorateLayer.html">DecorateLayer</a></li><li><a href="ngeo.FeatureOverlayMgr.html">FeatureOverlayMgr</a></li><li><a href="ngeo.getBrowserLanguageFactory.html">getBrowserLanguageFactory</a></li><li><a href="ngeo.LayerHelper.html">LayerHelper</a></li><li><a href="ngeo.Location.html">Location</a></li><li><a href="ngeo.Popup.html">Popup</a></li><li><a href="ngeo.PrintUtils.html">PrintUtils</a></li><li><a href="ngeo.SyncArrays.html">SyncArrays</a></li><li><a href="ngeo.ToolActivateMgr.html">ToolActivateMgr</a></li></ul><h3>Controllers</h3><ul><li><a href="ngeo.BtnGroupController.html">BtnGroupController</a></li><li><a href="ngeo.DesktopGeolocationController.html">DesktopGeolocationController</a></li><li><a href="ngeo.LayertreeController.html">LayertreeController</a></li><li><a href="ngeo.MobileGeolocationController.html">MobileGeolocationController</a></li><li><a href="ngeo.ScaleselectorController.html">ScaleselectorController</a></li></ul><h3>Classes</h3><ul><li><a href="ngeo.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeo.FeatureOverlay.html">FeatureOverlay</a></li><li><a href="ngeo.MeasureEvent.html">MeasureEvent</a></li><li><a href="ngeo.Print.html">Print</a></li><li><a href="ngeo.profile.html">profile</a></li><li><a href="ngeo.ToolActivate.html">ToolActivate</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.html#CreatePopup">CreatePopup</a></li><li><a href="ngeo.html#CreatePrint">CreatePrint</a></li><li><a href="ngeo.html#FeatureOverlayGroup">FeatureOverlayGroup</a></li><li><a href="ngeo.html#GetBrowserLanguage">GetBrowserLanguage</a></li><li><a href="ngeo.html#MockLocationProvider">MockLocationProvider</a></li><li><a href="ngeo.html#ScaleselectorOptions">ScaleselectorOptions</a></li><li><a href="ngeo.html#SortableOptions">SortableOptions</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.html#BackgroundEventType">BackgroundEventType</a></li><li><a href="ngeo.html#MeasureEventType">MeasureEventType</a></li><li><a href="ngeo.html#PrintStyleType">PrintStyleType</a></li></ul><h2>ngeo.format</h2><h3>Classes</h3><ul><li><a href="ngeo.format.FeatureHash.html">FeatureHash</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.format.html#FeatureHashStyleType">FeatureHashStyleType</a></li></ul><h2>ngeo.interaction</h2><h3>Classes</h3><ul><li><a href="ngeo.interaction.DrawAzimut.html">DrawAzimut</a></li><li><a href="ngeo.interaction.Measure.html">Measure</a></li><li><a href="ngeo.interaction.MeasureArea.html">MeasureArea</a></li><li><a href="ngeo.interaction.MeasureAzimut.html">MeasureAzimut</a></li><li><a href="ngeo.interaction.MeasureLength.html">MeasureLength</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.interaction.html#MeasureBaseOptions">MeasureBaseOptions</a></li></ul><h2>ngeo.MeasureEvent</h2><h3>Events</h3><ul><li><a href="ngeo.MeasureEvent.html#event:measureend">measureend</a></li></ul><h2>ngeox</h2><h3>Interfaces</h3><ul><li><a href="ngeox.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeox.MeasureEvent.html">MeasureEvent</a></li></ul><h3>Types</h3><ul><li><a href="ngeox.html#DesktopGeolocationDirectiveOptions">DesktopGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#MobileGeolocationDirectiveOptions">MobileGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#SearchDirectiveListeners">SearchDirectiveListeners</a></li></ul><h2>ngeox.format</h2><h3>Types</h3><ul><li><a href="ngeox.format.html#FeatureHashOptions">FeatureHashOptions</a></li></ul><h2>ngeox.interaction</h2><h3>Types</h3><ul><li><a href="ngeox.interaction.html#MeasureOptions">MeasureOptions</a></li></ul><h2>ngeox.profile</h2><h3>Types</h3><ul><li><a href="ngeox.profile.html#ElevationExtractor">ElevationExtractor</a></li><li><a href="ngeox.profile.html#PoiExtractor">PoiExtractor</a></li><li><a href="ngeox.profile.html#ProfileFormatter">ProfileFormatter</a></li><li><a href="ngeox.profile.html#ProfileOptions">ProfileOptions</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h2>gmf</h2><h3>Directives</h3><ul><li><a href="gmf.authenticationDirective.html">authenticationDirective</a></li><li><a href="gmf.layertreeDirective.html">layertreeDirective</a></li><li><a href="gmf.locationchooserDirective.html">locationchooserDirective</a></li><li><a href="gmf.mapDirective.html">mapDirective</a></li><li><a href="gmf.searchDirective.html">searchDirective</a></li></ul><h3>Services</h3><ul><li><a href="gmf.Themes.html">Themes</a></li></ul><h3>Controllers</h3><ul><li><a href="gmf.AuthenticationController.html">AuthenticationController</a></li><li><a href="gmf.LayertreeController.html">LayertreeController</a></li><li><a href="gmf.LocationchooserController.html">LocationchooserController</a></li><li><a href="gmf.MapController.html">MapController</a></li><li><a href="gmf.SearchController.html">SearchController</a></li></ul><h3>Classes</h3><ul><li><a href="gmf.AbstractMobileController.html">AbstractMobileController</a></li><li><a href="gmf.Authentication.html">Authentication</a></li></ul><h3>Types</h3><ul><li><a href="gmf.html#AuthenticationDefaultResponse">AuthenticationDefaultResponse</a></li><li><a href="gmf.html#AuthenticationFunctionalities">AuthenticationFunctionalities</a></li><li><a href="gmf.html#AuthenticationLoginResponse">AuthenticationLoginResponse</a></li><li><a href="gmf.html#ExportFeatures">ExportFeatures</a></li><li><a href="gmf.html#ThemesResponse">ThemesResponse</a></li><li><a href="gmf.html#User">User</a></li></ul><h3>Enumerations</h3><ul><li><a href="gmf.html#AuthenticationRouteSuffix">AuthenticationRouteSuffix</a></li><li><a href="gmf.html#ExportFormat">ExportFormat</a></li><li><a href="gmf.html#ThemesEventType">ThemesEventType</a></li></ul><h2>gmf.source</h2><h3>Classes</h3><ul><li><a href="gmf.source.AsitVD.html">AsitVD</a></li><li><a href="gmf.source.Swisstopo.html">Swisstopo</a></li></ul><h2>ngeo</h2><h3>Directives</h3><ul><li><a href="ngeo.btnDirective.html">btnDirective</a></li><li><a href="ngeo.btngroupDirective.html">btngroupDirective</a></li><li><a href="ngeo.controlDirective.html">controlDirective</a></li><li><a href="ngeo.desktopGeolocationDirective.html">desktopGeolocationDirective</a></li><li><a href="ngeo.filereaderDirective.html">filereaderDirective</a></li><li><a href="ngeo.layertreeDirective.html">layertreeDirective</a></li><li><a href="ngeo.mapDirective.html">mapDirective</a></li><li><a href="ngeo.mobileGeolocationDirective.html">mobileGeolocationDirective</a></li><li><a href="ngeo.modalDirective.html">modalDirective</a></li><li><a href="ngeo.popupDirective.html">popupDirective</a></li><li><a href="ngeo.profileDirective.html">profileDirective</a></li><li><a href="ngeo.recenterDirective.html">recenterDirective</a></li><li><a href="ngeo.resizemapDirective.html">resizemapDirective</a></li><li><a href="ngeo.scaleselectorDirective.html">scaleselectorDirective</a></li><li><a href="ngeo.searchDirective.html">searchDirective</a></li><li><a href="ngeo.sortableDirective.html">sortableDirective</a></li></ul><h3>Services</h3><ul><li><a href="ngeo.BackgroundLayerMgr.html">BackgroundLayerMgr</a></li><li><a href="ngeo.CreateGeoJSONBloodhound.html">CreateGeoJSONBloodhound</a></li><li><a href="ngeo.createPrintServiceFactory.html">createPrintServiceFactory</a></li><li><a href="ngeo.Debounce.html">Debounce</a></li><li><a href="ngeo.DecorateGeolocation.html">DecorateGeolocation</a></li><li><a href="ngeo.DecorateInteraction.html">DecorateInteraction</a></li><li><a href="ngeo.DecorateLayer.html">DecorateLayer</a></li><li><a href="ngeo.FeatureOverlayMgr.html">FeatureOverlayMgr</a></li><li><a href="ngeo.getBrowserLanguageFactory.html">getBrowserLanguageFactory</a></li><li><a href="ngeo.LayerHelper.html">LayerHelper</a></li><li><a href="ngeo.Location.html">Location</a></li><li><a href="ngeo.Popup.html">Popup</a></li><li><a href="ngeo.PrintUtils.html">PrintUtils</a></li><li><a href="ngeo.SyncArrays.html">SyncArrays</a></li><li><a href="ngeo.ToolActivateMgr.html">ToolActivateMgr</a></li></ul><h3>Controllers</h3><ul><li><a href="ngeo.BtnGroupController.html">BtnGroupController</a></li><li><a href="ngeo.DesktopGeolocationController.html">DesktopGeolocationController</a></li><li><a href="ngeo.LayertreeController.html">LayertreeController</a></li><li><a href="ngeo.MobileGeolocationController.html">MobileGeolocationController</a></li><li><a href="ngeo.ScaleselectorController.html">ScaleselectorController</a></li></ul><h3>Classes</h3><ul><li><a href="ngeo.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeo.FeatureOverlay.html">FeatureOverlay</a></li><li><a href="ngeo.MeasureEvent.html">MeasureEvent</a></li><li><a href="ngeo.Print.html">Print</a></li><li><a href="ngeo.profile.html">profile</a></li><li><a href="ngeo.ToolActivate.html">ToolActivate</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.html#CreatePopup">CreatePopup</a></li><li><a href="ngeo.html#CreatePrint">CreatePrint</a></li><li><a href="ngeo.html#FeatureOverlayGroup">FeatureOverlayGroup</a></li><li><a href="ngeo.html#GetBrowserLanguage">GetBrowserLanguage</a></li><li><a href="ngeo.html#MockLocationProvider">MockLocationProvider</a></li><li><a href="ngeo.html#ScaleselectorOptions">ScaleselectorOptions</a></li><li><a href="ngeo.html#SortableOptions">SortableOptions</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.html#BackgroundEventType">BackgroundEventType</a></li><li><a href="ngeo.html#MeasureEventType">MeasureEventType</a></li><li><a href="ngeo.html#PrintStyleType">PrintStyleType</a></li></ul><h2>ngeo.format</h2><h3>Classes</h3><ul><li><a href="ngeo.format.FeatureHash.html">FeatureHash</a></li></ul><h3>Enumerations</h3><ul><li><a href="ngeo.format.html#FeatureHashStyleType">FeatureHashStyleType</a></li></ul><h2>ngeo.interaction</h2><h3>Classes</h3><ul><li><a href="ngeo.interaction.DrawAzimut.html">DrawAzimut</a></li><li><a href="ngeo.interaction.Measure.html">Measure</a></li><li><a href="ngeo.interaction.MeasureArea.html">MeasureArea</a></li><li><a href="ngeo.interaction.MeasureAzimut.html">MeasureAzimut</a></li><li><a href="ngeo.interaction.MeasureLength.html">MeasureLength</a></li></ul><h3>Types</h3><ul><li><a href="ngeo.interaction.html#MeasureBaseOptions">MeasureBaseOptions</a></li></ul><h2>ngeo.MeasureEvent</h2><h3>Events</h3><ul><li><a href="ngeo.MeasureEvent.html#event:measureend">measureend</a></li></ul><h2>ngeox</h2><h3>Interfaces</h3><ul><li><a href="ngeox.BackgroundEvent.html">BackgroundEvent</a></li><li><a href="ngeox.MeasureEvent.html">MeasureEvent</a></li></ul><h3>Types</h3><ul><li><a href="ngeox.html#DesktopGeolocationDirectiveOptions">DesktopGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#MobileGeolocationDirectiveOptions">MobileGeolocationDirectiveOptions</a></li><li><a href="ngeox.html#SearchDirectiveListeners">SearchDirectiveListeners</a></li></ul><h2>ngeox.format</h2><h3>Types</h3><ul><li><a href="ngeox.format.html#FeatureHashOptions">FeatureHashOptions</a></li></ul><h2>ngeox.interaction</h2><h3>Types</h3><ul><li><a href="ngeox.interaction.html#MeasureOptions">MeasureOptions</a></li></ul><h2>ngeox.profile</h2><h3>Types</h3><ul><li><a href="ngeox.profile.html#ElevationExtractor">ElevationExtractor</a></li><li><a href="ngeox.profile.html#PoiExtractor">PoiExtractor</a></li><li><a href="ngeox.profile.html#ProfileFormatter">ProfileFormatter</a></li><li><a href="ngeox.profile.html#ProfileOptions">ProfileOptions</a></li></ul>
 </nav>
 
 <br class="clear">

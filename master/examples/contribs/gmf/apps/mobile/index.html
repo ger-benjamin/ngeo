@@ -40,14 +40,10 @@
           <li>
             <a href="#background" data-toggle="slide-in">Background</a>
             <a href="#data" data-toggle="slide-in">Data</a>
+            <a href="#login" data-toggle="slide-in">Login</a>
           </li>
         </ul>
-        <hr>
-        <ul>
-          <li>
-            <a href="#">Login</a>
-          </li>
-        </ul>
+        <hr />
         <p class="text-center">
           <b>Put your logo here</b>
         </p>
@@ -65,6 +61,8 @@
       <div id="themes" class="slide" data-header-title="Themes">
         <span>Themes</span>
       </div>
+      <gmf-authentication id="login" class="slide" data-header-title="Login">
+      </gmf-authentication>
     </nav>
     <nav class="nav-right" gmf-mobile-nav>
       <header>
@@ -94,7 +92,7 @@
          var module = angular.module('app');
          var serverVars = {
            serviceUrls: {
-             fulltextsearch: 'http://geomapfish-demo.camptocamp.net/2.0/wsgi/fulltextsearch?query=%QUERY'
+             fulltextsearch: 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/fulltextsearch?query=%QUERY'
            }
          };
          module.constant('serverVars', serverVars);
