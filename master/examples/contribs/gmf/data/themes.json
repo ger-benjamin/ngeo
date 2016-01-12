@@ -17,7 +17,7 @@
         "metadata": {
           "identifier_attribute_field": "display_name",
           "disclaimer": "\u00a9 les contributeurs d\u2019OpenStreetMap",
-          "legend": "true",
+          "legend": "false",
           "legend_rule": "Arr\u00eats de bus"
         }
       }, {
@@ -32,7 +32,7 @@
           "is_checked": "true",
           "identifier_attribute_field": "display_name",
           "disclaimer": "\u00a9 les contributeurs d\u2019OpenStreetMap",
-          "legend": "true",
+          "legend": "false",
           "legend_rule": "Informations"
         }
       }],

@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="../../lib/ngeo.css" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="http://getbootstrap.com/dist/css/bootstrap.min.css" type="text/css">
     <style>
       gmf-map > div {
         width: 600px;
@@ -34,6 +35,16 @@
       .treenode .zoom:before {
         font-family: FontAwesome;
         content: "\f18e";
+      }
+      .treenode .outOfResolution .legend {
+        display: none;
+      }
+      .treenode .legend a:after {
+        font-family: FontAwesome;
+        content: "\f036";
+      }
+      .treenode .legend img {
+        padding-left: 15px;
       }
       .treenode .noSource {
         opacity: 0.3;
@@ -70,8 +81,10 @@
         gmf-layertree-map="::ctrl.map">
     </gmf-layertree>
     <p id="desc">This example shows how to use the <code>gmf.Layertree</code> directive. This layertree needs a source object (that can change) that describes layers like the c2cgeoportal themes service. The wmsUrl is used by internals WMS layers but you can use WMS externals layers and WMTS layers too.</p>
+    <script src="../../lib/jquery.min.js"></script>
     <script src="../../lib/proj4.js"></script>
     <script src="../../lib/angular.min.js"></script>
+    <script src="../../lib/bootstrap.min.js"></script>
     <script src="../../lib/angular-gettext.min.js"></script>
     <script src="../../lib/proj4.js"></script>
     <script src="../../lib/gmf.js"></script>
