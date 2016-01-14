@@ -12,6 +12,7 @@ goog.provide('app_mobile');
 
 goog.require('app');
 goog.require('gmf.AbstractMobileController');
+goog.require('gmf.Themes');
 /** @suppress {extraRequire} */
 goog.require('gmf.authenticationDirective');
 /** @suppress {extraRequire} */
@@ -36,6 +37,7 @@ appModule.constant(
  * @param {ngeo.StateManager} ngeoStateManager the state manager.
  * @param {angular.Scope} $scope Scope.
  * @param {ngeo.GetBrowserLanguage} ngeoGetBrowserLanguage
+ * @param {gmf.Themes} gmfThemes Themes service.
  * @constructor
  * @extends {gmf.AbstractMobileController}
  * @ngInject
@@ -43,10 +45,10 @@ appModule.constant(
  */
 app.MobileController = function(
     ngeoFeatureOverlayMgr, serverVars, gettextCatalog, ngeoStateManager, $scope,
-    ngeoGetBrowserLanguage) {
+    ngeoGetBrowserLanguage, gmfThemes) {
   goog.base(
       this, ngeoFeatureOverlayMgr, serverVars, gettextCatalog, ngeoStateManager,
-      $scope, ngeoGetBrowserLanguage);
+      $scope, ngeoGetBrowserLanguage, gmfThemes);
 };
 goog.inherits(app.MobileController, gmf.AbstractMobileController);
 

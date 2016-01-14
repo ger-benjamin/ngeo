@@ -6705,6 +6705,52 @@ button[ngeo-mobile-geolocation] {
 button[ngeo-mobile-geolocation] button:after {
   content: 'b';
 }
+.gmf-theme-selector,
+.gmf-mobile-background-layer-selector {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gmf-theme-selector li,
+.gmf-mobile-background-layer-selector li {
+  cursor: pointer;
+  margin: 10px 0 10px 10px;
+}
+.gmf-theme-selector .gmf-check,
+.gmf-mobile-background-layer-selector .gmf-check,
+.gmf-theme-selector .gmf-text,
+.gmf-mobile-background-layer-selector .gmf-text,
+.gmf-theme-selector .gmf-thumb,
+.gmf-mobile-background-layer-selector .gmf-thumb {
+  float: left;
+}
+.gmf-theme-selector .gmf-check,
+.gmf-mobile-background-layer-selector .gmf-check {
+  height: 20px;
+  margin: 15px 5px 0 0;
+  width: 20px;
+}
+.gmf-theme-selector .gmf-check.active,
+.gmf-mobile-background-layer-selector .gmf-check.active {
+  background-color: green;
+}
+.gmf-theme-selector .gmf-text,
+.gmf-mobile-background-layer-selector .gmf-text {
+  margin: 15px 10px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 140px;
+  white-space: nowrap;
+}
+.gmf-theme-selector .gmf-thumb,
+.gmf-mobile-background-layer-selector .gmf-thumb {
+  height: 60px;
+  width: 60px;
+}
+.gmf-theme-selector .gmf-eol,
+.gmf-mobile-background-layer-selector .gmf-eol {
+  clear: left;
+}
 @media (min-width: 768px) {
   main button:hover {
     background-color: #cccccc;

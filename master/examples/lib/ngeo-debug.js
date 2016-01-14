@@ -39023,9 +39023,7 @@ ol.control.FullScreen.prototype.handleFullScreen_ = function() {
   if (goog.dom.fullscreen.isFullScreen()) {
     goog.dom.fullscreen.exitFullScreen();
   } else {
-    var target = map.getTarget();
-    goog.asserts.assert(target, 'target should be defined');
-    var element = goog.dom.getElement(target);
+    var element = map.getTargetElement();
     goog.asserts.assert(element, 'element should be defined');
     if (this.keys_) {
       goog.dom.fullscreen.requestFullScreenWithKeys(element);
@@ -54117,6 +54115,14 @@ ol.DragBoxEventType = {
    * @api stable
    */
   BOXSTART: 'boxstart',
+
+  /**
+   * Triggered on drag when box is active.
+   * @event ol.DragBoxEvent#boxdrag
+   * @api
+   */
+  BOXDRAG: 'boxdrag',
+
   /**
    * Triggered upon drag box end.
    * @event ol.DragBoxEvent#boxend
@@ -54255,6 +54261,9 @@ ol.interaction.DragBox.handleDragEvent_ = function(mapBrowserEvent) {
   }
 
   this.box_.setPixels(this.startPixel_, mapBrowserEvent.pixel);
+
+  this.dispatchEvent(new ol.DragBoxEvent(ol.DragBoxEventType.BOXDRAG,
+    mapBrowserEvent.coordinate, mapBrowserEvent));
 };
 
 
@@ -59672,8 +59681,11 @@ ol.render.canvas.Replay.prototype.replay_ = function(
             context.globalAlpha = alpha * opacity;
           }
 
-          context.drawImage(image, originX, originY, width, height,
-              x, y, width * pixelRatio, height * pixelRatio);
+          var w = (width + originX > image.width) ? image.width - originX : width;
+          var h = (height + originY > image.height) ? image.height - originY : height;
+
+          context.drawImage(image, originX, originY, w, h,
+              x, y, w * pixelRatio, h * pixelRatio);
 
           if (opacity != 1) {
             context.globalAlpha = alpha;
@@ -116728,7 +116740,7 @@ ol.source.MapQuest = function(opt_options) {
     logo: 'https://developer.mapquest.com/content/osm/mq_logo.png',
     maxZoom: layerConfig.maxZoom,
     reprojectionErrorThreshold: options.reprojectionErrorThreshold,
-    opaque: true,
+    opaque: layerConfig.opaque,
     tileLoadFunction: options.tileLoadFunction,
     url: url
   });
@@ -116747,11 +116759,12 @@ ol.source.MapQuest.TILE_ATTRIBUTION = new ol.Attribution({
 
 
 /**
- * @type {Object.<string, {maxZoom: number, attributions: (Array.<ol.Attribution>)}>}
+ * @type {Object.<string, {maxZoom: number, opaque: boolean, attributions: (Array.<ol.Attribution>)}>}
  */
 ol.source.MapQuestConfig = {
   'osm': {
     maxZoom: 19,
+    opaque: true,
     attributions: [
       ol.source.MapQuest.TILE_ATTRIBUTION,
       ol.source.OSM.ATTRIBUTION
@@ -116759,6 +116772,7 @@ ol.source.MapQuestConfig = {
   },
   'sat': {
     maxZoom: 18,
+    opaque: true,
     attributions: [
       ol.source.MapQuest.TILE_ATTRIBUTION,
       new ol.Attribution({
@@ -116769,6 +116783,7 @@ ol.source.MapQuestConfig = {
   },
   'hyb': {
     maxZoom: 18,
+    opaque: false,
     attributions: [
       ol.source.MapQuest.TILE_ATTRIBUTION,
       ol.source.OSM.ATTRIBUTION
@@ -133658,6 +133673,11 @@ goog.exportProperty(
     ol.geom.LineString.prototype,
     'getClosestPoint',
     ol.geom.LineString.prototype.getClosestPoint);
+
+goog.exportProperty(
+    ol.geom.LineString.prototype,
+    'getCoordinateAt',
+    ol.geom.LineString.prototype.getCoordinateAt);
 
 goog.exportProperty(
     ol.geom.LineString.prototype,
