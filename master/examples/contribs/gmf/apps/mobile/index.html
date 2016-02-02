@@ -43,7 +43,6 @@
           <li>
             <a href="#background" data-toggle="slide-in">Background</a>
             <a href="#data" data-toggle="slide-in">Data</a>
-            <a href="#login" data-toggle="slide-in">Login</a>
           </li>
         </ul>
         <hr />
@@ -65,7 +64,7 @@
             <gmf-layertree
                 gmf-layertree-source="mainCtrl.theme"
                 gmf-layertree-map="::mainCtrl.map"
-                gmf-layertree-openlinksinnewwindow="true">
+                gmf-layertree-openlinksinnewwindow="false">
             </gmf-layertree>
           </li>
         </ul>
@@ -77,8 +76,6 @@
           gmf-themeselector-currenttheme="mainCtrl.theme"
           gmf-themeselector-filter="::mainCtrl.filter">
       </gmf-themeselector>
-      <gmf-authentication id="login" class="slide" data-header-title="Login">
-      </gmf-authentication>
     </nav>
     <nav class="nav-right" gmf-mobile-nav>
       <header>
@@ -89,6 +86,7 @@
         <ul>
           <li>
             <a href="#measure-tools" data-toggle="slide-in">Measure tools</a>
+            <a href="#login" data-toggle="slide-in">Login</a>
           </li>
         </ul>
       </div>
@@ -100,6 +98,8 @@
           </li>
         </ul>
       </div>
+      <gmf-authentication id="login" class="slide" data-header-title="Login">
+      </gmf-authentication>
     </nav>
     <script src="../../../../lib/Function.prototype.bind.js"></script>
     <script src="../../build/mobile.js"></script>
@@ -114,7 +114,7 @@
            'de': '../../build/gmf-de.json'
          });
          module.constant('authenticationBaseUrl', 'https://geomapfish-demo.camptocamp.net/2.0/wsgi');
-         module.constant('fulltextsearchUrl', 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/fulltextsearch?query=%QUERY');
+         module.constant('fulltextsearchUrl', 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/fulltextsearch');
          module.constant('gmfWmsUrl', 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/mapserv_proxy');
          module.constant('gmfTreeUrl', 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/themes?version=2&background=background');
        })();

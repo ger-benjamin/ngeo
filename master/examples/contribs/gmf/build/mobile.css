@@ -105,6 +105,62 @@ nav.nav-left ul .treenode .legend a::before {
 nav.nav-left ul .treenode .legend img {
   padding-left: 15px;
 }
+[ngeo-popup].popover {
+  position: fixed;
+  top: 0;
+  left: auto;
+  right: auto;
+  max-width: 96%;
+  width: 96%;
+  height: 96%;
+  max-height: 96%;
+  margin: 2%;
+  border-radius: 0;
+}
+[ngeo-popup] .popover-title {
+  background-color: white;
+  border-bottom-color: #555;
+  color: #555;
+}
+[ngeo-popup] .popover-title .close {
+  color: #555;
+  line-height: 0.8;
+  opacity: 1;
+}
+[ngeo-popup] .popover-content {
+  /*
+     * popup's height - popover-title's height
+     * should be computed using bootstrap variables
+     */
+  max-height: 90%;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  [ngeo-popup].popover {
+    top: 20px;
+    max-width: 350px;
+    width: 350px;
+    margin-left: -175px;
+    left: 50%;
+    right: 50%;
+    max-height: 400px;
+    position: fixed;
+  }
+  [ngeo-popup] .popover-content {
+    overflow: auto;
+    /*
+       * popup's height - popover-title's height
+       * should be computed using bootstrap variables
+       */
+    max-height: calc(362px);
+  }
+}
+/**
+ * Entry point for all styles required for the mobile application.
+ */
+/**
+ * Fonts definition
+ */
 @font-face {
   font-family: "gmf-icons";
   src: url("../fonts/gmf-icons.eot");
@@ -2194,6 +2250,9 @@ nav.nav-left ul .treenode .legend img {
 .fa-percent:before {
   content: "\f295";
 }
+/**
+ * Styles shared between the different apps (mobile and desktop).
+ */
 .ol-box {
   box-sizing: border-box;
   border-radius: 2px;
@@ -8760,50 +8819,35 @@ button.close {
     display: none !important;
   }
 }
+html,
+body {
+  height: 100%;
+}
 body {
   overflow: hidden;
 }
 a {
   text-decoration: none;
 }
-main > * {
-  position: absolute;
-}
-main button {
-  height: 29px;
-  width: 29px;
-}
-gmf-authentication {
-  padding: 10px 20px;
-  display: block;
-}
-gmf-map {
-  position: initial;
-}
-gmf-map > div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
+/**
+ * Styles for the map and OL3 controls.
+ */
 .ol-zoom {
   background-color: transparent;
-  right: 0;
-  left: auto;
-  top: 52px;
-  margin: 10px;
+  padding: 0;
 }
 .ol-zoom button {
+  margin: 0;
   margin-bottom: 3px;
-  height: 29px;
-  width: 29px;
+  height: 3em;
+  width: 3em;
   background-color: white;
   border: solid 1px black;
   color: black;
 }
-.ol-zoom button:hover {
-  background-color: white;
+.ol-zoom button:hover,
+.ol-zoom button:focus {
+  background-color: #cccccc;
 }
 .ol-zoom:hover {
   background-color: transparent;
@@ -8818,68 +8862,12 @@ gmf-map > div {
   border-width: 2px;
   color: black;
 }
-.search {
-  top: 13px;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 6px 10px;
-  background-color: white;
-  width: 220px;
-  border-radius: 25px;
-  border: solid 1px black;
-  z-index: 2;
-}
-.search input {
-  width: 150px;
-  padding: 0 5px;
-  border-width: 0 1px;
-  border-radius: 0;
-}
-.search .clear-button {
-  position: absolute;
-  top: 13px;
-  left: 0;
-  right: 0;
-  margin: -6px auto 0 158px;
-}
-.search .clear-button:after {
-  content: '\f00d';
-  color: grey;
-  font-family: FontAwesome;
-  line-height: 0.5em;
-}
-.search .clear-button:hover {
-  cursor: pointer;
-}
-.nav-trigger {
-  top: 13px;
-  margin-top: 2px;
-  background-color: transparent;
-  border: none;
-  z-index: 3;
-}
-.nav-left-trigger {
-  margin-left: -104px;
-}
-.nav-right-trigger {
-  margin-left: 76px;
-}
 button[ngeo-mobile-geolocation] {
   background-color: white;
   border: solid 1px black;
   color: black;
   right: 13px;
   top: 135px;
-}
-@media (max-width: 767px) {
-  span.twitter-typeahead:after {
-    content: none !important;
-  }
-  span.twitter-typeahead input {
-    padding: 0 5px !important;
-  }
 }
 .gmf-theme-selector,
 .gmf-mobile-background-layer-selector {
@@ -8890,7 +8878,7 @@ button[ngeo-mobile-geolocation] {
 .gmf-theme-selector li,
 .gmf-mobile-background-layer-selector li {
   cursor: pointer;
-  margin: 10px 0 10px 10px;
+  margin-bottom: 10px;
 }
 .gmf-theme-selector .gmf-check,
 .gmf-mobile-background-layer-selector .gmf-check,
@@ -8905,10 +8893,6 @@ button[ngeo-mobile-geolocation] {
   height: 20px;
   margin: 15px 5px 0 0;
   width: 20px;
-}
-.gmf-theme-selector .gmf-check.active,
-.gmf-mobile-background-layer-selector .gmf-check.active {
-  background-color: green;
 }
 .gmf-theme-selector .gmf-text,
 .gmf-mobile-background-layer-selector .gmf-text {
@@ -8927,60 +8911,16 @@ button[ngeo-mobile-geolocation] {
 .gmf-mobile-background-layer-selector .gmf-eol {
   clear: left;
 }
-@media (min-width: 768px) {
-  main button:hover {
-    background-color: #cccccc;
-  }
-  .ol-zoom {
-    top: auto;
-    bottom: 36px;
-  }
-  .ol-zoom button:hover {
-    background-color: #cccccc;
-  }
-  .search {
-    left: 55px;
-    padding: 3px 10px;
-    right: auto;
-    height: 29px;
-    width: 200px;
-  }
-  .search input {
-    width: 150px;
-    margin: 0;
-    border: none;
-  }
-  .search .clear-button {
-    margin: -8px auto 0 170px;
-  }
-  .nav-trigger {
-    top: 13px;
-    margin: 0;
-    background-color: white;
-    border: solid 1px black;
-  }
-  .nav-left-trigger {
-    left: 13px;
-  }
-  .nav-right-trigger {
-    left: auto;
-    right: 13px;
-  }
-  button[ngeo-mobile-geolocation] {
-    bottom: 12px;
-    top: auto;
-  }
-  button[ngeo-mobile-geolocation] button:after {
-    content: 'b';
-  }
-}
+/**
+ * Styles for mobile navigation menus (side menus).
+ */
 main {
-  position: relative;
+  position: fixed;
   background-color: #e2e3df;
   box-shadow: 0px 0px 15px black;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
   z-index: 2;
-  padding-top: 120px;
   text-align: center;
   -webkit-transform: translateZ(0);
           transform: translateZ(0);
@@ -9000,14 +8940,14 @@ main {
 }
 main .overlay {
   /* shadow layer visible when navigation is active */
-  position: fixed;
+  position: absolute;
   z-index: 3;
   height: 100%;
   width: 100%;
   top: 0;
   left: 0;
   cursor: pointer;
-  background-color: rgba(85, 85, 85, 0.8);
+  background-color: rgba(85, 85, 85, 0.4);
   visibility: hidden;
   opacity: 0;
   -webkit-transition: opacity 0.3s, visibility 0.3s;
@@ -9019,11 +8959,13 @@ main .overlay {
   visibility: visible;
   opacity: 1;
 }
-.nav-left-is-visible nav.nav-right {
-  display: none;
-}
+.nav-left-is-visible nav.nav-right,
 .nav-right-is-visible nav.nav-left {
   display: none;
+}
+.nav-left-is-visible nav.nav-left,
+.nav-right-is-visible nav.nav-right {
+  visibility: visible;
 }
 nav.nav-left,
 nav.nav-right {
@@ -9036,6 +8978,7 @@ nav.nav-right {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   z-index: 1;
+  visibility: hidden;
 }
 nav.nav-left header,
 nav.nav-right header {
@@ -9122,7 +9065,7 @@ nav.nav-right a[data-toggle]::before,
 nav.nav-left a[data-toggle]::after,
 nav.nav-right a[data-toggle]::after {
   /* arrow goes on the right side - children navigation */
-  right: 20px;
+  right: 0;
   -webkit-transform-origin: 9px 50%;
           transform-origin: 9px 50%;
 }
@@ -9165,7 +9108,6 @@ nav.nav-right ul a {
   display: block;
   height: 50px;
   line-height: 50px;
-  padding: 0 20px;
   color: #808080;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9185,6 +9127,7 @@ nav.nav-right .slide {
   will-change: transform, opacity;
   opacity: 0;
   overflow-y: auto;
+  padding: 10px;
 }
 nav.nav-left .slide.active,
 nav.nav-right .slide.active {
@@ -9205,6 +9148,48 @@ nav.nav-right .slide.slide-out {
 .nav-right {
   right: 0;
 }
+/**
+ * Buttons to open right and left navigation menus
+ */
+.nav-trigger {
+  top: 1em;
+  background: white;
+  z-index: 3;
+  height: calc( 3em  - 3px);
+  margin-top: 2px;
+  border: none;
+}
+.nav-left-trigger {
+  left: calc( 1em  + 2px);
+  box-shadow: 3px 0 5px -2px #bbb;
+}
+.nav-right-trigger {
+  right: calc( 1em  + 2px);
+  box-shadow: -2px 0 5px -2px #bbb;
+}
+@media (min-width: 768px) {
+  main button:hover {
+    background-color: #cccccc;
+  }
+  .nav-trigger {
+    top: 1em;
+    margin: 0;
+    background-color: white;
+    border: solid 1px black;
+    box-shadow: none;
+    height: 3em;
+  }
+  .nav-left-trigger {
+    left: 1em;
+  }
+  .nav-right-trigger {
+    left: auto;
+    right: 1em;
+  }
+}
+/**
+ * Definitions for icons.
+ */
 .gmf-icon:after,
 .gmf-icon:before {
   font-family: gmf-icons;
@@ -9215,22 +9200,58 @@ nav.nav-right .slide.slide-out {
 .gmf-icon.gmf-icon-layers:after {
   content: '\e600';
 }
+.gmf-icon.gmf-icon-list:after {
+  content: '\e602';
+}
+.gmf-icon.gmf-icon-map:after {
+  content: '\f279';
+}
+.gmf-icon.gmf-icon-map-o:after {
+  content: '\f278';
+}
+.gmf-icon.gmf-icon-check:after {
+  content: '\e603';
+}
+.gmf-icon.gmf-icon-check-o:after {
+  content: '\e604';
+}
+main > * {
+  position: absolute;
+}
+main button {
+  height: 3em;
+  width: 3em;
+}
+gmf-map {
+  position: initial;
+}
+gmf-map > div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+/**
+ * Search (typeahead)
+ */
 span.twitter-typeahead:after {
   content: '\f002';
   font-family: FontAwesome;
   color: grey;
   position: absolute;
   top: 0;
-  left: 0;
+  left: .25em;
+  line-height: 2.8em;
 }
 span.twitter-typeahead input {
-  padding-left: 18px;
+  padding-left: 1.5em;
 }
 .tt-menu {
   position: fixed!important;
   left: 0;
   right: 0;
-  top: 48px!important;
+  top: 5em !important;
   bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -9244,7 +9265,7 @@ span.twitter-typeahead input {
 .tt-menu .search-datum {
   border-bottom: solid 1px black;
   margin: 0;
-  padding: 10px 13px;
+  padding: 10px 1em;
   text-align: left;
 }
 .tt-menu .search-datum:hover {
@@ -9261,9 +9282,104 @@ span.twitter-typeahead input {
   color: #808080;
   font-size: 0.8em;
 }
+.search {
+  top: 1em;
+  height: 3em;
+  left: 0;
+  right: 0;
+  margin-left: 1em;
+  margin-right: 1em;
+  padding: 0 10px;
+  background-color: white;
+  border: solid 1px black;
+  z-index: 2;
+}
+.search input {
+  width: 200px;
+  padding: 0 5px;
+  border-width: 0;
+  border-radius: 0;
+  height: 2.8em;
+}
+.search .clear-button {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  margin-left: calc( 100px  -  3em );
+  height: 3em;
+  width: 3em;
+  line-height: 3em;
+}
+.search .clear-button:after {
+  content: '\f00d';
+  color: grey;
+  font-family: FontAwesome;
+  font-size: 1.5em;
+}
+.search .clear-button:hover {
+  cursor: pointer;
+}
 @media (min-width: 768px) {
   .tt-menu {
-    top: 43px!important;
-    width: 33vw;
+    top: 4em !important;
+    width: 18em;
+    left: 5em !important;
+    bottom: auto;
+  }
+  .search {
+    left: 4em;
+    right: auto;
+    height: 3em;
+    width: 18em;
+    padding: 0;
+  }
+  .search input {
+    margin: 0;
+    border: none;
+    width: calc( 18em  - 2px);
+  }
+  .search .clear-button {
+    right: 0;
+    left: auto;
+  }
+}
+@media (max-width: 767px) {
+  span.twitter-typeahead:after {
+    content: none !important;
+  }
+  span.twitter-typeahead input {
+    padding: 0 5px !important;
+  }
+}
+.ol-control button,
+.ol-touch .ol-control button {
+  font-size: 1em;
+}
+.ol-zoom {
+  top: 5em;
+}
+.ol-zoom .ol-zoom-in,
+.ol-zoom .ol-zoom-out {
+  border-radius: 0;
+}
+button[ngeo-mobile-geolocation] {
+  right: 1em;
+  top: 11.5em;
+}
+.ol-zoom {
+  right: 1em;
+  left: auto;
+}
+@media (min-width: 768px) {
+  .ol-zoom {
+    top: auto;
+    bottom: 8.5em;
+  }
+  button[ngeo-mobile-geolocation] {
+    top: auto;
+    bottom: 5.5em;
+  }
+  button[ngeo-mobile-geolocation] button:after {
+    content: 'b';
   }
 }
