@@ -82,7 +82,7 @@ app.MainController = function($scope, ngeoQueryResult, ngeoFeatureOverlayMgr) {
       function() {
         return $('.displayqueries').attr('class');
       }, function(newVal, oldVal) {
-        if (newVal !== oldVal && goog.string.contains(newVal, 'show-remove')) {
+        if (newVal !== oldVal && (newVal + '').indexOf('show-remove') >= 0) {
           ngeoQueryResult.sources = {};
         }
       }, true);

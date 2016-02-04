@@ -72452,6 +72452,16 @@ ol.source.Vector.prototype.handleFeatureChange_ = function(event) {
 
 
 /**
+ * @param {ol.Feature} feature Feature.
+ * @return {boolean} Feature is in source.
+ */
+ol.source.Vector.prototype.hasFeature = function(feature) {
+  var id = feature.getId();
+  return id ? id in this.idIndex_ : goog.getUid(feature) in this.undefIdIndex_;
+};
+
+
+/**
  * @return {boolean} Is empty.
  */
 ol.source.Vector.prototype.isEmpty = function() {
@@ -74234,9 +74244,9 @@ ol.source.UrlTile.prototype.setTileUrlFunction = function(tileUrlFunction) {
  * @api stable
  */
 ol.source.UrlTile.prototype.setUrl = function(url) {
-  this.urls = [url];
-  var urls = ol.TileUrlFunction.expandUrl(url);
-  this.setTileUrlFunction(this.fixedTileUrlFunction ||
+  var urls = this.urls = ol.TileUrlFunction.expandUrl(url);
+  this.setTileUrlFunction(this.fixedTileUrlFunction ?
+      this.fixedTileUrlFunction.bind(this) :
       ol.TileUrlFunction.createFromTemplates(urls, this.tileGrid));
 };
 
@@ -112733,7 +112743,8 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
          * @param {ol.layer.Layer} layer Layer.
          */
         function(feature, layer) {
-          if (layer !== this.featureOverlay_) {
+          goog.asserts.assertInstanceof(feature, ol.Feature);
+          if (layer !== null) {
             if (add || toggle) {
               if (this.filter_(feature, layer) &&
                   !ol.array.includes(features.getArray(), feature) &&
@@ -112742,7 +112753,7 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
                 this.addFeatureLayerAssociation_(feature, layer);
               }
             }
-          } else {
+          } else if (this.featureOverlay_.getSource().hasFeature(feature)) {
             if (remove || toggle) {
               deselected.push(feature);
               this.removeFeatureLayerAssociation_(feature);
@@ -127843,10 +127854,10 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
     capabilitiesURL, layerName) {
   var parser = new ol.format.WMTSCapabilities();
   var layer = new ol.layer.Tile();
-  var deferred = this.$q_.defer();
   this.setHelperID(layer, capabilitiesURL, layerName);
+  var $q = this.$q_;
 
-  this.$http_.get(capabilitiesURL).then(function(response) {
+  return this.$http_.get(capabilitiesURL).then(function(response) {
     var result;
     if (response.data) {
       result = parser.read(response.data);
@@ -127863,15 +127874,11 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
       });
       layer.set('capabilitiesStyles', l['Style']);
 
-      deferred.resolve(layer);
-    } else {
-      deferred.resolve();
+      return $q.resolve(layer);
     }
-  }, function(response) {
-    deferred.resolve();
+    return $q.reject('Failed to get WMTS capabilities from ' +
+        capabilitiesURL);
   });
-
-  return deferred.promise;
 };
 
 
@@ -131250,11 +131257,6 @@ goog.exportProperty(
     ol.MapBrowserPointerEvent.prototype,
     'pixel',
     ol.MapBrowserPointerEvent.prototype.pixel);
-
-goog.exportProperty(
-    ol.MapBrowserPointerEvent.prototype,
-    'preventDefault',
-    ol.MapBrowserPointerEvent.prototype.preventDefault);
 
 goog.exportProperty(
     ol.MapBrowserPointerEvent.prototype,

@@ -1,160 +1,3 @@
-gmf-layertree div {
-  margin-right: 10px;
-}
-nav.nav-left ul .treenode {
-  padding: 10px 0 0 10px;
-}
-nav.nav-left ul .treenode a {
-  color: black;
-  display: inline;
-  line-height: inherit;
-  padding-left: 0;
-  text-decoration: none;
-}
-nav.nav-left ul .treenode a::after {
-  display: none;
-}
-nav.nav-left ul .treenode .state,
-nav.nav-left ul .treenode .rightButtons *::after {
-  background: none;
-  color: black;
-  display: inline;
-  font-family: FontAwesome;
-}
-nav.nav-left ul .treenode .leaf .state.on::after {
-  content: "\f058";
-}
-nav.nav-left ul .treenode .leaf .state.off::after {
-  content: "\f1db";
-}
-nav.nav-left ul .treenode .group .state.on::after {
-  content: "\f14a";
-}
-nav.nav-left ul .treenode .group .state.off::after {
-  content: "\f096";
-}
-nav.nav-left ul .treenode .group .state.indeterminate::after {
-  content: "\f147";
-}
-nav.nav-left ul .treenode .group .layerIcon {
-  display: none;
-}
-nav.nav-left ul .treenode .layerIcon {
-  display: -webkit-inline-box;
-  display: -webkit-inline-flex;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  height: 10px;
-  width: 20px;
-}
-nav.nav-left ul .treenode .name {
-  white-space: normal;
-}
-nav.nav-left ul .treenode .rightButtons {
-  float: right;
-}
-nav.nav-left ul .treenode .rightButtons *::after,
-nav.nav-left ul .treenode .rightButtons *::before {
-  background: none;
-  position: relative;
-  right: initial;
-}
-nav.nav-left ul .treenode .metadata a {
-  padding: 0;
-}
-nav.nav-left ul .treenode .metadata a::after {
-  content: "\f129";
-  display: inline;
-  font-family: FontAwesome;
-}
-nav.nav-left ul .treenode .zoom {
-  display: none;
-}
-nav.nav-left ul .treenode .zoom:hover {
-  cursor: pointer;
-}
-nav.nav-left ul .treenode .zoom::after {
-  content: "\f18e";
-}
-nav.nav-left ul .treenode .noSource {
-  opacity: 0.3;
-}
-nav.nav-left ul .treenode .noSource::after {
-  content: "(source not available)";
-}
-nav.nav-left ul .treenode .outOfResolution {
-  opacity: 0.6;
-}
-nav.nav-left ul .treenode .outOfResolution .rightButtons .zoom {
-  display: inline;
-}
-nav.nav-left ul .treenode .outOfResolution .rightButtons .legendButton {
-  display: none;
-}
-nav.nav-left ul .treenode .legendButton a {
-  padding: 0;
-}
-nav.nav-left ul .treenode .legendButton a::after {
-  content: "\f036";
-  -webkit-transform: initial;
-          transform: initial;
-}
-nav.nav-left ul .treenode .legend a::before {
-  display: none;
-}
-nav.nav-left ul .treenode .legend img {
-  padding-left: 15px;
-}
-[ngeo-popup].popover {
-  position: fixed;
-  top: 0;
-  left: auto;
-  right: auto;
-  max-width: 96%;
-  width: 96%;
-  height: 96%;
-  max-height: 96%;
-  margin: 2%;
-  border-radius: 0;
-}
-[ngeo-popup] .popover-title {
-  background-color: white;
-  border-bottom-color: #555;
-  color: #555;
-}
-[ngeo-popup] .popover-title .close {
-  color: #555;
-  line-height: 0.8;
-  opacity: 1;
-}
-[ngeo-popup] .popover-content {
-  /*
-     * popup's height - popover-title's height
-     * should be computed using bootstrap variables
-     */
-  max-height: 90%;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 768px) {
-  [ngeo-popup].popover {
-    top: 20px;
-    max-width: 350px;
-    width: 350px;
-    margin-left: -175px;
-    left: 50%;
-    right: 50%;
-    max-height: 400px;
-    position: fixed;
-  }
-  [ngeo-popup] .popover-content {
-    overflow: auto;
-    /*
-       * popup's height - popover-title's height
-       * should be computed using bootstrap variables
-       */
-    max-height: calc(362px);
-  }
-}
 /**
  * Entry point for all styles required for the mobile application.
  */
@@ -8911,6 +8754,163 @@ button[ngeo-mobile-geolocation] {
 .gmf-mobile-background-layer-selector .gmf-eol {
   clear: left;
 }
+gmf-layertree div {
+  margin-right: 10px;
+}
+gmf-layertree ul .treenode {
+  padding-top: 10px;
+}
+gmf-layertree ul .treenode a {
+  color: black;
+  display: inline;
+  line-height: inherit;
+  padding-left: 0;
+  text-decoration: none;
+}
+gmf-layertree ul .treenode a::after {
+  display: none;
+}
+gmf-layertree ul .treenode .state,
+gmf-layertree ul .treenode .rightButtons *::after {
+  background: none;
+  color: black;
+  display: inline;
+  font-family: FontAwesome;
+}
+gmf-layertree ul .treenode .leaf .state.on::after {
+  content: "\f058";
+}
+gmf-layertree ul .treenode .leaf .state.off::after {
+  content: "\f1db";
+}
+gmf-layertree ul .treenode .group .state.on::after {
+  content: "\f14a";
+}
+gmf-layertree ul .treenode .group .state.off::after {
+  content: "\f096";
+}
+gmf-layertree ul .treenode .group .state.indeterminate::after {
+  content: "\f147";
+}
+gmf-layertree ul .treenode .group .layerIcon {
+  display: none;
+}
+gmf-layertree ul .treenode .layerIcon {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  height: 10px;
+  width: 20px;
+}
+gmf-layertree ul .treenode .name {
+  white-space: normal;
+}
+gmf-layertree ul .treenode .rightButtons {
+  float: right;
+}
+gmf-layertree ul .treenode .rightButtons *::after,
+gmf-layertree ul .treenode .rightButtons *::before {
+  background: none;
+  position: relative;
+  right: initial;
+}
+gmf-layertree ul .treenode .metadata a {
+  padding: 0;
+}
+gmf-layertree ul .treenode .metadata a::after {
+  content: "\f129";
+  display: inline;
+  font-family: FontAwesome;
+}
+gmf-layertree ul .treenode .zoom {
+  display: none;
+}
+gmf-layertree ul .treenode .zoom:hover {
+  cursor: pointer;
+}
+gmf-layertree ul .treenode .zoom::after {
+  content: "\f18e";
+}
+gmf-layertree ul .treenode .noSource {
+  opacity: 0.3;
+}
+gmf-layertree ul .treenode .noSource::after {
+  content: "(source not available)";
+}
+gmf-layertree ul .treenode .outOfResolution {
+  opacity: 0.6;
+}
+gmf-layertree ul .treenode .outOfResolution .rightButtons .zoom {
+  display: inline;
+}
+gmf-layertree ul .treenode .outOfResolution .rightButtons .legendButton {
+  display: none;
+}
+gmf-layertree ul .treenode .legendButton a {
+  padding: 0;
+}
+gmf-layertree ul .treenode .legendButton a::after {
+  content: "\f036";
+  -webkit-transform: initial;
+          transform: initial;
+}
+gmf-layertree ul .treenode .legend a::before {
+  display: none;
+}
+gmf-layertree ul .treenode .legend img {
+  padding-left: 15px;
+}
+[ngeo-popup].popover {
+  position: fixed;
+  top: 0;
+  left: auto;
+  right: auto;
+  max-width: 96%;
+  width: 96%;
+  height: 96%;
+  max-height: 96%;
+  margin: 2%;
+  border-radius: 0;
+}
+[ngeo-popup] .popover-title {
+  background-color: white;
+  border-bottom-color: #555;
+  color: #555;
+}
+[ngeo-popup] .popover-title .close {
+  color: #555;
+  line-height: 0.8;
+  opacity: 1;
+}
+[ngeo-popup] .popover-content {
+  /*
+     * popup's height - popover-title's height
+     * should be computed using bootstrap variables
+     */
+  max-height: 90%;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  [ngeo-popup].popover {
+    top: 20px;
+    max-width: 350px;
+    width: 350px;
+    margin-left: -175px;
+    left: 50%;
+    right: 50%;
+    max-height: 400px;
+    position: fixed;
+  }
+  [ngeo-popup] .popover-content {
+    overflow: auto;
+    /*
+       * popup's height - popover-title's height
+       * should be computed using bootstrap variables
+       */
+    max-height: calc(362px);
+  }
+}
 /**
  * Styles for mobile navigation menus (side menus).
  */
@@ -9071,12 +9071,12 @@ nav.nav-right a[data-toggle]::after {
 }
 nav.nav-left .go-back::before,
 nav.nav-right .go-back::before,
-nav.nav-left a[data-toggle]::before,
-nav.nav-right a[data-toggle]::before,
+nav.nav-left a[data-toggle=slide-in]::before,
+nav.nav-right a[data-toggle=slide-in]::before,
 nav.nav-left .go-back::after,
 nav.nav-right .go-back::after,
-nav.nav-left a[data-toggle]::after,
-nav.nav-right a[data-toggle]::after {
+nav.nav-left a[data-toggle=slide-in]::after,
+nav.nav-right a[data-toggle=slide-in]::after {
   /* arrow icon in CSS - for element with nested unordered lists */
   content: '';
   position: absolute;
@@ -9091,20 +9091,20 @@ nav.nav-right a[data-toggle]::after {
 }
 nav.nav-left .go-back::before,
 nav.nav-right .go-back::before,
-nav.nav-left a[data-toggle]::before,
-nav.nav-right a[data-toggle]::before {
+nav.nav-left a[data-toggle=slide-in]::before,
+nav.nav-right a[data-toggle=slide-in]::before {
   -webkit-transform: rotate(45deg);
           transform: rotate(45deg);
 }
 nav.nav-left .go-back::after,
 nav.nav-right .go-back::after,
-nav.nav-left a[data-toggle]::after,
-nav.nav-right a[data-toggle]::after {
+nav.nav-left a[data-toggle=slide-in]::after,
+nav.nav-right a[data-toggle=slide-in]::after {
   -webkit-transform: rotate(-45deg);
           transform: rotate(-45deg);
 }
-nav.nav-left ul a,
-nav.nav-right ul a {
+nav.nav-left ul a[data-toggle=slide-in],
+nav.nav-right ul a[data-toggle=slide-in] {
   display: block;
   height: 50px;
   line-height: 50px;
