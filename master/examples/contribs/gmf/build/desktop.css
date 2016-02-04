@@ -8821,87 +8821,88 @@ main {
   bottom: 0;
   left: 0;
 }
-.map-container .search {
+.search {
   position: absolute;
   top: 13px;
   left: 63px;
   z-index: 2;
 }
-.map-container .search .gmf-search > * {
-  float: left;
-}
-.map-container .search .gmf-search > .clear-button {
-  margin-left: -15px;
-  padding: 3px 0 2px;
-  position: relative;
-}
-.map-container .search .gmf-search > .clear-button:hover {
-  cursor: pointer;
-}
-.map-container .search .gmf-search > .clear-button:after {
-  content: 'x';
-}
-.map-container .search span.twitter-typeahead .tt-menu {
+.search span.twitter-typeahead:after {
+  content: '\f002';
+  font-family: FontAwesome;
+  color: grey;
   position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  display: none;
-  float: left;
-  min-width: 160px;
-  padding: 5px 0;
+  top: 0;
+  left: .5em;
+  line-height: 34px;
+}
+.search span.twitter-typeahead input {
+  padding-left: 2em;
+}
+.search span.twitter-typeahead + span.clear-button {
+  position: absolute;
+  line-height: 34px;
+  top: 0;
+  right: .5em;
+  display: block;
+  cursor: pointer;
+  color: white;
+  opacity: 0.5;
+}
+.search span.twitter-typeahead + span.clear-button:after {
+  content: '\f00d';
+  color: grey;
+  font-family: FontAwesome;
+}
+.search span.twitter-typeahead + span.clear-button:hover {
+  opacity: 1;
+}
+.search span.twitter-typeahead .form-control {
+  position: relative;
+  padding-right: 20px;
+  width: auto;
+}
+.search span.twitter-typeahead .tt-menu {
+  min-width: 250px;
   margin: 2px 0 0;
-  list-style: none;
-  font-size: 14px;
-  text-align: left;
   background-color: #ffffff;
-  border: 1px solid #cccccc;
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
   background-clip: padding-box;
+  overflow: hidden;
 }
-.map-container .search span.twitter-typeahead .header {
-  background-color: #CCDDEE;
-  padding: 4px 0;
+.search span.twitter-typeahead .tt-menu .search-header {
+  font-size: 0.9em;
+  background-color: #eee;
+  text-transform: uppercase;
+  color: #666;
 }
-.map-container .search span.twitter-typeahead .tt-suggestion {
-  display: block;
-  padding: 3px 20px;
-  margin-bottom: 0px;
-  clear: both;
-  font-weight: normal;
-  line-height: 1.42857143;
-  color: #333333;
-  white-space: nowrap;
+.search span.twitter-typeahead .tt-menu .search-header,
+.search span.twitter-typeahead .tt-menu .search-datum {
+  padding: 8px 10px;
 }
-.map-container .search span.twitter-typeahead .tt-suggestion:hover,
-.map-container .search span.twitter-typeahead .tt-suggestion:focus {
-  color: #ffffff;
-  text-decoration: none;
-  outline: 0;
-  background-color: #428bca;
+.search span.twitter-typeahead .tt-menu .search-datum:not(:last-child) {
+  border-bottom: solid 1px #eee;
 }
-.map-container .search span.twitter-typeahead .tt-suggestion.tt-cursor {
-  color: #ffffff;
-  background-color: #428bca;
+.search span.twitter-typeahead .tt-menu .search-datum {
+  font-weight: 600;
 }
-.map-container .search span.twitter-typeahead .tt-suggestion button {
-  background: none;
-  border: 0;
-  float: right;
+.search span.twitter-typeahead .tt-menu .search-datum.tt-cursor,
+.search span.twitter-typeahead .tt-menu .search-datum:hover,
+.search span.twitter-typeahead .tt-menu .search-datum:focus {
+  cursor: pointer;
+  background-color: #cccccc;
 }
-.map-container .search .input-group span.twitter-typeahead {
-  display: block !important;
+.search span.twitter-typeahead .tt-menu .search-datum p {
+  margin-bottom: 0;
 }
-.map-container .search .input-group span.twitter-typeahead .tt-menu {
-  top: 32px !important;
+.search span.twitter-typeahead .tt-menu .search-datum .search-label {
+  color: black;
 }
-.map-container .search .input-group.input-group-lg span.twitter-typeahead .tt-menu {
-  top: 44px !important;
-}
-.map-container .search .input-group.input-group-sm span.twitter-typeahead .tt-menu {
-  top: 28px !important;
+.search span.twitter-typeahead .tt-menu .search-datum .search-group {
+  color: #808080;
+  font-size: 0.8em;
 }
 .ol-zoom {
   left: 13px;

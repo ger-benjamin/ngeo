@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: controlDirective <small>directive:ngeoControl</small></title>
+    <title>JSDoc: Source: contribs/gmf/src/directives/displayqueries.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,160 +17,332 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: controlDirective <small>directive:ngeoControl</small></h1>
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2 id="controlDirective">
-            <span class="ancestors">ngeo.</span>controlDirective
-        </h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-
-    <h4 class="name" id="controlDirective"><span class="type-signature"></span>new controlDirective<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://docs.angularjs.org/guide/directive">angular.Directive</a>}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Provides a directive can be used to add a control to a DOM
-element of the HTML page.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>&lt;div ngeo-control=&quot;ctrl.control&quot; ngeo-control-map=&quot;ctrl.map&quot;>&lt;/div></code></pre><p>The expression passed to &quot;ngeo-control&quot; should evaluate to a control
-instance, and the expression passed to &quot;ngeo-control-map&quot; should
-evaluate to a map instance.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_directives_control.js.html">src/directives/control.js</a>, <a href="src_directives_control.js.html#line26">line 26</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>The directive specs.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="https://docs.angularjs.org/guide/directive">angular.Directive</a></span>
-
-
-    </dd>
-</dl>
+    <h1 class="page-title">Source: contribs/gmf/src/directives/displayqueries.js</h1>
 
     
 
 
 
     
-    </div>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>goog.provide('gmf.DisplayqueriesController');
+goog.provide('gmf.displayqueriesDirective');
 
-    
+goog.require('gmf');
+goog.require('ngeo.FeatureOverlay');
+goog.require('ngeo.FeatureOverlayMgr');
+goog.require('ol.Collection');
+goog.require('ol.style.Circle');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Stroke');
+goog.require('ol.style.Style');
 
-    
 
-    
+ngeoModule.value('gmfDisplayqueriesTemplateUrl',
+    /**
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     */
+    function(element, attrs) {
+      var templateUrl = attrs['gmfDisplayqueriesTemplateurl'];
+      return templateUrl !== undefined ? templateUrl :
+          gmf.baseTemplateUrl + '/displayqueries.html';
+    });
 
-     
 
-    
+/**
+ * Provide a "gmf display queries" directive.
+ *
+ * This directive displays results of the ngeoQueryResult and shows related
+ * features on the map using the ngeoFeatureOverlayMgr.
+ *
+ * You can override the default directive's template by setting the value
+ * 'gmfDisplayqueriesTemplateUrl'.
+ *
+ * Features displayed on the map use a default style but you can override these
+ * styles by passing ol.style.Style objects as attributes of this directive.
+ *
+ * @example
+ * &lt;gmf-displayqueries
+ *     gmf-displayqueries-featuresstyle="ctrl.styleForAllFeatures"
+ *     gmf-displayqueries-selectedfeaturestyle="ctrl.styleForTheCurrentFeature">
+ * &lt;/gmf-displayqueries>
+ *
+ * @htmlAttribute {ol.style.Style} gmf-displayqueries-featuresstyle A style
+ *     object for all features from the result of the query.
+ * @htmlAttribute {ol.style.Style} selectedfeaturestyle A style
+ *     object for the current displayed feature.
+ * @param {string} gmfDisplayqueriesTemplateUrl URL to a template.
+ * @return {angular.Directive} Directive Definition Object.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname gmfDisplayqueries
+ */
+gmf.displayqueriesDirective = function(gmfDisplayqueriesTemplateUrl) {
+  return {
+    bindToController: true,
+    controller: 'GmfDisplayqueriesController',
+    controllerAs: 'ctrl',
+    templateUrl: gmfDisplayqueriesTemplateUrl,
+    replace: true,
+    restrict: 'E',
+    scope: {
+      'featuresStyleFn': '&amp;gmfDisplayqueriesFeaturesstyle',
+      'selectedFeatureStyleFn': '&amp;gmfDisplayqueriesSelectedfeaturestyle'
+    }
+  };
+};
 
-    
 
-    
+gmfModule.directive('gmfDisplayqueries', gmf.displayqueriesDirective);
 
-    
 
-    
-</article>
 
-</section>
+/**
+ * @param {angular.Scope} $scope Angular scope.
+ * @param {Object} ngeoQueryResult ngeo query result FIXME.
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
+ *     overlay manager service.
+ * @constructor
+ * @export
+ * @ngInject
+ * @ngdoc Controller
+ * @ngname GmfDisplayqueriesController
+ */
+gmf.DisplayqueriesController = function($scope, ngeoQueryResult,
+    ngeoFeatureOverlayMgr) {
+
+  /**
+   * @type {Object} FIXME
+   * @private
+   */
+  this.ngeoQueryResult_ = ngeoQueryResult;
+
+  /**
+   * @type {ol.Collection}
+   * @private
+   */
+  this.features_ = new ol.Collection();
+
+  var featureOverlay = ngeoFeatureOverlayMgr.getFeatureOverlay();
+  var featuresStyle = this['featuresStyleFn']();
+  if (goog.isDef(featuresStyle)) {
+    goog.asserts.assertInstanceof(featuresStyle, ol.style.Style);
+    featureOverlay.setStyle(featuresStyle);
+  }
+  featureOverlay.setFeatures(this.features_);
+
+  /**
+   * @type {ngeo.FeatureOverlay}
+   * @private
+   */
+  this.selectedFeatureOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+
+  var selectedFeatureStyle = this['selectedFeatureStyleFn']();
+  if (goog.isDef(selectedFeatureStyle)) {
+    goog.asserts.assertInstanceof(selectedFeatureStyle, ol.style.Style);
+  } else {
+    var fill = new ol.style.Fill({color: [255, 0, 0, 0.6]});
+    var stroke = new ol.style.Stroke({color: [255, 0, 0, 1], width: 2});
+    selectedFeatureStyle = new ol.style.Style({
+      fill: fill,
+      image: new ol.style.Circle({fill: fill, radius: 5, stroke: stroke}),
+      stroke: stroke
+    });
+  }
+  this.selectedFeatureOverlay_.setStyle(selectedFeatureStyle);
+
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.open = false;
+
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.source = null;
+
+  /**
+   * @type {ol.Feature}
+   * @export
+   */
+  this.feature = null;
+
+  /**
+   * @type {number}
+   * @export
+   */
+  this.currentResult = 0;
+
+  $scope.$watchCollection(
+      function() {
+        return ngeoQueryResult.sources;
+      },
+      angular.bind(this, function(newSources, oldSources) {
+        if (newSources.length > 0 &amp;&amp; newSources !== oldSources) {
+          this.show();
+        }
+      }));
+};
+
+
+/**
+ * Remove current displayed results then get new results from the
+ * ngeoQueryResult sevice. Display all results on the map and display,
+ * highlight the first feature.
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.show = function() {
+  this.clear();
+  this.setCurrentResult_(0);
+  if (this.source !== null) {
+    this.collectFeatures_();
+    this.highlightCurrentFeature_();
+    this.open = true;
+  }
+};
+
+
+/**
+ * Select a source and a feature depending of the given position.
+ * @param {number} position The index of the feature. If the position is bigger
+ * than the length of the first source, get it in the next source. Etc.
+ * @private
+ */
+gmf.DisplayqueriesController.prototype.setCurrentResult_ = function(position) {
+  var i, source, features;
+  var sources = this.ngeoQueryResult_.sources;
+  this.currentResult = position;
+  for (i = 0; i &lt; sources.length; i++) {
+    source = sources[i];
+    features = source.features;
+    if (position >= features.length) {
+      position -= features.length;
+    } else {
+      this.source = source;
+      this.feature = source.features[position];
+      break;
+    }
+  }
+};
+
+
+/**
+ * Select the logical previous source and feature then highlight this feature on
+ * the map.
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.previous = function() {
+  var lastFeature = this.feature;
+  var position = this.currentResult - 1;
+  if (position &lt; 0) {
+    position = this.getResultLength() - 1;
+  }
+  this.setCurrentResult_(position);
+  this.highlightCurrentFeature_(lastFeature);
+};
+
+
+/**
+ * Select the logical next source and feature then highlight this feature on
+ * the map.
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.next = function() {
+  var lastFeature = this.feature;
+  var position = this.currentResult + 1;
+  var positionMax = this.getResultLength() - 1;
+  if (position > positionMax) {
+    position = 0;
+  }
+  this.setCurrentResult_(position);
+  this.highlightCurrentFeature_(lastFeature);
+};
+
+
+/**
+ * Get the total count of features in the result of the query.
+ * @return {number}
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.getResultLength = function() {
+  var sources = this.ngeoQueryResult_.sources;
+  var sourcesLength = sources.length;
+  if (!goog.isDef(sourcesLength) || sourcesLength &lt;= 0) {
+    return 0;
+  }
+  return sourcesLength + sources[sourcesLength - 1].features.length;
+};
+
+
+/**
+ * Collect all features in the queryResult object.
+ * @private
+ */
+gmf.DisplayqueriesController.prototype.collectFeatures_ = function() {
+  var i, ii, features;
+  var sources = this.ngeoQueryResult_.sources;
+  this.features_.clear();
+  for (i = 0; i &lt; sources.length; i++) {
+    features = sources[i].features;
+    for (ii = 0; ii &lt; features.length; ii++) {
+      this.features_.push(features[ii]);
+    }
+  }
+};
+
+
+/**
+ * Highlight the current displayed feature.
+ * @param {ol.Feature=} opt_lastFeature last highlighted feature. Require if
+ * it exists because it must be added to the 'non-selected' features collection.
+ * @private
+ */
+gmf.DisplayqueriesController.prototype.highlightCurrentFeature_ = function(
+    opt_lastFeature) {
+  this.selectedFeatureOverlay_.clear();
+  this.features_.remove(this.feature);
+  this.selectedFeatureOverlay_.addFeature(this.feature);
+  if (goog.isDef(opt_lastFeature)) {
+    this.features_.push(opt_lastFeature);
+  }
+};
+
+
+/**
+ * Remove the current selected feature and source and remove all features
+ * from the map.
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.close = function() {
+  this.open = false;
+  this.clear();
+};
+
+
+/**
+ * Remove the current selected feature and source and remove all features
+ * from the map.
+ * @export
+ */
+gmf.DisplayqueriesController.prototype.clear = function() {
+  this.feature = null;
+  this.source = null;
+  this.currentResult = 0;
+  this.features_.clear();
+  this.selectedFeatureOverlay_.clear();
+};
+
+
+gmfModule.controller('GmfDisplayqueriesController',
+    gmf.DisplayqueriesController);
+</code></pre>
+        </article>
+    </section>
 
 
 

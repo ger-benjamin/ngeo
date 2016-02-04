@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: controlDirective <small>directive:ngeoControl</small></title>
+    <title>JSDoc: Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: controlDirective <small>directive:ngeoControl</small></h1>
+    <h1 class="page-title">Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="controlDirective">
-            <span class="ancestors">ngeo.</span>controlDirective
+        <h2 id="displayqueriesDirective">
+            <span class="ancestors">gmf.</span>displayqueriesDirective
         </h2>
         
     
@@ -42,19 +42,20 @@
 
     
 
-    <h4 class="name" id="controlDirective"><span class="type-signature"></span>new controlDirective<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://docs.angularjs.org/guide/directive">angular.Directive</a>}</span></h4>
+    <h4 class="name" id="displayqueriesDirective"><span class="type-signature"></span>new displayqueriesDirective<span class="signature">(gmfDisplayqueriesTemplateUrl)</span><span class="type-signature"> &rarr; {<a href="https://docs.angularjs.org/guide/directive">angular.Directive</a>}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Provides a directive can be used to add a control to a DOM
-element of the HTML page.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>&lt;div ngeo-control=&quot;ctrl.control&quot; ngeo-control-map=&quot;ctrl.map&quot;>&lt;/div></code></pre><p>The expression passed to &quot;ngeo-control&quot; should evaluate to a control
-instance, and the expression passed to &quot;ngeo-control-map&quot; should
-evaluate to a map instance.</p>
+    <p>Provide a &quot;gmf display queries&quot; directive.</p>
+<p>This directive displays results of the ngeoQueryResult and shows related
+features on the map using the ngeoFeatureOverlayMgr.</p>
+<p>You can override the default directive's template by setting the value
+'gmfDisplayqueriesTemplateUrl'.</p>
+<p>Features displayed on the map use a default style but you can override these
+styles by passing ol.style.Style objects as attributes of this directive.</p>
 </div>
 
 
@@ -65,6 +66,80 @@ evaluate to a map instance.</p>
 
 
 
+
+
+    <h5>HTML attributes:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>gmf-displayqueries-featuresstyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A style
+    object for all features from the result of the query.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selectedfeaturestyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A style
+    object for the current displayed feature.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -100,7 +175,7 @@ evaluate to a map instance.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_directives_control.js.html">src/directives/control.js</a>, <a href="src_directives_control.js.html#line26">line 26</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -127,7 +202,7 @@ evaluate to a map instance.</p>
 
         
 <div class="param-desc">
-    <p>The directive specs.</p>
+    <p>Directive Definition Object.</p>
 </div>
 
 
@@ -145,6 +220,14 @@ evaluate to a map instance.</p>
 </dl>
 
     
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;gmf-displayqueries
+    gmf-displayqueries-featuresstyle="ctrl.styleForAllFeatures"
+    gmf-displayqueries-selectedfeaturestyle="ctrl.styleForTheCurrentFeature">
+&lt;/gmf-displayqueries></code></pre>
 
 
 
