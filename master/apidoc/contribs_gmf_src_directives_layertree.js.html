@@ -293,7 +293,7 @@ gmf.LayertreeController.prototype.getLayer = function(node, opt_depth,
     // If layer is 'unchecked', set it to invisible.
     var metadata = node.metadata;
     if (!goog.isDef(node.children) &amp;&amp; goog.isDefAndNotNull(metadata)) {
-      if (metadata['isChecked'] == 'false') {
+      if (metadata['isChecked'] != 'true') {
         layer.setVisible(false);
       }
     }
@@ -407,7 +407,7 @@ gmf.LayertreeController.prototype.retrieveNodeNames_ = function(node,
     n = nodes[i];
     metadata = n.metadata;
     if (!opt_onlyChecked ||
-        (goog.isDefAndNotNull(metadata) &amp;&amp; metadata['isChecked'] == 'true')) {
+        (goog.isDefAndNotNull(metadata) &amp;&amp; metadata['isChecked'] != 'false')) {
       names.push(n.name);
     }
   }

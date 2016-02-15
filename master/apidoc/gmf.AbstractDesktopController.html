@@ -42,7 +42,7 @@
 
     
 
-    <h4 class="name" id="AbstractDesktopController"><span class="type-signature"></span>new AbstractDesktopController<span class="signature">(config, defaultLang, langUrls, gettextCatalog, ngeoGetBrowserLanguage, $scope, ngeoStateManager, ngeoFeatureOverlayMgr, gmfThemes, fulltextsearchUrl, ngeoToolActivateMgr, gmfQueryManager)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AbstractDesktopController"><span class="type-signature"></span>new AbstractDesktopController<span class="signature">(config, $scope, $injector)</span><span class="type-signature"></span></h4>
 
     
 
@@ -110,98 +110,6 @@ by the HTML page and the controller to provide the configuration.</p>
 
         <tr>
             
-                <td class="name"><code>defaultLang</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The default language.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>langUrls</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The languages URLs.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gettextCatalog</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://angular-gettext.rocketeer.be/dev-guide/api/angular-gettext/">angularGettext.Catalog</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Gettext catalog.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ngeoGetBrowserLanguage</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ngeo.html#GetBrowserLanguage">ngeo.GetBrowserLanguage</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>$scope</code></td>
             
 
@@ -225,13 +133,13 @@ by the HTML page and the controller to provide the configuration.</p>
 
         <tr>
             
-                <td class="name"><code>ngeoStateManager</code></td>
+                <td class="name"><code>$injector</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ngeo.StateManager.html">ngeo.StateManager</a></span>
+<span class="param-type"><a href="https://docs.angularjs.org/api/auto/service/$injector">angular.$injector</a></span>
 
 
             
@@ -241,123 +149,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
             
 
-            <td class="description last"><p>the state manager.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ngeoFeatureOverlayMgr</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The ngeo feature
-    overlay manager service.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmfThemes</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="gmf.Themes.html">gmf.Themes</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Themes service.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fulltextsearchUrl</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>url to a gmf fulltextsearch service.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ngeoToolActivateMgr</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ngeo.ToolActivateMgr.html">ngeo.ToolActivateMgr</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The ngeo ToolActivate</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmfQueryManager</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="gmf.QueryManager.html">gmf.QueryManager</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The gmf query manager service.</p></td>
+            <td class="description last"><p>Main injector.</p></td>
         </tr>
 
     
@@ -400,7 +192,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line48">line 48</a>
+        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -452,6 +244,79 @@ by the HTML page and the controller to provide the configuration.</p>
 
     
         <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="$scope"><span class="type-signature"></span>$scope<span class="type-signature"> :<a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="gmf.AbstractController.html#$scope">gmf.AbstractController#$scope</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line95">line 95</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
 
         
             
@@ -514,7 +379,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line112">line 112</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line101">line 101</a>
     </li></ul></dd>
     
 
@@ -587,7 +452,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line96">line 96</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -664,7 +529,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line124">line 124</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -741,7 +606,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line118">line 118</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -814,7 +679,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line78">line 78</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line67">line 67</a>
     </li></ul></dd>
     
 
@@ -882,7 +747,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line69">line 69</a>
+        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -959,7 +824,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line91">line 91</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line80">line 80</a>
     </li></ul></dd>
     
 
@@ -1032,80 +897,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line84">line 84</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="scope"><span class="type-signature"></span>scope<span class="type-signature"> :<a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
-        <a href="gmf.AbstractController.html#scope">gmf.AbstractController#scope</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line106">line 106</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -1178,7 +970,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line65">line 65</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -1251,7 +1043,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line101">line 101</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -1328,7 +1120,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line57">line 57</a>
+        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line41">line 41</a>
     </li></ul></dd>
     
 
@@ -1396,7 +1188,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line86">line 86</a>
+        <a href="contribs_gmf_src_controllers_abstractdesktop.js.html">contribs/gmf/src/controllers/abstractdesktop.js</a>, <a href="contribs_gmf_src_controllers_abstractdesktop.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
