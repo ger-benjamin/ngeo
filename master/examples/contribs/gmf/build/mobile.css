@@ -9707,6 +9707,9 @@ span.twitter-typeahead input {
   border-radius: 0;
   height: 2.8em;
 }
+.search input::-ms-clear {
+  display: none;
+}
 .search .clear-button {
   position: absolute;
   top: 0;
