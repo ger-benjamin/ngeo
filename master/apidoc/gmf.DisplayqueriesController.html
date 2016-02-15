@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: AbstractController</title>
+    <title>JSDoc: Class: DisplayqueriesController <small>Controller:GmfDisplayqueriesController</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: AbstractController</h1>
+    <h1 class="page-title">Class: DisplayqueriesController <small>Controller:GmfDisplayqueriesController</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="AbstractController">
-            <span class="ancestors">gmf.</span>AbstractController
+        <h2 id="DisplayqueriesController">
+            <span class="ancestors">gmf.</span>DisplayqueriesController
         </h2>
         
     
@@ -42,17 +42,11 @@
 
     
 
-    <h4 class="name" id="AbstractController"><span class="type-signature"></span>new AbstractController<span class="signature">(config, $scope, $injector)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="DisplayqueriesController"><span class="type-signature"></span>new DisplayqueriesController<span class="signature">($scope, ngeoQueryResult, ngeoFeatureOverlayMgr)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>Application abstract cntroller.</p>
-<p>This file includes <code>goog.require</code>'for base components/directives used
-by the HTML page and the controller to provide the configuration.</p>
-</div>
 
 
 
@@ -87,29 +81,6 @@ by the HTML page and the controller to provide the configuration.</p>
 
         <tr>
             
-                <td class="name"><code>config</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="gmfx.html#Config">gmfx.Config</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>A part of the application config.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>$scope</code></td>
             
 
@@ -126,20 +97,20 @@ by the HTML page and the controller to provide the configuration.</p>
 
             
 
-            <td class="description last"><p>Scope.</p></td>
+            <td class="description last"><p>Angular scope.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>$injector</code></td>
+                <td class="name"><code>ngeoQueryResult</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="https://docs.angularjs.org/api/auto/service/$injector">angular.$injector</a></span>
+<span class="param-type"><a href="ngeo.html#QueryResult">ngeo.QueryResult</a></span>
 
 
             
@@ -149,7 +120,31 @@ by the HTML page and the controller to provide the configuration.</p>
 
             
 
-            <td class="description last"><p>Main injector.</p></td>
+            <td class="description last"><p>ngeo query result.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ngeoFeatureOverlayMgr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The ngeo feature
+    overlay manager service.</p></td>
         </tr>
 
     
@@ -192,7 +187,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line34">line 34</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -236,7 +231,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="$scope"><span class="type-signature"></span>$scope<span class="type-signature"> :<a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span></h4>
+<h4 class="name" id="animate"><span class="type-signature"></span>animate<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
 
 
 
@@ -247,7 +242,7 @@ by the HTML page and the controller to provide the configuration.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
 
 
         </li>
@@ -286,7 +281,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line95">line 95</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line162">line 162</a>
     </li></ul></dd>
     
 
@@ -304,14 +299,10 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="defaultLang"><span class="type-signature"></span>defaultLang<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></h4>
+<h4 class="name" id="currentResult"><span class="type-signature"></span>currentResult<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
 
 
 
-
-<div class="description">
-    <p>Default language</p>
-</div>
 
 
 
@@ -319,7 +310,7 @@ by the HTML page and the controller to provide the configuration.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
 
 
         </li>
@@ -358,7 +349,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line101">line 101</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -376,7 +367,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="getBrowserLanguage"><span class="type-signature"></span>getBrowserLanguage<span class="type-signature"> :<a href="ngeo.html#GetBrowserLanguage">ngeo.GetBrowserLanguage</a></span></h4>
+<h4 class="name" id="feature"><span class="type-signature"></span>feature<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span></h4>
 
 
 
@@ -387,7 +378,7 @@ by the HTML page and the controller to provide the configuration.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="ngeo.html#GetBrowserLanguage">ngeo.GetBrowserLanguage</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span>
 
 
         </li>
@@ -426,7 +417,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line85">line 85</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line144">line 144</a>
     </li></ul></dd>
     
 
@@ -444,151 +435,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="gettextCatalog"><span class="type-signature"></span>gettextCatalog<span class="type-signature"> :<a href="https://angular-gettext.rocketeer.be/dev-guide/api/angular-gettext/">angularGettext.Catalog</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>The gettext catalog</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://angular-gettext.rocketeer.be/dev-guide/api/angular-gettext/">angularGettext.Catalog</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line113">line 113</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="langUrls"><span class="type-signature"></span>langUrls<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span></h4>
-
-
-
-
-<div class="description">
-    <p>Languages URL</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line107">line 107</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="leftNavVisible"><span class="type-signature"></span>leftNavVisible<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
+<h4 class="name" id="isNext"><span class="type-signature"></span>isNext<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
@@ -638,7 +485,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line67">line 67</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line156">line 156</a>
     </li></ul></dd>
     
 
@@ -656,79 +503,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="queryActive"><span class="type-signature"></span>queryActive<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>The active state of the ngeo query directive.</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line80">line 80</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="rightNavVisible"><span class="type-signature"></span>rightNavVisible<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
+<h4 class="name" id="open"><span class="type-signature"></span>open<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
@@ -778,7 +553,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line73">line 73</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line168">line 168</a>
     </li></ul></dd>
     
 
@@ -796,7 +571,7 @@ by the HTML page and the controller to provide the configuration.</p>
 
         
             
-<h4 class="name" id="searchDatasources"><span class="type-signature"></span>searchDatasources<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="gmfx.html#SearchDirectiveDatasource">gmfx.SearchDirectiveDatasource</a>></span></h4>
+<h4 class="name" id="source"><span class="type-signature">(nullable) </span>source<span class="type-signature"> :<a href="ngeo.html#QueryResultSource">ngeo.QueryResultSource</a></span></h4>
 
 
 
@@ -807,7 +582,7 @@ by the HTML page and the controller to provide the configuration.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="gmfx.html#SearchDirectiveDatasource">gmfx.SearchDirectiveDatasource</a>></span>
+<span class="param-type"><a href="ngeo.html#QueryResultSource">ngeo.QueryResultSource</a></span>
 
 
         </li>
@@ -846,363 +621,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line54">line 54</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="stateManager"><span class="type-signature"></span>stateManager<span class="type-signature"> :<a href="ngeo.StateManager.html">ngeo.StateManager</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="ngeo.StateManager.html">ngeo.StateManager</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line90">line 90</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="theme"><span class="type-signature"></span>theme<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>A reference to the current theme</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line41">line 41</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~gmfThemes"><span class="type-signature">(inner) </span>gmfThemes<span class="type-signature"> :<a href="gmf.Themes.html">gmf.Themes</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>Themes service</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="gmf.Themes.html">gmf.Themes</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line47">line 47</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~ngeoFeatureOverlayMgr"><span class="type-signature">(inner) </span>ngeoFeatureOverlayMgr<span class="type-signature"> :<a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>The ngeo feature overlay manager service</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line121">line 121</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="~ngeoToolActivateMgr"><span class="type-signature">(inner) </span>ngeoToolActivateMgr<span class="type-signature"> :<a href="ngeo.ToolActivateMgr.html">ngeo.ToolActivateMgr</a></span></h4>
-
-
-
-
-<div class="description">
-    <p>The ngeo ToolActivate manager service.</p>
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="ngeo.ToolActivateMgr.html">ngeo.ToolActivateMgr</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line130">line 130</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line138">line 138</a>
     </li></ul></dd>
     
 
@@ -1229,11 +648,16 @@ by the HTML page and the controller to provide the configuration.</p>
 
     
 
-    <h4 class="name" id="initLanguage"><span class="type-signature"></span>initLanguage<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
+
+<div class="description">
+    <p>Remove the current selected feature and source and remove all features
+from the map.</p>
+</div>
 
 
 
@@ -1278,7 +702,7 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line150">line 150</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line349">line 349</a>
     </li></ul></dd>
     
 
@@ -1309,12 +733,16 @@ by the HTML page and the controller to provide the configuration.</p>
 
     
 
-    <h4 class="name" id="switchLanguage"><span class="type-signature"></span>switchLanguage<span class="signature">(lang)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
+<div class="description">
+    <p>Remove the current selected feature and source and remove all features
+from the map.</p>
+</div>
 
 
 
@@ -1322,54 +750,6 @@ by the HTML page and the controller to provide the configuration.</p>
 
 
 
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>lang</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Language code.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -1407,7 +787,365 @@ by the HTML page and the controller to provide the configuration.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_controllers_abstract.js.html">contribs/gmf/src/controllers/abstract.js</a>, <a href="contribs_gmf_src_controllers_abstract.js.html#line140">line 140</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line338">line 338</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getResultLength"><span class="type-signature"></span>getResultLength<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Get the total count of features in the result of the query.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line277">line 277</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="next"><span class="type-signature"></span>next<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Select the logical next source and feature then highlight this feature on
+the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line259">line 259</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="previous"><span class="type-signature"></span>previous<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Select the logical previous source and feature then highlight this feature on
+the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line242">line 242</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Remove current displayed results then get new results from the
+ngeoQueryResult sevice. Display all results on the map and display,
+highlight the first feature.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line190">line 190</a>
     </li></ul></dd>
     
 

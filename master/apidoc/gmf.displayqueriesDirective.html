@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: QueryManager <small>service:gmfThemes</small></title>
+    <title>JSDoc: Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: QueryManager <small>service:gmfThemes</small></h1>
+    <h1 class="page-title">Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="QueryManager">
-            <span class="ancestors">gmf.</span>QueryManager
+        <h2 id="displayqueriesDirective">
+            <span class="ancestors">gmf.</span>displayqueriesDirective
         </h2>
         
     
@@ -42,12 +42,21 @@
 
     
 
-    <h4 class="name" id="QueryManager"><span class="type-signature"></span>new QueryManager<span class="signature">(ngeoQuery, gmfThemes, gmfWmsUrl)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="displayqueriesDirective"><span class="type-signature"></span>new displayqueriesDirective<span class="signature">(gmfDisplayqueriesTemplateUrl)</span><span class="type-signature"> &rarr; {<a href="https://docs.angularjs.org/guide/directive">angular.Directive</a>}</span></h4>
 
     
 
 
 
+<div class="description">
+    <p>Provide a &quot;gmf display queries&quot; directive.</p>
+<p>This directive displays results of the ngeoQueryResult and shows related
+features on the map using the ngeoFeatureOverlayMgr.</p>
+<p>You can override the default directive's template by setting the value
+'gmfDisplayqueriesTemplateUrl'.</p>
+<p>Features displayed on the map use a default style but you can override these
+styles by passing ol.style.Style objects as attributes of this directive.</p>
+</div>
 
 
 
@@ -56,7 +65,10 @@
 
 
 
-    <h5>Parameters:</h5>
+
+
+
+    <h5>HTML attributes:</h5>
     
 
 <table class="params">
@@ -81,13 +93,13 @@
 
         <tr>
             
-                <td class="name"><code>ngeoQuery</code></td>
+                <td class="name"><code>gmf-displayqueries-featuresstyle</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ngeo.Query.html">ngeo.Query</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
 
 
             
@@ -97,20 +109,21 @@
 
             
 
-            <td class="description last"><p>The ngeo Query service.</p></td>
+            <td class="description last">A style
+    object for all features from the result of the query.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>gmfThemes</code></td>
+                <td class="name"><code>selectedfeaturestyle</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="gmf.Themes.html">gmf.Themes</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
 
 
             
@@ -120,37 +133,13 @@
 
             
 
-            <td class="description last"><p>The gmf Themes service.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmfWmsUrl</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>URL to the wms service to use by default.</p></td>
+            <td class="description last">A style
+    object for the current displayed feature.</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -186,7 +175,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_services_querymanager.js.html">contribs/gmf/src/services/querymanager.js</a>, <a href="contribs_gmf_src_services_querymanager.js.html#line23">line 23</a>
+        <a href="contribs_gmf_src_directives_displayqueries.js.html">contribs/gmf/src/directives/displayqueries.js</a>, <a href="contribs_gmf_src_directives_displayqueries.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -209,6 +198,36 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Directive Definition Object.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="https://docs.angularjs.org/guide/directive">angular.Directive</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>&lt;gmf-displayqueries
+    gmf-displayqueries-featuresstyle="ctrl.styleForAllFeatures"
+    gmf-displayqueries-selectedfeaturestyle="ctrl.styleForTheCurrentFeature">
+&lt;/gmf-displayqueries></code></pre>
 
 
 
