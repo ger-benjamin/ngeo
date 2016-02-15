@@ -110043,6 +110043,30 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
   goog.asserts.assert(goog.isDef(map));
 
   /**
+   * @type {ngeo.LayertreeController}
+   * @export
+   */
+  this.parent = $scope.$parent['layertreeCtrl'];
+
+  /**
+   * @type {number}
+   * @export
+   */
+  this.uid = goog.getUid(this);
+
+  /**
+   * @type {number}
+   * @export
+   */
+  this.depth = isRoot ? 0 : this.parent['depth'] + 1;
+
+  // We set 'uid' and 'depth' in the scope as well to access the parent values
+  // in the inherited scopes. This is intended to be used in the javascript not
+  // in the templates.
+  $scope['uid'] = this.uid;
+  $scope['depth'] = this.depth;
+
+  /**
    * @type {ol.Map}
    * @export
    */
@@ -110066,31 +110090,8 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
    * @export
    */
   this.layer = isRoot ? null : /** @type {ol.layer.Layer} */
-      ($scope.$eval(nodelayerExpr, {'node': this.node}));
+      ($scope.$eval(nodelayerExpr, {'node': this.node, 'depth': this.depth}));
 
-  /**
-   * @type {number}
-   * @export
-   */
-  this.parentUid = $scope.$parent['uid'];
-
-  /**
-   * @type {number}
-   * @export
-   */
-  this.uid = goog.getUid(this);
-
-  /**
-   * @type {number}
-   * @export
-   */
-  this.depth = isRoot ? 0 : $scope.$parent['depth'] + 1;
-
-  // We set 'uid' and 'depth' in the scope as well to access the parent values
-  // in the inherited scopes. This is intended to be used in the javascript not
-  // in the templates.
-  $scope['uid'] = this.uid;
-  $scope['depth'] = this.depth;
 
   var listenersExpr = $attrs['ngeoLayertreeListeners'];
   if (!goog.isDef(listenersExpr)) {
@@ -120239,41 +120240,8 @@ ngeo.LayerHelper = function($q, $http) {
 
 
 /**
- * @const {string}
- * @export
- */
-ngeo.LayerHelper.prototype.helperID = 'helperID';
-
-
-/**
- * Add a HelperID to the given layer. Layers with this ID can be
- * managed by this sevice.
- * @param {ol.layer.Layer} layer The layer that needs an ID.
- * @param {string} layerURL Part of the ID.
- * @param {string} layerName Part of the ID.
- * @export
- */
-ngeo.LayerHelper.prototype.setHelperID = function(layer, layerURL, layerName) {
-  layer.set(this.helperID, this.makeHelperID(layerURL, layerName));
-};
-
-
-/**
- * Return an ID based on two strings ('layerURL_layerName');
- * @param {string} layerURL Part of the ID.
- * @param {string} layerName Part of the ID.
- * @return {string}
- * @export
- */
-ngeo.LayerHelper.prototype.makeHelperID = function(layerURL, layerName) {
-  return layerURL + '_' + layerName;
-};
-
-
-/**
  * Create and return a basic WMS layer with only a source URL and a dot
  * separated layers names (see {@link ol.source.ImageWMS}).
- * This layer will be tagged by a a helperID.
  * @param {string} sourceURL The source URL.
  * @param {string} sourceLayersName A dot separated names string.
  * @return {ol.layer.Image}
@@ -120287,7 +120255,6 @@ ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
       params: {'LAYERS': sourceLayersName}
     })
   });
-  this.setHelperID(layer, sourceURL, sourceLayersName);
   return layer;
 };
 
@@ -120299,7 +120266,6 @@ ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
  * loaded from the given capabilitiesUrl.
  * The style object described in the capabilities for this layer will be added
  * as key 'capabilitiesStyles' as param of the new layer.
- * This layer will be tagged by a helperID.
  * @param {string} capabilitiesURL The getCapabilities url.
  * @param {string} layerName The name of the layer.
  * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
@@ -120310,7 +120276,6 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
     capabilitiesURL, layerName) {
   var parser = new ol.format.WMTSCapabilities();
   var layer = new ol.layer.Tile();
-  this.setHelperID(layer, capabilitiesURL, layerName);
   var $q = this.$q_;
 
   return this.$http_.get(capabilitiesURL).then(function(response) {
@@ -120352,117 +120317,6 @@ ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
     group.setLayers(opt_layers);
   }
   return group;
-};
-
-
-/**
- * Get the position of the layer in the map's layers array or -1 if the layer
- * can't be found.
- * The layer must be tagged by a helperID (return -1 else).
- * @param {ol.Map} map The concerned map.
- * @param {ol.layer.Layer} layer The concerned layer.
- * @return {number} index or -1 if not found.
- * @export
- */
-ngeo.LayerHelper.prototype.getLayerIndex = function(map, layer) {
-  var layerId = layer.get(this.helperID);
-  if (!goog.isDef(layerId)) {
-    return -1;
-  }
-
-  var i, layers = /** @type {Array.<ol.layer.Layer>} */
-      (map.getLayers().getArray());
-  for (i = 0; i < layers.length; i++) {
-    if (layers[i].get(this.helperID) === layerId) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-
-/**
- * Retrieve a layer from the given array of layers and based on the given
- * layers's helperID. Return null if no layer match.
- * @param {Array.<ol.layer.Layer>} layers An array of layers.
- * @param {string} layerID an ID like one created by the setHelperID method
- *   in this service
- * @return {ol.layer.Layer?} layer or null;
- * @export
- */
-ngeo.LayerHelper.prototype.findLayer = function(layers, layerID) {
-  var i, layer;
-  for (i = 0; i < layers.length; i++) {
-    layer = layers[i];
-    if (layer.get(this.helperID) === layerID) {
-      return layer;
-    }
-  }
-  return null;
-};
-
-
-/**
- * Add the given layer on the map if it doesn't already exists and if the layer
- * has a source.
- * The layer must be tagged by a helperID.
- * @param {ol.Map} map The map where add the layer.
- * @param {ol.layer.Layer} layer The concerned layer.
- * @return {boolean} true if added, false else.
- * @export
- */
-ngeo.LayerHelper.prototype.addLayerToMap = function(map, layer) {
-  var added = false;
-  if (layer.getSource()) {
-    var layerIndex = this.getLayerIndex(map, layer);
-    if (layerIndex < 0) {
-      map.addLayer(layer);
-      added = true;
-    }
-  }
-  return added;
-};
-
-
-/**
- * Remove the given layer from the map if it exists.
- * The layer must be tagged by a helperID.
- * @param {ol.Map} map The map on which to remove the layer.
- * @param {ol.layer.Layer} layer The concerned layer.
- * @return {boolean} true if removed, false else.
- * @export
- */
-ngeo.LayerHelper.prototype.removeLayerFromMap = function(map, layer) {
-  var removed = false;
-  var layerToRemove;
-  var layerIndex = this.getLayerIndex(map, layer);
-  if (layerIndex >= 0) {
-    layerToRemove = map.getLayers().getArray()[layerIndex];
-    map.removeLayer(layerToRemove);
-    removed = true;
-  }
-  return removed;
-};
-
-
-/**
- * Add or remove some layers from the map.
- * The layer must be tagged by a helperID.
- * @param {ol.Map} map The concerned map.
- * @param {Array.<ol.layer.Layer>} layers An array of layers.
- * @param {boolean} add True to add the layers, False to remove them.
- * @export
- */
-ngeo.LayerHelper.prototype.moveInOutLayers = function(map, layers, add) {
-  var i, layer;
-  for (i = 0; i < layers.length; i++) {
-    layer = layers[i];
-    if (add) {
-      this.addLayerToMap(map, layer);
-    } else {
-      this.removeLayerFromMap(map, layer);
-    }
-  }
 };
 
 
@@ -121813,6 +121667,7 @@ goog.provide('ngeo.Query');
 goog.require('ngeo');
 goog.require('ol.format.WMSGetFeatureInfo');
 goog.require('ol.source.ImageWMS');
+goog.require('ol.source.TileWMS');
 
 
 /**
@@ -121970,7 +121825,8 @@ ngeo.Query.prototype.addSource = function(source) {
       if (wmsSource &&
           (wmsSource instanceof ol.source.ImageWMS ||
            wmsSource instanceof ol.source.TileWMS)) {
-        source.wmsSource = wmsSource;
+        source.wmsSource =
+            /** @type {ol.source.ImageWMS|ol.source.TileWMS} */ (wmsSource);
       }
     } else {
       var url = source.url;
@@ -122015,9 +121871,14 @@ ngeo.Query.prototype.addSource = function(source) {
 
   var sourceLabel = source.label !== undefined ? source.label : sourceId;
 
+  var sourceIdentifierAttributeField =
+      source.identifierAttributeField !== undefined ?
+      source.identifierAttributeField : sourceId;
+
   var resultSource = /** @type {ngeo.QueryResultSource} */ ({
     'features': [],
     'id': sourceId,
+    'identifierAttributeField': sourceIdentifierAttributeField,
     'label': sourceLabel,
     'pending': false
   });

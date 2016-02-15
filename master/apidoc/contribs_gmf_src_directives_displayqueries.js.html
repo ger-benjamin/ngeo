@@ -114,6 +114,12 @@ gmf.DisplayqueriesController = function($scope, ngeoQueryResult,
     ngeoFeatureOverlayMgr) {
 
   /**
+   * @type {angular.Scope}
+   * @private
+   */
+  this.scope_ = $scope;
+
+  /**
    * @type {ngeo.QueryResult}
    * @private
    */
@@ -169,7 +175,13 @@ gmf.DisplayqueriesController = function($scope, ngeoQueryResult,
    * @type {number}
    * @export
    */
-  this.currentResult = 0;
+  this.currentResult = -1;
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.isNext = true;
 
   /**
    * @type {number}
@@ -183,7 +195,7 @@ gmf.DisplayqueriesController = function($scope, ngeoQueryResult,
    */
   this.open = false;
 
-  $scope.$watchCollection(
+  this.scope_.$watchCollection(
       function() {
         return ngeoQueryResult;
       },
@@ -219,10 +231,12 @@ gmf.DisplayqueriesController.prototype.show = function() {
  * @param {number} position The index of the feature. If the position is bigger
  * @param {boolean} setHighlight True to set the highlight automatically.
  * than the length of the first source, get it in the next source. Etc.
+ * @return {boolean} True if result has changed. False else.
  * @private
  */
 gmf.DisplayqueriesController.prototype.setCurrentResult_ = function(position,
     setHighlight) {
+  var hasChanged = false;
   if (position !== this.currentResult) {
     var i, source, features;
     var lastFeature = this.feature;
@@ -236,6 +250,7 @@ gmf.DisplayqueriesController.prototype.setCurrentResult_ = function(position,
       } else {
         this.source = source;
         this.feature = source.features[position];
+        hasChanged = true;
         break;
       }
     }
@@ -243,6 +258,7 @@ gmf.DisplayqueriesController.prototype.setCurrentResult_ = function(position,
       this.highlightCurrentFeature_(lastFeature);
     }
   }
+  return hasChanged;
 };
 
 
@@ -256,8 +272,10 @@ gmf.DisplayqueriesController.prototype.previous = function() {
   if (position &lt; 0) {
     position = this.getResultLength() - 1;
   }
-  this.setCurrentResult_(position, true);
-  this.animate++;
+  var hasChanged = this.setCurrentResult_(position, true);
+  if (hasChanged) {
+    this.animate_(false);
+  }
 };
 
 
@@ -272,8 +290,10 @@ gmf.DisplayqueriesController.prototype.next = function() {
   if (position > positionMax) {
     position = 0;
   }
-  this.setCurrentResult_(position, true);
-  this.animate--;
+  var hasChanged = this.setCurrentResult_(position, true);
+  if (hasChanged) {
+    this.animate_(true);
+  }
 };
 
 
@@ -284,6 +304,23 @@ gmf.DisplayqueriesController.prototype.next = function() {
  */
 gmf.DisplayqueriesController.prototype.getResultLength = function() {
   return this.ngeoQueryResult_.total;
+};
+
+
+/**
+ * Special function that's used to set the "animation" value after to set the
+ * "isNext" value. The aim is to wait on Angular to add a class (corresponding
+ * to "isNext") on the DOM before to set the "animation" value and do the
+ * animation.
+ * @param {boolean} isNext used to indicate if the user want to see the next
+ * or the previopus result.
+ * @private
+ */
+gmf.DisplayqueriesController.prototype.animate_ = function(isNext) {
+  this.isNext = isNext;
+  this.scope_.$evalAsync(angular.bind(this, function() {
+    this.animate++;
+  }));
 };
 
 

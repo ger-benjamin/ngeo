@@ -77,23 +77,38 @@
       .displayqueries .slide-animation.ng-enter, .slide-animation.ng-leave {
         transition: 0.3s ease-in all;
       }
-      .displayqueries .slide-animation.ng-enter {
+      /* Left to right animation */
+      .displayqueries .next .slide-animation.ng-enter {
         left: 100%;
       }
-      .displayqueries .slide-animation.ng-enter-active {
+      .displayqueries .next .slide-animation.ng-enter-active {
         left: 0;
       }
-      .displayqueries .slide-animation.ng-leave {
+      .displayqueries .next .slide-animation.ng-leave {
         left: 0;
       }
-      .displayqueries .slide-animation.ng-leave-active {
+      .displayqueries .next .slide-animation.ng-leave-active {
         left: -100%;
+      }
+      /* Right to left animation */
+      .displayqueries .previous .slide-animation.ng-enter {
+        left: -100%;
+      }
+      .displayqueries .previous .slide-animation.ng-enter-active {
+        left: 0;
+      }
+      .displayqueries .previous .slide-animation.ng-leave {
+        left: 0;
+      }
+      .displayqueries .previous .slide-animation.ng-leave-active {
+        left: 100%;
       }
       .displayqueries .header .title {
         font-weight: bold;
       }
       .displayqueries .header .subtitle {
         margin-left: 10px;
+        height: 2ex;
       }
       .displayqueries .details {
         height: 65%;
@@ -215,7 +230,7 @@
       .treenode .state.indeterminate:before {
         content: "\f147";
       }
- 
+
     </style>
   </head>
   <body ng-controller="MainController as ctrl">
