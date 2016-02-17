@@ -11,7 +11,6 @@ app.module = angular.module('app', ['gmf']);
 app.module.constant('gmfTreeUrl', 'data/themes.json');
 
 
-
 /**
  * @constructor
  * @param {angular.$http} $http Angular's $http service.
@@ -21,15 +20,11 @@ app.module.constant('gmfTreeUrl', 'data/themes.json');
 app.MainController = function($http, gmfThemes) {
 
   /**
-   * @type {Function}
+   * @param {Object} theme Theme.
+   * @return {boolean} Theme is 'Enseignement'
    * @export
    */
-  this.filter =
-      /**
-       * @param {Object} theme
-       * @return {boolean}
-       */
-      function(theme) {
+  this.filter = function(theme) {
     return theme.name !== 'Enseignement';
   };
 

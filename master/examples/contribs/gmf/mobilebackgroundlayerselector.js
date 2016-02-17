@@ -15,7 +15,6 @@ app.module.constant(
         'version=2&background=background');
 
 
-
 /**
  * @param {gmf.Themes} gmfThemes Themes service.
  * @constructor

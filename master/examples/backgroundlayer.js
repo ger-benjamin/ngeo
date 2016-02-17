@@ -39,7 +39,6 @@ app.backgroundlayerDirective = function() {
 app.module.directive('appBackgroundlayer', app.backgroundlayerDirective);
 
 
-
 /**
  * @constructor
  * @param {angular.$http} $http Angular http service.
@@ -116,7 +115,6 @@ app.BackgroundlayerController.prototype.getLayer_ = function(layerName) {
 
 app.module.controller('AppBackgroundlayerController',
     app.BackgroundlayerController);
-
 
 
 /**

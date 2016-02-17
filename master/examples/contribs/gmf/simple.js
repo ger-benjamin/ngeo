@@ -9,7 +9,6 @@ var app = {};
 app.module = angular.module('app', ['gmf']);
 
 
-
 /**
  * @constructor
  */

@@ -108500,7 +108500,6 @@ goog.provide('ngeo.profile');
 goog.require('goog.object');
 
 
-
 /**
  * Provides a D3js component to be used to draw an elevation
  * profile chart.
@@ -108537,8 +108536,8 @@ goog.require('goog.object');
  *     ]
  *
  * @constructor
- * @return {Object}
- * @param {ngeox.profile.ProfileOptions} options
+ * @return {Object} D3js component.
+ * @param {ngeox.profile.ProfileOptions} options Profile options.
  * @export
  */
 ngeo.profile = function(options) {
@@ -108554,14 +108553,6 @@ ngeo.profile = function(options) {
    */
   var margin = light ? {top: 0, right: 0, bottom: 0, left: 0} :
       {top: 10, right: 20, bottom: 30, left: 40};
-
-  /**
-   * Method to get the coordinate in pixels from a distance.
-   */
-  var bisectDistance = d3.bisector(function(d) {
-    return elevationExtractor.dist(d);
-  }).left;
-
 
   /**
    * Hover callback function.
@@ -108581,6 +108572,13 @@ ngeo.profile = function(options) {
    * Elevation data extractor used to get the dist and elevation values.
    */
   var elevationExtractor = options.elevationExtractor;
+
+  /**
+   * Method to get the coordinate in pixels from a distance.
+   */
+  var bisectDistance = d3.bisector(function(d) {
+    return elevationExtractor.dist(d);
+  }).left;
 
   /**
    * POI data extractor.
@@ -108603,23 +108601,37 @@ ngeo.profile = function(options) {
    */
   var formatter = {
     /**
-     * @return {string}
+     * @param {number} dist Distance.
+     * @param {string} units Units.
+     * @return {string} Distance.
      */
     xhover: function(dist, units) {
       return parseFloat(dist.toPrecision(3)) + ' ' + units;
     },
     /**
-     * @return {string}
+     * @param {number} ele Elevation.
+     * @param {string} units Units.
+     * @return {string} Elevation.
      */
-    yhover: function(ele, units) { return Math.round(ele) + ' m'; },
+    yhover: function(ele, units) {
+      return Math.round(ele) + ' m';
+    },
     /**
-     * @return {string|number}
+     * @param {number} dist Distance.
+     * @param {string} units Units.
+     * @return {string|number} Distance.
      */
-    xtick: function(dist, units) { return dist; },
+    xtick: function(dist, units) {
+      return dist;
+    },
     /**
-     * @return {string|number}
+     * @param {number} ele Elevation.
+     * @param {string} units Units.
+     * @return {string|number} Elevation.
      */
-    ytick: function(ele, units) { return ele; }
+    ytick: function(ele, units) {
+      return ele;
+    }
   };
 
   if (goog.isDef(options.formatter)) {
@@ -108701,12 +108713,20 @@ ngeo.profile = function(options) {
           .orient('left');
 
       var area = d3.svg.area()
-          .x(function(d) { return x(extractor.dist(d)); })
+          .x(function(d) {
+            return x(extractor.dist(d));
+          })
           .y0(height)
-          .y1(function(d) { return y(extractor.z(d)); });
+          .y1(function(d) {
+            return y(extractor.z(d));
+          });
       var line = d3.svg.line()
-          .x(function(d) { return x(extractor.dist(d)); })
-          .y(function(d) { return y(extractor.z(d)); });
+          .x(function(d) {
+            return x(extractor.dist(d));
+          })
+          .y(function(d) {
+            return y(extractor.z(d));
+          });
 
       // Select the svg element, if it exists.
       svg = d3.select(this).selectAll('svg').data([data]);
@@ -108785,10 +108805,14 @@ ngeo.profile = function(options) {
           .attr('transform', 'translate(' + margin.left + ',' +
               margin.top + ')');
 
-      xDomain = d3.extent(data, function(d) { return extractor.dist(d); });
+      xDomain = d3.extent(data, function(d) {
+        return extractor.dist(d);
+      });
       x.domain(xDomain);
 
-      var yDomain = d3.extent(data, function(d) { return extractor.z(d); });
+      var yDomain = d3.extent(data, function(d) {
+        return extractor.z(d);
+      });
       y.domain(yDomain);
 
       // set the ratio according to the horizontal distance
@@ -108983,28 +109007,36 @@ ngeo.profile = function(options) {
 
     p.selectAll('text')
       .attr('transform', function(d) {
-          if (light) {
-            return ['translate(',
-              x(pe.dist(d)), ',',
-              y(pe.z(d)) - 10, ')'
-            ].join('');
-          } else {
-            return ['translate(',
-              x(pe.dist(d)), ',',
-              y(pe.z(d)) - 20, ') rotate(', poiLabelAngle, ')'
-            ].join('');
-          }
-        })
+        if (light) {
+          return ['translate(',
+            x(pe.dist(d)), ',',
+            y(pe.z(d)) - 10, ')'
+          ].join('');
+        } else {
+          return ['translate(',
+            x(pe.dist(d)), ',',
+            y(pe.z(d)) - 20, ') rotate(', poiLabelAngle, ')'
+          ].join('');
+        }
+      })
       .text(function(d) {
-          return pe.sort(d) + (light ? '' : (' - ' + pe.title(d)));
-        });
+        return pe.sort(d) + (light ? '' : (' - ' + pe.title(d)));
+      });
 
     p.selectAll('line')
        .style('stroke', 'grey')
-       .attr('x1', function(d) { return x(pe.dist(d));})
-       .attr('y1', function(d) { return y(y.domain()[0]);})
-       .attr('x2', function(d) { return x(pe.dist(d));})
-       .attr('y2', function(d) { return y(pe.z(d));});
+       .attr('x1', function(d) {
+         return x(pe.dist(d));
+       })
+       .attr('y1', function(d) {
+         return y(y.domain()[0]);
+       })
+       .attr('x2', function(d) {
+         return x(pe.dist(d));
+       })
+       .attr('y2', function(d) {
+         return y(pe.z(d));
+       });
 
     // remove unused pois
     p.exit().remove();
@@ -109100,7 +109132,6 @@ ngeo.btngroupDirective = function($parse) {
 
 
 ngeo.module.directive('ngeoBtnGroup', ngeo.btngroupDirective);
-
 
 
 /**
@@ -109334,7 +109365,6 @@ goog.require('ol.style.StyleFunction');
 ngeo.FeatureOverlayGroup;
 
 
-
 /**
  * Provides a service that wraps an "unmanaged" vector layer,
  * used as a shared vector layer accross the application.
@@ -109487,15 +109517,13 @@ ngeo.FeatureOverlayMgr.prototype.setStyle = function(style, groupIndex) {
  * @return {Array.<ol.style.Style>|ol.style.Style} Styles.
  * @private
  */
-ngeo.FeatureOverlayMgr.prototype.styleFunction_ =
-    function(feature, resolution) {
+ngeo.FeatureOverlayMgr.prototype.styleFunction_ = function(feature, resolution) {
   var featureUid = goog.getUid(feature).toString();
   goog.asserts.assert(featureUid in this.featureUidToGroupIndex_);
   var groupIndex = this.featureUidToGroupIndex_[featureUid];
   var group = this.groups_[groupIndex];
   return group.styleFunction(feature, resolution);
 };
-
 
 
 /**
@@ -109654,7 +109682,6 @@ ngeo.desktopGeolocationDirective = function() {
 
 ngeo.module.directive('ngeoDesktopGeolocation',
     ngeo.desktopGeolocationDirective);
-
 
 
 /**
@@ -109881,6 +109908,7 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
     /**
      * @param {angular.JQLite} element Element.
      * @param {angular.Attributes} attrs Attributes.
+     * @return {boolean} Template URL.
      */
     function(element, attrs) {
       var templateUrl = attrs['ngeoLayertreeTemplateurl'];
@@ -109955,49 +109983,41 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  * @ngdoc directive
  * @ngname ngeoLayertree
  */
-ngeo.layertreeDirective = function(
-    $compile, ngeoLayertreeTemplateUrl) {
+ngeo.layertreeDirective = function($compile, ngeoLayertreeTemplateUrl) {
   return {
     restrict: 'A',
     scope: true,
     templateUrl: ngeoLayertreeTemplateUrl,
     controller: 'NgeoLayertreeController',
-    compile:
+    compile: function(tElement, tAttrs) {
+      var contents = tElement.contents().remove();
+      var compiledContents;
+      return (
         /**
-         * @param {angular.JQLite} tElement Template element.
-         * @param {angular.Attributes} tAttrs Template attributes.
-         * @return {Function} Post-link function.
+         * Post-link function.
+         * @param {!angular.Scope} scope Scope.
+         * @param {angular.JQLite} iElement Instance element.
+         * @param {angular.Attributes} iAttrs Instance attributes.
          */
-        function(tElement, tAttrs) {
-          var contents = tElement.contents().remove();
-          var compiledContents;
-          return (
-              /**
-               * Post-link function.
-               * @param {!angular.Scope} scope Scope.
-               * @param {angular.JQLite} iElement Instance element.
-               * @param {angular.Attributes} iAttrs Instance attributes.
-               */
-              function(scope, iElement, iAttrs) {
-                if (!compiledContents) {
-                  compiledContents = $compile(contents);
-                }
-                compiledContents(scope,
-                    /**
-                     * @param {Object} clone Clone element.
-                     */
-                    function(clone) {
-                      var cloneElement = /** @type {angular.JQLite} */ (clone);
-                      iElement.append(cloneElement);
-                    });
-              });
-        }
+        function(scope, iElement, iAttrs) {
+          if (!compiledContents) {
+            compiledContents = $compile(contents);
+          }
+          compiledContents(scope,
+            /**
+             * @param {Object} clone Clone element.
+             */
+            function(clone) {
+              var cloneElement = /** @type {angular.JQLite} */ (clone);
+              iElement.append(cloneElement);
+            });
+        });
+    }
   };
 };
 
 
 ngeo.module.directive('ngeoLayertree', ngeo.layertreeDirective);
-
 
 
 /**
@@ -110135,8 +110155,7 @@ ngeo.LayertreeController.prototype.getSetActive = function(val) {
 };
 
 
-ngeo.module.controller('NgeoLayertreeController',
-    ngeo.LayertreeController);
+ngeo.module.controller('NgeoLayertreeController', ngeo.LayertreeController);
 
 goog.provide('ngeo.mapDirective');
 
@@ -110220,7 +110239,6 @@ ngeo.mobileGeolocationDirective = function() {
 
 
 ngeo.module.directive('ngeoMobileGeolocation', ngeo.mobileGeolocationDirective);
-
 
 
 /**
@@ -110481,7 +110499,6 @@ ngeo.module.value('ngeoQueryResult', {
 });
 
 
-
 /**
  * The Query service provides a way to send WMS GetFeatureInfo requests from
  * visible layer objects within a map. Those do not necessarily need to have
@@ -110635,9 +110652,14 @@ ngeo.Query.prototype.addSource = function(source) {
 
   var sourceLabel = source.label !== undefined ? source.label : sourceId;
 
+  var sourceIdentifierAttributeField =
+      source.identifierAttributeField !== undefined ?
+      source.identifierAttributeField : sourceId;
+
   var resultSource = /** @type {ngeo.QueryResultSource} */ ({
     'features': [],
     'id': sourceId,
+    'identifierAttributeField': sourceIdentifierAttributeField,
     'label': sourceLabel,
     'pending': false
   });
@@ -110764,10 +110786,7 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
     var layers = items[0].source.wmsSource.getParams()['LAYERS'].split(',');
 
     wmsGetFeatureInfoUrl = items[0].source.wmsSource.getGetFeatureInfoUrl(
-        coordinate,
-        resolution,
-        projCode,
-        {
+        coordinate, resolution, projCode, {
           'INFO_FORMAT': infoFormat,
           'FEATURE_COUNT': this.limit_
         });
@@ -110876,7 +110895,6 @@ ngeo.mobileQueryDirective = function() {
 
 
 ngeo.module.directive('ngeoMobileQuery', ngeo.mobileQueryDirective);
-
 
 
 /**
@@ -111057,6 +111075,7 @@ ngeo.module.value('ngeoPopupTemplateUrl',
     /**
      * @param {angular.JQLite} element Element.
      * @param {angular.Attributes} attrs Attributes.
+     * @return {string} Template URL.
      */
     function(element, attrs) {
       var templateUrl = attrs['ngeoPopupTemplateurl'];
@@ -111099,6 +111118,9 @@ ngeo.popupDirective = function(ngeoPopupTemplateUrl) {
         function(scope, element, attrs) {
           element.addClass('popover');
 
+          /**
+           * @param {jQuery.Event} evt Event.
+           */
           scope.close = function(evt) {
             if (evt) {
               evt.stopPropagation();
@@ -114411,6 +114433,7 @@ ngeo.module.value('ngeoScaleselectorTemplateUrl',
     /**
      * @param {angular.JQLite} element Element.
      * @param {angular.Attributes} attrs Attributes.
+     * @return {string} Template URL.
      */
     function(element, attrs) {
       var templateUrl = attrs['ngeoScaleselectorTemplateurl'];
@@ -114481,7 +114504,6 @@ ngeo.scaleselectorDirective = function(ngeoScaleselectorTemplateUrl) {
 
 
 ngeo.module.directive('ngeoScaleselector', ngeo.scaleselectorDirective);
-
 
 
 /**
@@ -114647,8 +114669,7 @@ ngeo.ScaleselectorController.prototype.handleViewChange_ = function(e) {
 /**
  * @private
  */
-ngeo.ScaleselectorController.prototype.registerResolutionChangeListener_ =
-    function() {
+ngeo.ScaleselectorController.prototype.registerResolutionChangeListener_ = function() {
   if (!goog.isNull(this.resolutionChangeKey_)) {
     ol.events.unlistenByKey(this.resolutionChangeKey_);
   }
@@ -118173,7 +118194,6 @@ ngeo.format.FeatureHashStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
     ngeo.format.FeatureHashStyleType.POLYGON;
 
 
-
 /**
  * @classdesc
  * Provide an OpenLayers format for encoding and decoding features for use
@@ -118311,8 +118331,7 @@ ngeo.format.FeatureHash.encodeNumber_ = function(num) {
  * @param {Array.<string>} encodedStyles Encoded styles array.
  * @private
  */
-ngeo.format.FeatureHash.encodeStyles_ =
-    function(styles, geometryType, encodedStyles) {
+ngeo.format.FeatureHash.encodeStyles_ = function(styles, geometryType, encodedStyles) {
   var styleType = ngeo.format.FeatureHashStyleTypes_[geometryType];
   goog.asserts.assert(goog.isDef(styleType));
   for (var i = 0; i < styles.length; ++i) {
@@ -118349,8 +118368,7 @@ ngeo.format.FeatureHash.encodeStyles_ =
  * @param {Array.<string>} encodedStyles Encoded styles array.
  * @private
  */
-ngeo.format.FeatureHash.encodeStyleLine_ =
-    function(strokeStyle, encodedStyles) {
+ngeo.format.FeatureHash.encodeStyleLine_ = function(strokeStyle, encodedStyles) {
   ngeo.format.FeatureHash.encodeStyleStroke_(strokeStyle, encodedStyles);
 };
 
@@ -118362,8 +118380,7 @@ ngeo.format.FeatureHash.encodeStyleLine_ =
  * @param {Array.<string>} encodedStyles Encoded styles array.
  * @private
  */
-ngeo.format.FeatureHash.encodeStylePoint_ =
-    function(imageStyle, encodedStyles) {
+ngeo.format.FeatureHash.encodeStylePoint_ = function(imageStyle, encodedStyles) {
   if (imageStyle instanceof ol.style.Circle) {
     var radius = imageStyle.getRadius();
     if (encodedStyles.length > 0) {
@@ -118391,8 +118408,7 @@ ngeo.format.FeatureHash.encodeStylePoint_ =
  * @param {Array.<string>} encodedStyles Encoded styles array.
  * @private
  */
-ngeo.format.FeatureHash.encodeStylePolygon_ =
-    function(fillStyle, strokeStyle, encodedStyles) {
+ngeo.format.FeatureHash.encodeStylePolygon_ = function(fillStyle, strokeStyle, encodedStyles) {
   ngeo.format.FeatureHash.encodeStyleFill_(fillStyle, encodedStyles);
   if (!goog.isNull(strokeStyle)) {
     ngeo.format.FeatureHash.encodeStyleStroke_(strokeStyle, encodedStyles);
@@ -118409,8 +118425,7 @@ ngeo.format.FeatureHash.encodeStylePolygon_ =
  * @param {string=} opt_propertyName Property name.
  * @private
  */
-ngeo.format.FeatureHash.encodeStyleFill_ =
-    function(fillStyle, encodedStyles, opt_propertyName) {
+ngeo.format.FeatureHash.encodeStyleFill_ = function(fillStyle, encodedStyles, opt_propertyName) {
   var propertyName = goog.isDef(opt_propertyName) ?
       opt_propertyName : 'fillColor';
   var fillColor = fillStyle.getColor();
@@ -118433,8 +118448,7 @@ ngeo.format.FeatureHash.encodeStyleFill_ =
  * @param {Array.<string>} encodedStyles Encoded styles array.
  * @private
  */
-ngeo.format.FeatureHash.encodeStyleStroke_ =
-    function(strokeStyle, encodedStyles) {
+ngeo.format.FeatureHash.encodeStyleStroke_ = function(strokeStyle, encodedStyles) {
   var strokeColor = strokeStyle.getColor();
   if (!goog.isNull(strokeColor)) {
     var strokeColorRgba = ol.color.asArray(strokeColor);
@@ -118798,8 +118812,7 @@ ngeo.format.FeatureHash.writeMultiPointGeometry_ = function(geometry) {
  * @this {ngeo.format.FeatureHash}
  * @private
  */
-ngeo.format.FeatureHash.encodeRings_ =
-    function(flatCoordinates, stride, offset, ends, textArray) {
+ngeo.format.FeatureHash.encodeRings_ = function(flatCoordinates, stride, offset, ends, textArray) {
   var linearRingCount = ends.length;
   for (var i = 0; i < linearRingCount; ++i) {
     // skip the "closing" point
@@ -118904,8 +118917,7 @@ ngeo.format.FeatureHash.GEOMETRY_WRITERS_ = {
  * @return {Array.<number>} Flat coordinates.
  * @private
  */
-ngeo.format.FeatureHash.prototype.decodeCoordinates_ =
-    function(text, opt_flatCoordinates) {
+ngeo.format.FeatureHash.prototype.decodeCoordinates_ = function(text, opt_flatCoordinates) {
   var len = text.length;
   var index = 0;
   var flatCoordinates = goog.isDef(opt_flatCoordinates) ?
@@ -118949,8 +118961,7 @@ ngeo.format.FeatureHash.prototype.decodeCoordinates_ =
  * @return {string} String.
  * @private
  */
-ngeo.format.FeatureHash.prototype.encodeCoordinates_ =
-    function(flatCoordinates, stride, offset, end) {
+ngeo.format.FeatureHash.prototype.encodeCoordinates_ = function(flatCoordinates, stride, offset, end) {
   var encodedCoordinates = '';
   for (var i = offset; i < end; i += stride) {
     var x = flatCoordinates[i];
@@ -118972,11 +118983,10 @@ ngeo.format.FeatureHash.prototype.encodeCoordinates_ =
  * Read a feature from a logical sequence of characters.
  * @param {string} text Text.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {ol.Feature}
+ * @return {ol.Feature} Feature.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.readFeatureFromText =
-    function(text, opt_options) {
+ngeo.format.FeatureHash.prototype.readFeatureFromText = function(text, opt_options) {
   goog.asserts.assert(text.length > 2);
   goog.asserts.assert(text[1] === '(');
   goog.asserts.assert(text[text.length - 1] === ')');
@@ -119012,11 +119022,10 @@ ngeo.format.FeatureHash.prototype.readFeatureFromText =
  * Read multiple features from a logical sequence of characters.
  * @param {string} text Text.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {Array.<ol.Feature>}
+ * @return {Array.<ol.Feature>} Features.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.readFeaturesFromText =
-    function(text, opt_options) {
+ngeo.format.FeatureHash.prototype.readFeaturesFromText = function(text, opt_options) {
   goog.asserts.assert(text[0] === 'F');
   /** @type {Array.<ol.Feature>} */
   var features = [];
@@ -119037,11 +119046,10 @@ ngeo.format.FeatureHash.prototype.readFeaturesFromText =
  * Read a geometry from a logical sequence of characters.
  * @param {string} text Text.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {ol.geom.Geometry}
+ * @return {ol.geom.Geometry} Geometry.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.readGeometryFromText =
-    function(text, opt_options) {
+ngeo.format.FeatureHash.prototype.readGeometryFromText = function(text, opt_options) {
   var geometryReader = ngeo.format.FeatureHash.GEOMETRY_READERS_[text[0]];
   goog.asserts.assert(goog.isDef(geometryReader));
   this.prevX_ = 0;
@@ -119054,11 +119062,10 @@ ngeo.format.FeatureHash.prototype.readGeometryFromText =
  * Encode a feature into a logical sequence of characters.
  * @param {ol.Feature} feature Feature.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {string}
+ * @return {string} Encoded feature.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.writeFeatureText =
-    function(feature, opt_options) {
+ngeo.format.FeatureHash.prototype.writeFeatureText = function(feature, opt_options) {
   var /** @type {Array.<string>} */ encodedParts = [];
 
   // encode geometry
@@ -119131,11 +119138,10 @@ ngeo.format.FeatureHash.prototype.writeFeatureText =
  * Encode an array of features into a logical sequence of characters.
  * @param {Array.<ol.Feature>} features Feature.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {string}
+ * @return {string} Encoded features.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.writeFeaturesText =
-    function(features, opt_options) {
+ngeo.format.FeatureHash.prototype.writeFeaturesText = function(features, opt_options) {
   var textArray = [];
   if (features.length > 0) {
     textArray.push('F');
@@ -119151,11 +119157,10 @@ ngeo.format.FeatureHash.prototype.writeFeaturesText =
  * Encode a geometry into a logical sequence of characters.
  * @param {ol.geom.Geometry} geometry Geometry.
  * @param {olx.format.ReadOptions=} opt_options Read options.
- * @return {string}
+ * @return {string} Encoded geometry.
  * @protected
  */
-ngeo.format.FeatureHash.prototype.writeGeometryText =
-    function(geometry, opt_options) {
+ngeo.format.FeatureHash.prototype.writeGeometryText = function(geometry, opt_options) {
   var geometryWriter = ngeo.format.FeatureHash.GEOMETRY_WRITERS_[
       geometry.getType()];
   goog.asserts.assert(goog.isDef(geometryWriter));
@@ -119210,7 +119215,6 @@ ngeo.MeasureEventType = {
 };
 
 
-
 /**
  * @classdesc
  * Events emitted by {@link ngeo.interaction.Interaction} instances are
@@ -119235,7 +119239,6 @@ ngeo.MeasureEvent = function(type, feature) {
 
 };
 goog.inherits(ngeo.MeasureEvent, ol.events.Event);
-
 
 
 /**
@@ -119299,6 +119302,22 @@ ngeo.interaction.Measure = function(opt_options) {
   this.continueMsg = null;
 
   /**
+   * Defines the number of decimals to keep in the measurement. If not defined,
+   * then the default behaviour occurs depending on the measure type.
+   * @type {?number}
+   * @protected
+   */
+  this.decimals = options.decimals !== undefined ? options.decimals : null;
+
+  /**
+   * Whether or not to display any tooltip
+   * @type {boolean}
+   * @private
+   */
+  this.displayHelpTooltip_ = goog.isDef(options.displayHelpTooltip) ?
+      options.displayHelpTooltip : true;
+
+  /**
    * The message to show when user is about to start drawing.
    * @type {Element}
    */
@@ -119345,12 +119364,21 @@ ngeo.interaction.Measure = function(opt_options) {
 
   /**
    * The draw interaction to be used.
-   * @type {ol.interaction.Draw|ngeo.interaction.DrawAzimut}
+   * @type {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
    * @private
    */
-  this.drawInteraction_ = this.getDrawInteraction(options.sketchStyle,
+  this.drawInteraction_ = this.createDrawInteraction(options.sketchStyle,
       this.vectorLayer_.getSource());
 
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.shouldHandleDrawInteractionActiveChange_ = true;
+
+  ol.events.listen(this.drawInteraction_,
+      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
+      this.handleDrawInteractionActiveChange_, this);
   ol.events.listen(this.drawInteraction_,
       ol.interaction.DrawEventType.DRAWSTART, this.onDrawStart_, this);
   ol.events.listen(this.drawInteraction_,
@@ -119368,19 +119396,30 @@ goog.inherits(ngeo.interaction.Measure, ol.interaction.Interaction);
  * of the area.
  * @param {ol.geom.Polygon} polygon Polygon.
  * @param {ol.proj.Projection} projection Projection of the polygon coords.
+ * @param {?number} decimals Decimals.
  * @return {string} Formatted string of the area.
  */
-ngeo.interaction.Measure.getFormattedArea = function(polygon, projection) {
+ngeo.interaction.Measure.getFormattedArea = function(
+    polygon, projection, decimals) {
   var geom = /** @type {ol.geom.Polygon} */ (
       polygon.clone().transform(projection, 'EPSG:4326'));
   var coordinates = geom.getLinearRing(0).getCoordinates();
   var area = Math.abs(ol.sphere.WGS84.geodesicArea(coordinates));
   var output;
   if (area > 1000000) {
-    output = parseFloat((area / 1000000).toPrecision(3)) +
-        ' ' + 'km<sup>2</sup>';
+    if (decimals !== null) {
+      output = goog.string.padNumber(area / 1000000, 0, decimals);
+    } else {
+      output = parseFloat((area / 1000000).toPrecision(3));
+    }
+    output += ' ' + 'km<sup>2</sup>';
   } else {
-    output = parseFloat(area.toPrecision(3)) + ' ' + 'm<sup>2</sup>';
+    if (decimals !== null) {
+      output = goog.string.padNumber(area, 0, decimals);
+    } else {
+      output = parseFloat(area.toPrecision(3));
+    }
+    output += ' ' + 'm<sup>2</sup>';
   }
   return output;
 };
@@ -119391,10 +119430,11 @@ ngeo.interaction.Measure.getFormattedArea = function(polygon, projection) {
  * string of the length.
  * @param {ol.geom.LineString} lineString Line string.
  * @param {ol.proj.Projection} projection Projection of the line string coords.
+ * @param {?number} decimals Decimals.
  * @return {string} Formatted string of length.
  */
-ngeo.interaction.Measure.getFormattedLength =
-    function(lineString, projection) {
+ngeo.interaction.Measure.getFormattedLength = function(lineString, projection,
+    decimals) {
   var length = 0;
   var coordinates = lineString.getCoordinates();
   for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
@@ -119404,13 +119444,40 @@ ngeo.interaction.Measure.getFormattedLength =
   }
   var output;
   if (length > 1000) {
-    output = parseFloat((length / 1000).toPrecision(3)) +
-        ' ' + 'km';
+    if (decimals !== null) {
+      output = goog.string.padNumber(length / 1000, 0, decimals);
+    } else {
+      output = parseFloat((length / 1000).toPrecision(3));
+    }
+    output += ' ' + 'km';
   } else {
-    output = parseFloat(length.toPrecision(3)) +
-        ' ' + 'm';
+    if (decimals !== null) {
+      output = goog.string.padNumber(length, 0, decimals);
+    } else {
+      output = parseFloat(length.toPrecision(3));
+    }
+    output += ' ' + 'm';
   }
   return output;
+};
+
+
+/**
+ * Return a formatted string of the point.
+ * @param {ol.geom.Point} point Point.
+ * @param {ol.proj.Projection} projection Projection of the line string coords.
+ * @param {?number} decimals Decimals.
+ * @return {string} Formatted string of coordinate.
+ */
+ngeo.interaction.Measure.getFormattedPoint = function(
+    point, projection, decimals) {
+  var coordinates = point.getCoordinates();
+  var x = coordinates[0];
+  var y = coordinates[1];
+  decimals = decimals !== null ? decimals : 0;
+  x = goog.string.padNumber(x, 0, decimals);
+  y = goog.string.padNumber(y, 0, decimals);
+  return ['X: ', x, ', Y: ', y].join('');
 };
 
 
@@ -119431,11 +119498,22 @@ ngeo.interaction.Measure.handleEvent_ = function(evt) {
     helpMsg = this.continueMsg;
   }
 
-  goog.dom.removeChildren(this.helpTooltipElement_);
-  goog.dom.appendChild(this.helpTooltipElement_, helpMsg);
-  this.helpTooltipOverlay_.setPosition(evt.coordinate);
+  if (this.displayHelpTooltip_) {
+    goog.dom.removeChildren(this.helpTooltipElement_);
+    goog.dom.appendChild(this.helpTooltipElement_, helpMsg);
+    this.helpTooltipOverlay_.setPosition(evt.coordinate);
+  }
 
   return true;
+};
+
+
+/**
+ * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw} The draw interaction.
+ * @export
+ */
+ngeo.interaction.Measure.prototype.getDrawInteraction = function() {
+  return this.drawInteraction_;
 };
 
 
@@ -119444,10 +119522,10 @@ ngeo.interaction.Measure.handleEvent_ = function(evt) {
  * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined}
  *     style The sketchStyle used for the drawing interaction.
  * @param {ol.source.Vector} source Vector source.
- * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut}
+ * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
  * @protected
  */
-ngeo.interaction.Measure.prototype.getDrawInteraction = goog.abstractMethod;
+ngeo.interaction.Measure.prototype.createDrawInteraction = goog.abstractMethod;
 
 
 /**
@@ -119471,7 +119549,7 @@ ngeo.interaction.Measure.prototype.setMap = function(map) {
 
 /**
  * Handle draw interaction `drawstart` event.
- * @param {ol.interaction.DrawEvent} evt
+ * @param {ol.interaction.DrawEvent} evt Event.
  * @private
  */
 ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
@@ -119480,6 +119558,7 @@ ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
   this.createMeasureTooltip_();
 
   var geometry = this.sketchFeature.getGeometry();
+
   goog.asserts.assert(goog.isDef(geometry));
   this.changeEventKey_ = ol.events.listen(geometry,
       ol.events.EventType.CHANGE,
@@ -119496,7 +119575,7 @@ ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
 
 /**
  * Handle draw interaction `drawend` event.
- * @param {ol.interaction.DrawEvent} evt
+ * @param {ol.interaction.DrawEvent} evt Event.
  * @private
  */
 ngeo.interaction.Measure.prototype.onDrawEnd_ = function(evt) {
@@ -119517,14 +119596,16 @@ ngeo.interaction.Measure.prototype.onDrawEnd_ = function(evt) {
  */
 ngeo.interaction.Measure.prototype.createHelpTooltip_ = function() {
   this.removeHelpTooltip_();
-  this.helpTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
-  goog.dom.classlist.add(this.helpTooltipElement_, 'tooltip');
-  this.helpTooltipOverlay_ = new ol.Overlay({
-    element: this.helpTooltipElement_,
-    offset: [15, 0],
-    positioning: 'center-left'
-  });
-  this.getMap().addOverlay(this.helpTooltipOverlay_);
+  if (this.displayHelpTooltip_) {
+    this.helpTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
+    goog.dom.classlist.add(this.helpTooltipElement_, 'tooltip');
+    this.helpTooltipOverlay_ = new ol.Overlay({
+      element: this.helpTooltipElement_,
+      offset: [15, 0],
+      positioning: 'center-left'
+    });
+    this.getMap().addOverlay(this.helpTooltipOverlay_);
+  }
 };
 
 
@@ -119533,12 +119614,14 @@ ngeo.interaction.Measure.prototype.createHelpTooltip_ = function() {
  * @private
  */
 ngeo.interaction.Measure.prototype.removeHelpTooltip_ = function() {
-  this.getMap().removeOverlay(this.helpTooltipOverlay_);
-  if (!goog.isNull(this.helpTooltipElement_)) {
-    this.helpTooltipElement_.parentNode.removeChild(this.helpTooltipElement_);
+  if (this.displayHelpTooltip_) {
+    this.getMap().removeOverlay(this.helpTooltipOverlay_);
+    if (!goog.isNull(this.helpTooltipElement_)) {
+      this.helpTooltipElement_.parentNode.removeChild(this.helpTooltipElement_);
+    }
+    this.helpTooltipElement_ = null;
+    this.helpTooltipOverlay_ = null;
   }
-  this.helpTooltipElement_ = null;
-  this.helpTooltipOverlay_ = null;
 };
 
 
@@ -119580,13 +119663,17 @@ ngeo.interaction.Measure.prototype.removeMeasureTooltip_ = function() {
  */
 ngeo.interaction.Measure.prototype.updateState_ = function() {
   var active = this.getActive();
+  this.shouldHandleDrawInteractionActiveChange_ = false;
   this.drawInteraction_.setActive(active);
+  this.shouldHandleDrawInteractionActiveChange_ = true;
   if (!this.getMap()) {
     return;
   }
   if (active) {
-    this.createMeasureTooltip_();
-    this.createHelpTooltip_();
+    if (!this.measureTooltipOverlay_) {
+      this.createMeasureTooltip_();
+      this.createHelpTooltip_();
+    }
   } else {
     this.vectorLayer_.getSource().clear(true);
     this.getMap().removeOverlay(this.measureTooltipOverlay_);
@@ -119608,18 +119695,32 @@ ngeo.interaction.Measure.prototype.handleMeasure = goog.abstractMethod;
 
 /**
  * Get a reference to the tooltip element.
- * @return {Element}
+ * @return {Element} Tooltip Element.
  */
 ngeo.interaction.Measure.prototype.getTooltipElement = function() {
   return this.measureTooltipElement_;
 };
+
+
+/**
+ * Called when the draw interaction `active` property changes. If the
+ * change is due to something else than this measure interactino, then
+ * update follow the its active state accordingly.
+ *
+ * @private
+ */
+ngeo.interaction.Measure.prototype.handleDrawInteractionActiveChange_ =
+    function() {
+      if (this.shouldHandleDrawInteractionActiveChange_) {
+        this.setActive(this.drawInteraction_.getActive());
+      }
+    };
 
 goog.provide('ngeo.interaction.MeasureArea');
 
 goog.require('ngeo.interaction.Measure');
 goog.require('ol.geom.Polygon');
 goog.require('ol.interaction.Draw');
-
 
 
 /**
@@ -119654,7 +119755,7 @@ goog.inherits(ngeo.interaction.MeasureArea, ngeo.interaction.Measure);
 /**
  * @inheritDoc
  */
-ngeo.interaction.MeasureArea.prototype.getDrawInteraction = function(style,
+ngeo.interaction.MeasureArea.prototype.createDrawInteraction = function(style,
     source) {
 
   return new ol.interaction.Draw(
@@ -119674,7 +119775,8 @@ ngeo.interaction.MeasureArea.prototype.handleMeasure = function(callback) {
   var geom = /** @type {ol.geom.Polygon} */
       (this.sketchFeature.getGeometry());
   var proj = this.getMap().getView().getProjection();
-  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj);
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj, dec);
   var verticesCount = geom.getCoordinates()[0].length;
   var coord = null;
   if (verticesCount > 2) {
@@ -119702,7 +119804,6 @@ goog.require('ol.interaction.InteractionProperty');
 goog.require('ol.interaction.Pointer');
 goog.require('ol.layer.Vector');
 goog.require('ol.source.Vector');
-
 
 
 /**
@@ -119735,7 +119836,7 @@ goog.inherits(ngeo.interaction.MeasureAzimut, ngeo.interaction.Measure);
 /**
  * @inheritDoc
  */
-ngeo.interaction.MeasureAzimut.prototype.getDrawInteraction = function(style,
+ngeo.interaction.MeasureAzimut.prototype.createDrawInteraction = function(style,
     source) {
 
   return new ngeo.interaction.DrawAzimut({
@@ -119761,8 +119862,8 @@ ngeo.interaction.MeasureAzimut.prototype.handleMeasure = function(callback) {
 
 /**
  * Format measure output.
- * @param {ol.geom.LineString} line
- * @return {string}
+ * @param {ol.geom.LineString} line LineString.
+ * @return {string} Formated measure.
  * @private
  */
 ngeo.interaction.MeasureAzimut.prototype.formatMeasure_ = function(line) {
@@ -119774,10 +119875,11 @@ ngeo.interaction.MeasureAzimut.prototype.formatMeasure_ = function(line) {
   var azimut = Math.round(factor * rad * 180 / Math.PI) % 360;
   var output = azimut + '°';
   var proj = this.getMap().getView().getProjection();
-  output += '<br/>' + ngeo.interaction.Measure.getFormattedLength(line, proj);
+  var dec = this.decimals;
+  output += '<br/>' + ngeo.interaction.Measure.getFormattedLength(
+      line, proj, dec);
   return output;
 };
-
 
 
 /**
@@ -119943,8 +120045,7 @@ ngeo.interaction.DrawAzimut.prototype.handlePointerMove_ = function(event) {
  * @param {ol.MapBrowserEvent} event Event.
  * @private
  */
-ngeo.interaction.DrawAzimut.prototype.createOrUpdateSketchPoint_ =
-    function(event) {
+ngeo.interaction.DrawAzimut.prototype.createOrUpdateSketchPoint_ = function(event) {
   var coordinates = event.coordinate.slice();
   if (goog.isNull(this.sketchPoint_)) {
     this.sketchPoint_ = new ol.Feature(new ol.geom.Point(coordinates));
@@ -120090,7 +120191,6 @@ goog.require('ol.geom.LineString');
 goog.require('ol.interaction.Draw');
 
 
-
 /**
  * @classdesc
  * Interaction dedicated to measure length.
@@ -120123,7 +120223,7 @@ goog.inherits(ngeo.interaction.MeasureLength, ngeo.interaction.Measure);
 /**
  * @inheritDoc
  */
-ngeo.interaction.MeasureLength.prototype.getDrawInteraction = function(style,
+ngeo.interaction.MeasureLength.prototype.createDrawInteraction = function(style,
     source) {
 
   return new ol.interaction.Draw(
@@ -120143,7 +120243,578 @@ ngeo.interaction.MeasureLength.prototype.handleMeasure = function(callback) {
   var geom = /** @type {ol.geom.LineString} */
       (this.sketchFeature.getGeometry());
   var proj = this.getMap().getView().getProjection();
-  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj);
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj, dec);
+  var coord = geom.getLastCoordinate();
+  callback(output, coord);
+};
+
+goog.provide('ngeo.interaction.MobileDraw');
+
+goog.require('ol.Feature');
+goog.require('ol.geom.LineString');
+goog.require('ol.geom.Point');
+goog.require('ol.geom.SimpleGeometry');
+goog.require('ol.interaction.DrawEvent');
+goog.require('ol.interaction.Interaction');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+
+
+/**
+ * @enum {string}
+ */
+ngeo.interaction.MobileDrawProperty = {
+  DIRTY: 'dirty',
+  DRAWING: 'drawing',
+  VALID: 'valid'
+};
+
+
+/**
+ * @classdesc
+ * Interaction for drawing feature geometries from a mobile device using the
+ * center of the map view as entry for points added.
+ *
+ * Supports:
+ * - point
+ * - line string
+ *
+ * @constructor
+ * @fires ol.interaction.DrawEvent
+ * @extends {ol.interaction.Interaction}
+ * @param {ngeox.interaction.MobileDrawOptions} options Options
+ * @export
+ */
+ngeo.interaction.MobileDraw = function(options) {
+
+  goog.base(this, {
+    handleEvent: goog.functions.TRUE
+  });
+
+  /**
+   * The key for view center change event.
+   * @type {?ol.events.Key}
+   * @private
+   */
+  this.changeEventKey_ = null;
+
+  /**
+   * Geometry type.
+   * @type {ol.geom.GeometryType}
+   * @private
+   */
+  this.type_ = options.type;
+
+  /**
+   * The number of points that must be drawn before a polygon ring or line
+   * string can be finished.  The default is 3 for polygon rings and 2 for
+   * line strings.
+   * @type {number}
+   * @private
+   */
+  this.minPoints_ = options.minPoints ?
+      options.minPoints :
+      (this.type_ === ol.geom.GeometryType.POLYGON ? 3 : 2);
+
+  /**
+   * Sketch feature.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.sketchFeature_ = null;
+
+  /**
+   * Previous sketch points, saved to be able to display them on the layer.
+   * @type {Array.<ol.Feature>}
+   * @private
+   */
+  this.sketchPoints_ = [];
+
+  /**
+   * Current sketch point.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.sketchPoint_ = null;
+
+  /**
+   * Draw overlay where our sketch features are drawn.
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.overlay_ = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      useSpatialIndex: false,
+      wrapX: options.wrapX ? options.wrapX : false
+    }),
+    style: options.style ? options.style :
+        ol.interaction.Draw.getDefaultStyleFunction(),
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  ol.events.listen(this,
+      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
+      this.updateState_, this);
+
+  this.set(ngeo.interaction.MobileDrawProperty.DIRTY, false);
+  this.set(ngeo.interaction.MobileDrawProperty.DRAWING, false);
+  this.set(ngeo.interaction.MobileDrawProperty.VALID, false);
+
+};
+goog.inherits(ngeo.interaction.MobileDraw, ol.interaction.Interaction);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MobileDraw.prototype.setMap = function(map) {
+
+  var currentMap = this.getMap();
+  if (currentMap) {
+    if (this.changeEventKey_) {
+      ol.events.unlistenByKey(this.changeEventKey_);
+    }
+  }
+
+  goog.base(this, 'setMap', map);
+
+  if (map) {
+    this.changeEventKey_ = ol.events.listen(map.getView(),
+        ol.Object.getChangeEventType(ol.ViewProperty.CENTER),
+        this.handleViewCenterChange_, this);
+  }
+
+  this.updateState_();
+};
+
+
+// === PUBLIC METHODS - PROPERTY GETTERS ===
+
+
+/**
+ * Return whether the interaction is currently dirty. It is if the sketch
+ * feature has its geometry last coordinate set to the center without the
+ * use of the `addToDrawing` method.
+ * @return {boolean} `true` if the interaction is dirty, `false` otherwise.
+ * @observable
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.getDirty = function() {
+  return /** @type {boolean} */ (
+      this.get(ngeo.interaction.MobileDrawProperty.DIRTY));
+};
+
+
+/**
+ * Return whether the interaction is currently drawing.
+ * @return {boolean} `true` if the interaction is drawing, `false` otherwise.
+ * @observable
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.getDrawing = function() {
+  return /** @type {boolean} */ (
+      this.get(ngeo.interaction.MobileDrawProperty.DRAWING));
+};
+
+
+/**
+ * Return whether the interaction as a valid sketch feature, i.e. its geometry
+ * is valid.
+ * @return {boolean} `true` if the interaction has a valid sketch feature,
+ *     `false` otherwise.
+ * @observable
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.getValid = function() {
+  return /** @type {boolean} */ (
+      this.get(ngeo.interaction.MobileDrawProperty.VALID));
+};
+
+
+/**
+ * Returns the current sketch feature.
+ * @return {?ol.Feature} The sketch feature, or null if none.
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.getFeature = function() {
+  return this.sketchFeature_;
+};
+
+
+// === PUBLIC METHODS ===
+
+
+/**
+ * Add current sketch point to sketch feature if the latter exists, else create
+ * it.
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.addToDrawing = function() {
+
+  // no need to do anything if interaction is not active, nor drawing
+  var active = this.getActive();
+  var drawing = this.getDrawing();
+
+  if (!active || !drawing) {
+    return;
+  }
+
+  var sketchFeatureGeom;
+  var sketchPointGeom = this.getSketchPointGeometry_();
+  var coordinate = sketchPointGeom.getCoordinates();
+  var coordinates;
+
+  // == point ==
+  if (this.type_ === ol.geom.GeometryType.POINT) {
+    if (!this.sketchFeature_) {
+      this.sketchFeature_ = new ol.Feature(new ol.geom.Point(coordinate));
+      this.dispatchEvent(new ol.interaction.DrawEvent(
+          ol.interaction.DrawEventType.DRAWSTART, this.sketchFeature_));
+
+    }
+    sketchFeatureGeom = this.sketchFeature_.getGeometry();
+    goog.asserts.assertInstanceof(sketchFeatureGeom, ol.geom.SimpleGeometry);
+    sketchFeatureGeom.setCoordinates(coordinate);
+    return;
+  }
+
+  // == line string ==
+  if (this.type_ === ol.geom.GeometryType.LINE_STRING) {
+    this.sketchPoints_.push(this.sketchPoint_);
+    if (!this.sketchFeature_) {
+      coordinates = [coordinate.slice(), coordinate.slice()];
+      this.sketchFeature_ = new ol.Feature(new ol.geom.LineString(coordinates));
+      this.dispatchEvent(new ol.interaction.DrawEvent(
+          ol.interaction.DrawEventType.DRAWSTART, this.sketchFeature_));
+    } else {
+      sketchFeatureGeom = this.sketchFeature_.getGeometry();
+      goog.asserts.assertInstanceof(sketchFeatureGeom, ol.geom.SimpleGeometry);
+      coordinates = sketchFeatureGeom.getCoordinates();
+      coordinates.push(coordinate.slice());
+      sketchFeatureGeom.setCoordinates(coordinates);
+    }
+  }
+
+  var dirty = this.getDirty();
+  if (dirty) {
+    this.set(ngeo.interaction.MobileDrawProperty.DIRTY, false);
+  }
+
+  // minPoints validation
+  var valid = this.getValid();
+  if (this.type_ === ol.geom.GeometryType.LINE_STRING) {
+    if (coordinates.length >= this.minPoints_) {
+      if (!valid) {
+        this.set(ngeo.interaction.MobileDrawProperty.VALID, true);
+      }
+    } else {
+      if (valid) {
+        this.set(ngeo.interaction.MobileDrawProperty.VALID, false);
+      }
+    }
+  }
+
+  // reset sketch point
+  this.sketchPoint_ = null;
+
+  // update sketch features
+  this.updateSketchFeatures_();
+};
+
+
+/**
+ * Clear the drawing
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.clearDrawing = function() {
+  this.setActive(false);
+  this.setActive(true);
+};
+
+
+/**
+ * Finish drawing. If there's a sketch point, it's added first.
+ * @export
+ */
+ngeo.interaction.MobileDraw.prototype.finishDrawing = function() {
+
+  // no need to do anything if interaction is not active, nor drawing
+  var active = this.getActive();
+  var drawing = this.getDrawing();
+
+  if (!active || !drawing) {
+    return;
+  }
+
+  if (this.sketchPoint_) {
+    this.addToDrawing();
+  }
+
+  this.set(ngeo.interaction.MobileDrawProperty.DRAWING, false);
+
+  this.dispatchEvent(new ol.interaction.DrawEvent(
+      ol.interaction.DrawEventType.DRAWEND, this.sketchFeature_));
+};
+
+
+// === PRIVATE METHODS ===
+
+
+/**
+ * Start drawing by adding the sketch point first.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.startDrawing_ = function() {
+  this.set(ngeo.interaction.MobileDrawProperty.DRAWING, true);
+  this.createOrUpdateSketchPoint_();
+  this.updateSketchFeatures_();
+
+  if (this.type_ === ol.geom.GeometryType.POINT) {
+    this.addToDrawing();
+  }
+};
+
+
+/**
+ * Modify the geometry of the sketch feature to have its last coordinate
+ * set to the center of the map.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.modifyDrawing_ = function() {
+  if (!this.sketchFeature_) {
+    return;
+  }
+
+  var center = this.getCenter_();
+
+  if (this.type_ === ol.geom.GeometryType.LINE_STRING) {
+    var sketchFeatureGeom = this.sketchFeature_.getGeometry();
+    goog.asserts.assertInstanceof(sketchFeatureGeom, ol.geom.SimpleGeometry);
+    var coordinates = sketchFeatureGeom.getCoordinates();
+    coordinates.pop();
+    coordinates.push(center);
+    sketchFeatureGeom.setCoordinates(coordinates);
+  }
+
+  var dirty = this.getDirty();
+  if (!dirty) {
+    this.set(ngeo.interaction.MobileDrawProperty.DIRTY, true);
+  }
+
+};
+
+
+/**
+ * Stop drawing without adding the sketch feature to the target layer.
+ * @return {?ol.Feature} The sketch feature (or null if none).
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.abortDrawing_ = function() {
+  var sketchFeature = this.sketchFeature_;
+  if (sketchFeature || this.sketchPoints_.length > 0) {
+    this.sketchFeature_ = null;
+    this.sketchPoint_ = null;
+    this.overlay_.getSource().clear(true);
+  }
+  this.sketchPoints_ = [];
+  this.set(ngeo.interaction.MobileDrawProperty.DIRTY, false);
+  this.set(ngeo.interaction.MobileDrawProperty.DRAWING, false);
+  this.set(ngeo.interaction.MobileDrawProperty.VALID, false);
+  return sketchFeature;
+};
+
+
+/**
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.updateState_ = function() {
+  var map = this.getMap();
+  var active = this.getActive();
+  if (!map || !active) {
+    this.abortDrawing_();
+  } else {
+    this.startDrawing_();
+  }
+  this.overlay_.setMap(active ? map : null);
+};
+
+
+/**
+ * @param {ol.ObjectEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.handleViewCenterChange_ = function(evt) {
+  // no need to do anything if interaction is not active, nor drawing
+  var active = this.getActive();
+  var drawing = this.getDrawing();
+
+  if (!active || !drawing) {
+    return;
+  }
+
+  this.createOrUpdateSketchPoint_();
+
+  if (this.type_ === ol.geom.GeometryType.POINT) {
+    this.addToDrawing();
+  } else {
+    this.modifyDrawing_();
+    this.updateSketchFeatures_();
+  }
+};
+
+
+/**
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.createOrUpdateSketchPoint_ = function() {
+  var center = this.getCenter_();
+
+  if (this.sketchPoint_) {
+    var geometry = this.getSketchPointGeometry_();
+    geometry.setCoordinates(center);
+  } else {
+    this.sketchPoint_ = new ol.Feature(new ol.geom.Point(center));
+  }
+
+};
+
+
+/**
+ * Redraw the sketch features.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.updateSketchFeatures_ = function() {
+  var sketchFeatures = [];
+  if (this.sketchFeature_) {
+    sketchFeatures.push(this.sketchFeature_);
+  }
+  if (this.sketchPoint_) {
+    sketchFeatures.push(this.sketchPoint_);
+  }
+  var overlaySource = this.overlay_.getSource();
+  overlaySource.clear(true);
+  overlaySource.addFeatures(sketchFeatures);
+  overlaySource.addFeatures(this.sketchPoints_);
+};
+
+
+/**
+ * Returns the geometry of the sketch point feature.
+ * @return {ol.geom.Point} Point.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.getSketchPointGeometry_ = function() {
+  goog.asserts.assert(this.sketchPoint_, 'sketch point should be thruty');
+  var geometry = this.sketchPoint_.getGeometry();
+  goog.asserts.assertInstanceof(geometry, ol.geom.Point);
+  return geometry;
+};
+
+
+/**
+ * Returns the center of the map view
+ * @return {ol.Coordinate} Coordinate.
+ * @private
+ */
+ngeo.interaction.MobileDraw.prototype.getCenter_ = function() {
+  var center = this.getMap().getView().getCenter();
+  goog.asserts.assertArray(center);
+  return center;
+};
+
+goog.provide('ngeo.interaction.MeasureLengthMobile');
+
+goog.require('ngeo.interaction.MeasureLength');
+goog.require('ngeo.interaction.MobileDraw');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length on mobile devices.
+ *
+ * @constructor
+ * @extends {ngeo.interaction.MeasureLength}
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureLengthMobile = function(opt_options) {
+
+  var options = goog.isDef(opt_options) ? opt_options : {};
+
+  goog.object.extend(options, {displayHelpTooltip: false});
+
+  goog.base(this, options);
+
+};
+goog.inherits(ngeo.interaction.MeasureLengthMobile,
+              ngeo.interaction.MeasureLength);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureLengthMobile.prototype.createDrawInteraction =
+    function(style, source) {
+      return new ngeo.interaction.MobileDraw({
+        'type': /** @type {ol.geom.GeometryType<string>} */ ('LineString'),
+        'style': style,
+        'source': source
+      });
+    };
+
+goog.provide('ngeo.interaction.MeasurePointMobile');
+
+goog.require('ngeo.interaction.Measure');
+goog.require('ngeo.interaction.MobileDraw');
+goog.require('ol.geom.Point');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure by coordinate (point) on mobile devices.
+ *
+ * @constructor
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasurePointMobile = function(opt_options) {
+
+  var options = goog.isDef(opt_options) ? opt_options : {};
+
+  goog.object.extend(options, {displayHelpTooltip: false});
+
+  goog.base(this, options);
+
+};
+goog.inherits(ngeo.interaction.MeasurePointMobile, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasurePointMobile.prototype.createDrawInteraction = function(
+    style, source) {
+  return new ngeo.interaction.MobileDraw({
+    'type': /** @type {ol.geom.GeometryType<string>} */ ('Point'),
+    'style': style,
+    'source': source
+  });
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasurePointMobile.prototype.handleMeasure = function(
+    callback) {
+  var geom = /** @type {ol.geom.Point} */
+      (this.sketchFeature.getGeometry());
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedPoint(geom, proj, dec);
   var coord = geom.getLastCoordinate();
   callback(output, coord);
 };
@@ -120169,12 +120840,11 @@ ngeo.BackgroundEventType = {
 };
 
 
-
 /**
  * @constructor
  * @extends {ol.events.Event}
  * @param {ngeo.BackgroundEventType} type Type.
- * @param {ol.layer.Base} previous
+ * @param {ol.layer.Base} previous Previous background layer.
  * @implements {ngeox.BackgroundEvent}
  */
 ngeo.BackgroundEvent = function(type, previous) {
@@ -120188,7 +120858,6 @@ ngeo.BackgroundEvent = function(type, previous) {
   this.previous = previous;
 };
 goog.inherits(ngeo.BackgroundEvent, ol.events.Event);
-
 
 
 /**
@@ -120396,6 +121065,8 @@ goog.provide('ngeo.Debounce');
 
 goog.require('ngeo');
 
+/* eslint-disable valid-jsdoc */
+// FIXME: eslint can't detect that the function returns a function
 
 /**
  * Provides a debounce service. That service is a function
@@ -120619,7 +121290,6 @@ goog.require('ol.source.ImageWMS');
 goog.require('ol.source.WMTS');
 
 
-
 /**
  * Provides help functions that helps you to create and manage layers.
  * @param {angular.$q} $q Angular promises/deferred service.
@@ -120650,7 +121320,7 @@ ngeo.LayerHelper = function($q, $http) {
  * separated layers names (see {@link ol.source.ImageWMS}).
  * @param {string} sourceURL The source URL.
  * @param {string} sourceLayersName A dot separated names string.
- * @return {ol.layer.Image}
+ * @return {ol.layer.Image} WMS Layer.
  * @export
  */
 ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
@@ -120714,7 +121384,7 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
  * directly add them in the returned group.
  * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
  * returned Group.
- * @return {ol.layer.Group}
+ * @return {ol.layer.Group} Layer group.
  * @export
  */
 ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
@@ -120730,7 +121400,7 @@ ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
  * Get an array of all layers in a group. The group can contain multiple levels
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @return {Array.<ol.layer.Layer>}
+ * @return {Array.<ol.layer.Layer>} Layers.
  * @export
  */
 ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
@@ -120743,7 +121413,7 @@ ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
  * of others groups.
  * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
  * @param {Array.<ol.layer.Base>} array An array to add layers.
- * @return {Array.<ol.layer.Layer>}
+ * @return {Array.<ol.layer.Layer>} Layers.
  * @private
  */
 ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
@@ -120774,7 +121444,6 @@ goog.require('ngeo');
  * @typedef {function(angular.$locationProvider)}
  */
 ngeo.MockLocationProvider;
-
 
 
 /**
@@ -120818,7 +121487,7 @@ ngeo.Location = function(location, history) {
 
 /**
  * Get the location's URI object.
- * @return {!goog.Uri}
+ * @return {!goog.Uri} URI.
  */
 ngeo.Location.prototype.getUri = function() {
   return this.uri_;
@@ -120882,7 +121551,7 @@ ngeo.Location.prototype.getParamKeys = function() {
 
 /**
  * Set or create a param in the location's URI.
- * @param {Object.<string, string>} params
+ * @param {Object.<string, string>} params Parameters.
  */
 ngeo.Location.prototype.updateParams = function(params) {
   var qd = this.uri_.getQueryData();
@@ -120968,29 +121637,58 @@ ngeo.mockLocationProvider = function($locationProvider) {
    */
   $locationProvider['$get'] = function() {
     var locationMock = /** @type {angular.$location} */ ({
+      /**
+       * @return {string} Absolute URL.
+       */
       absUrl: function() {
         return '';
       },
+      /**
+       * @param {string=} opt_path Path.
+       * @return {string} Hash.
+       */
       hash: function(opt_path) {
         return goog.isDef(opt_path) ? this : '';
       },
+      /**
+       * @return {string} Host.
+       */
       host: function() {
         return '';
       },
+      /**
+       * @param {string=} opt_path Path.
+       * @return {string} Path.
+       */
       path: function(opt_path) {
         return goog.isDef(opt_path) ? this : '';
       },
+      /**
+       * @return {number} Port.
+       */
       port: function() {
         return 0;
       },
+      /**
+       * @return {string} Protocol.
+       */
       protocol: function() {
         return '';
       },
       replace: function() {
       },
+      /**
+       * @param {string=} opt_search Search.
+       * @param {Object=} opt_paramValue Parameters.
+       * @return {Object} Search.
+       */
       search: function(opt_search, opt_paramValue) {
         return goog.isDef(opt_search) ? this : {};
       },
+      /**
+       * @param {string=} opt_url URL.
+       * @return {string} URL.
+       */
       url: function(opt_url) {
         return '';
       }
@@ -121016,7 +121714,6 @@ goog.require('ngeo.popupDirective');
  * @typedef {function():!ngeo.Popup}
  */
 ngeo.CreatePopup;
-
 
 
 /**
@@ -121182,7 +121879,6 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POINT] =
     ngeo.PrintStyleType.POINT;
 ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
     ngeo.PrintStyleType.POLYGON;
-
 
 
 /**
@@ -121410,7 +122106,7 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
 
 
 /**
- * @param {string} url
+ * @param {string} url URL.
  * @return {string} Absolute URL.
  * @private
  */
@@ -121594,8 +122290,7 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
  * @param {string} featureStyleProp Feature style property name.
  * @private
  */
-ngeo.Print.prototype.encodeVectorStyle_ =
-    function(object, geometryType, style, styleId, featureStyleProp) {
+ngeo.Print.prototype.encodeVectorStyle_ = function(object, geometryType, style, styleId, featureStyleProp) {
   if (!(geometryType in ngeo.PrintStyleTypes_)) {
     // unsupported geometry type
     return;
@@ -121655,8 +122350,7 @@ ngeo.Print.prototype.encodeVectorStyleFill_ = function(symbolizer, fillStyle) {
  * @param {!ol.style.Stroke} strokeStyle Stroke style.
  * @private
  */
-ngeo.Print.prototype.encodeVectorStyleLine_ =
-    function(symbolizers, strokeStyle) {
+ngeo.Print.prototype.encodeVectorStyleLine_ = function(symbolizers, strokeStyle) {
   var symbolizer = /** @type {MapFishPrintSymbolizerLine} */ ({
     type: 'line'
   });
@@ -121671,8 +122365,7 @@ ngeo.Print.prototype.encodeVectorStyleLine_ =
  * @param {!ol.style.Image} imageStyle Image style.
  * @private
  */
-ngeo.Print.prototype.encodeVectorStylePoint_ =
-    function(symbolizers, imageStyle) {
+ngeo.Print.prototype.encodeVectorStylePoint_ = function(symbolizers, imageStyle) {
   var symbolizer;
   if (imageStyle instanceof ol.style.Circle) {
     symbolizer = /** @type {MapFishPrintSymbolizerPoint} */ ({
@@ -121713,8 +122406,7 @@ ngeo.Print.prototype.encodeVectorStylePoint_ =
  * @param {ol.style.Stroke} strokeStyle Stroke style.
  * @private
  */
-ngeo.Print.prototype.encodeVectorStylePolygon_ =
-    function(symbolizers, fillStyle, strokeStyle) {
+ngeo.Print.prototype.encodeVectorStylePolygon_ = function(symbolizers, fillStyle, strokeStyle) {
   var symbolizer = /** @type {MapFishPrintSymbolizerPolygon} */ ({
     type: 'polygon'
   });
@@ -121731,8 +122423,7 @@ ngeo.Print.prototype.encodeVectorStylePolygon_ =
  * @param {!ol.style.Stroke} strokeStyle Stroke style.
  * @private
  */
-ngeo.Print.prototype.encodeVectorStyleStroke_ =
-    function(symbolizer, strokeStyle) {
+ngeo.Print.prototype.encodeVectorStyleStroke_ = function(symbolizer, strokeStyle) {
   var strokeColor = strokeStyle.getColor();
   if (!goog.isNull(strokeColor)) {
     var strokeColorRgba = ol.color.asArray(strokeColor);
@@ -121812,7 +122503,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
 
 
 /**
- * Return the WMTS URL to use in the print spec.
+ * Return the WMTS URL to use in the print spec.
  * @param {ol.source.WMTS} source The WMTS source.
  * @return {string} URL.
  * @private
@@ -121865,7 +122556,7 @@ ngeo.Print.prototype.getStatus = function(ref, opt_httpConfig) {
 
 
 /**
- * Get the URL of a report.
+ * Get the URL of a report.
  * @param {string} ref Print report reference.
  * @return {string} The report URL for this ref.
  */
@@ -121912,7 +122603,6 @@ goog.provide('ngeo.PrintUtils');
 goog.require('ngeo');
 
 
-
 /**
  * Provides a service with print utility functions.
  *
@@ -121948,8 +122638,7 @@ ngeo.PrintUtils.DOTS_PER_INCH_ = 72;
  * @return {function(ol.render.Event)} Function to use as a map postcompose
  * listener.
  */
-ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
-    function(getSize, getScale) {
+ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize, getScale) {
 
   return (
       /**
@@ -122473,7 +123162,6 @@ goog.require('ngeo');
 goog.require('ngeo.Location');
 
 
-
 /**
  * Provides a service for managing the application state.
  * The application state is written to both the URL and the local storage.
@@ -122555,7 +123243,7 @@ ngeo.StateManager.prototype.updateState = function(object) {
 
 /**
  * Delete a parameter
- * @param {string} key
+ * @param {string} key Key.
  */
 ngeo.StateManager.prototype.deleteParam = function(key) {
   this.ngeoLocation.deleteParam(key);
@@ -122674,7 +123362,6 @@ goog.provide('ngeo.ToolActivateMgr');
 goog.require('ngeo');
 
 
-
 /**
  * A simple object that can be managed by `ngeo.ToolActivateMgr`.
  *
@@ -122689,7 +123376,7 @@ ngeo.ToolActivate = function(toolContext, activePropertyName) {
 
   /**
    * A getter function to get the active state of the tool.
-   * @return {boolean}
+   * @return {boolean} Is active.
    * @export
    */
   this.getActive = function() {
@@ -122718,7 +123405,6 @@ ngeo.module.value('ngeoToolActivate', ngeo.ToolActivate);
  *    unlisten: (function(): void)}}
  */
 ngeo.ToolMgrEntry;
-
 
 
 /**

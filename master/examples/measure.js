@@ -33,7 +33,6 @@ app.measuretoolsDirective = function() {
 app.module.directive('appMeasuretools', app.measuretoolsDirective);
 
 
-
 /**
  * @param {!angular.Scope} $scope Angular scope.
  * @param {angular.$compile} $compile Angular compile service.
@@ -208,7 +207,6 @@ app.MeasuretoolsController = function($scope, $compile, $sce,
 };
 
 app.module.controller('AppMeasuretoolsController', app.MeasuretoolsController);
-
 
 
 /**

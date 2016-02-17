@@ -9,7 +9,6 @@ var app = {};
 app.module = angular.module('app', ['ngeo']);
 
 
-
 /**
  * @constructor
  * @param {angular.Scope} $scope Scope.
@@ -70,7 +69,7 @@ app.MainController = function($scope) {
 
 
 /**
- * @param {string} kml KML document.
+ * @param {string} kml KML document.
  * @private
  */
 app.MainController.prototype.importKml_ = function(kml) {

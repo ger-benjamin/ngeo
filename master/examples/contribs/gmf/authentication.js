@@ -14,7 +14,6 @@ app.module.constant(
     'https://geomapfish-demo.camptocamp.net/2.0/wsgi');
 
 
-
 /**
  * @constructor
  */

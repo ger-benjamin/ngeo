@@ -9094,12 +9094,27 @@ a {
   border: solid 1px black;
   color: black;
 }
-.ol-zoom button:hover,
-.ol-zoom button:focus {
+.ol-zoom button:hover {
   background-color: #cccccc;
+}
+.ol-zoom button:focus {
+  background-color: white;
+  outline: none;
+}
+.ol-zoom button:active {
+  outline: none;
 }
 .ol-zoom:hover {
   background-color: transparent;
+}
+/**
+ * Only affects webkit desktop browsers
+ */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .ol-zoom button:active {
+    background-color: #cccccc;
+    outline: -webkit-focus-ring-color auto 5px;
+  }
 }
 .ol-attribution {
   display: none;
@@ -9414,8 +9429,7 @@ main {
   color: black;
 }
 .search span.twitter-typeahead .tt-menu .search-datum .search-group {
-  color: #808080;
-  font-size: 0.8em;
+  display: none;
 }
 .ol-zoom {
   left: 13px;

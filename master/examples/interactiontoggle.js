@@ -9,7 +9,6 @@ var app = {};
 var module = angular.module('app', ['ngeo']);
 
 
-
 /**
  * @param {ngeo.DecorateInteraction} ngeoDecorateInteraction Decorate
  *     interaction service.
