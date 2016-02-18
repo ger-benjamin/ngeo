@@ -109311,8 +109311,9 @@ goog.require('ngeo');
  * `Object.defineProperty`) to the `ol.Geolocation` instance, making it
  * possible to activate/deactivate the tracking mode.
  *
- * @example
- * <input type="checkbox" ngModel="geolocation.tracking" />
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="geolocation.tracking" />
  *
  * @typedef {function(ol.Geolocation)}
  * @ngdoc service
@@ -109656,11 +109657,12 @@ goog.require('ol.geom.Point');
 /**
  * Provide a "desktop geolocation" directive.
  *
- * @example
- * <button ngeo-desktop-geolocation=""
- *   ngeo-desktop-geolocation-map="ctrl.map"
- *   ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
- * </button>
+ * Example:
+ *
+ *      <button ngeo-desktop-geolocation=""
+ *        ngeo-desktop-geolocation-map="ctrl.map"
+ *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
+ *      </button>
  *
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
@@ -109848,8 +109850,9 @@ goog.require('ngeo');
  * Only works for text files (`readAsText` used for reading the file). And does
  * not work in Internet Explorer 9.
  *
- * @example
- * <input type="file" ngeo-filereader="ctrl.fileContent"
+ * Example:
+ *
+ *      <input type="file" ngeo-filereader="ctrl.fileContent"
  *        ngeo-filereader-supported="ctrl.supported"/>
  *
  * @param {angular.$window} $window The Angular $window service.
@@ -109926,11 +109929,11 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  *
  * Example:
  *
- *     <div ngeo-layertree="ctrl.tree"
- *          ngeo-layertree-map="ctrl.map"
- *          ngeo-layertree-nodelayer="ctrl.getLayer(node)"
- *          ngeo-layertree-listeners="ctrl.listeners(treeScope, treeCtrl)"
- *     </div>
+ *      <div ngeo-layertree="ctrl.tree"
+ *        ngeo-layertree-map="ctrl.map"
+ *        ngeo-layertree-nodelayer="ctrl.getLayer(node)"
+ *        ngeo-layertree-listeners="ctrl.listeners(treeScope, treeCtrl)"
+ *      </div>
  *
  * The "ngeo-layertree", "ngeo-layertree-map" and
  * "ngeo-layertree-nodelayer" attributes are mandatory attributes.
@@ -109963,12 +109966,12 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  *
  * Example:
  *
- *     <div ngeo-layertree="ctrl.tree"
- *          ngeo-layertree-templateurl="path/to/layertree.html"
- *          ngeo-layertree-map="ctrl.map"
- *          ngeo-layertree-nodelayer="ctrl.getLayer(node)"
- *          ngeo-layertree-listeners="ctrl.listeners(treeScope, treeCtrl)"
- *     </div>
+ *      <div ngeo-layertree="ctrl.tree"
+ *        ngeo-layertree-templateurl="path/to/layertree.html"
+ *        ngeo-layertree-map="ctrl.map"
+ *        ngeo-layertree-nodelayer="ctrl.getLayer(node)"
+ *        ngeo-layertree-listeners="ctrl.listeners(treeScope, treeCtrl)"
+ *      </div>
  *
  * The directive has its own scope, but it is not an isolate scope. That scope
  * has a "layertreeCtrl" property which is a reference to the directive's
@@ -110168,7 +110171,9 @@ goog.require('ol.Map');
  * Provides a directive used to insert a user-defined OpenLayers
  * map in the DOM. The directive does not create an isolate scope.
  *
- *     <div ngeo-map="ctrl.map"></div>
+ * Example:
+ *
+ *      <div ngeo-map="ctrl.map"></div>
  *
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
@@ -110214,11 +110219,12 @@ goog.require('ol.geom.Point');
 /**
  * Provide a "mobile geolocation" directive.
  *
- * @example
- * <button ngeo-mobile-geolocation=""
- *   ngeo-mobile-geolocation-map="ctrl.map"
- *   ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
- * </button>
+ * Example:
+ *
+ *      <button ngeo-mobile-geolocation=""
+ *        ngeo-mobile-geolocation-map="ctrl.map"
+ *        ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
+ *      </button>
  *
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
@@ -110903,12 +110909,13 @@ goog.require('ngeo.Query');
  * it could be used with a ngeo-btn to manage the activation of the directive.
  * See below an example without any use of UI:
  *
- * @example
- * <span
- *   ngeo-mobile-query=""
- *   ngeo-mobile-query-map="::ctrl.map"
- *   ngeo-mobile-query-active="ctrl.queryActive">
- * </span>
+ * Example:
+ *
+ *      <span
+ *        ngeo-mobile-query=""
+ *        ngeo-mobile-query-map="::ctrl.map"
+ *        ngeo-mobile-query-active="ctrl.queryActive">
+ *      </span>
  *
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
@@ -111134,6 +111141,7 @@ ngeo.module.value('ngeoPopupTemplateUrl',
  * - The directive doesn't create any scope but relies on its parent scope.
  *   Properties like 'content', 'title' or 'open' come from the parent scope.
  *
+ * @private
  * @param {string} ngeoPopupTemplateUrl URL to popup template.
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
@@ -111187,10 +111195,10 @@ goog.require('ngeo.profile');
  *
  * Example:
  *
- *     <div ngeo-profile="ctrl.profileData"
- *          ngeo-profile-options="ctrl.profileOptions"
- *          ngeo-profile-pois="ctrl.profilePois"
- *     ></div>
+ *      <div ngeo-profile="ctrl.profileData"
+ *        ngeo-profile-options="ctrl.profileOptions"
+ *        ngeo-profile-pois="ctrl.profilePois">
+ *      </div>
  *
  * Where "ctrl.profileOptions" is of type {@link ngeox.profile.ProfileOptions};
  * "ctrl.profileData" and "ctrl.profilePois" are arrays which will be
@@ -111305,19 +111313,18 @@ goog.require('ngeo');
  *
  * Example:
  *
- *     <div ngeo-recenter ngeo-recenter-map="::ctrl.map">
- *       <a href="#" ngeo-extent="[-1898084, 4676723, 3972279, 8590299]">A</a>
- *       <a href="#" ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</a>
- *       <a href="#" ngeo-zoom="1">Zoom to level 1</a>
- *     </div>
+ *      <div ngeo-recenter ngeo-recenter-map="::ctrl.map">
+ *        <a href="#" ngeo-extent="[-1898084, 4676723, 3972279, 8590299]">A</a>
+ *        <a href="#" ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</a>
+ *        <a href="#" ngeo-zoom="1">Zoom to level 1</a>
+ *      </div>
  *
  * Or with a select:
  *
- *     <select ngeo-recenter ngeo-recenter-map="::ctrl.map">
- *       <option ngeo-extent="[-1898084, 4676723, 3972279, 8590299]">A</option>
- *       <option ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</option>
- *     </select>
- *
+ *      <select ngeo-recenter ngeo-recenter-map="::ctrl.map">
+ *        <option ngeo-extent="[-1898084, 4676723, 3972279, 8590299]">A</option>
+ *        <option ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</option>
+ *      </select>
  *
  * @return {angular.Directive} Directive Definition Object.
  * @ngdoc directive
@@ -114396,10 +114403,12 @@ goog.require('ol.Map');
  * when changing the size of other elements with a transition leads to a change
  * of the map size.
  *
- * @example
- *   <div ng-class="ctrl.open ? 'open' : 'close' ngeo-resizemap="ctrl.map"
- *        ngeo-resizemap-state="open"><div>
- *   <input type="checkbox" ng-model="ctrl.open" />
+ * Example:
+ *
+ *      <div ng-class="ctrl.open ? 'open' : 'close' ngeo-resizemap="ctrl.map"
+ *        ngeo-resizemap-state="open">
+ *      <div>
+ *      <input type="checkbox" ng-model="ctrl.open" />
  *
  * @param {angular.$window} $window Angular window service.
  * @param {angular.$animate} $animate Angular animate service.
@@ -114727,10 +114736,12 @@ goog.require('ngeo');
  * Provides the "ngeoSearch" directive, which uses Twitter's
  * typeahead component to change an input text into a search field.
  *
- *     <input type="text"
- *       ngeo-search="ctrl.typeaheadOptions"
- *       ngeo-search-datasets="ctrl.typeaheadDatasets"
- *       ngeo-search-listeners="crtl.typeaheadListeners">
+ * Example:
+ *
+ *      <input type="text"
+ *        ngeo-search="ctrl.typeaheadOptions"
+ *        ngeo-search-datasets="ctrl.typeaheadDatasets"
+ *        ngeo-search-listeners="crtl.typeaheadListeners">
  *
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
@@ -121163,8 +121174,9 @@ goog.require('ngeo');
  * `Object.defineProperty`) to an interaction, making it possible to use ngModel
  * to activate/deactivate interactions.
  *
- * @example
- * <input type="checkbox" ngModel="interaction.active" />
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="interaction.active" />
  *
  * @typedef {function(ol.interaction.Interaction)}
  * @ngdoc service
@@ -121203,8 +121215,9 @@ goog.require('ngeo');
  * `Object.defineProperty`) to the layer, making it possible to control layer
  * properties with ngModel.
  *
- * @example
- * <input type="checkbox" ngModel="layer.visible" />
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="layer.visible" />
  *
  * @typedef {function(ol.layer.Layer)}
  * @ngdoc service
@@ -121754,6 +121767,8 @@ ngeo.CreatePopup;
 /**
  * Provides a factory to create a popup in the page.
  * The factory returns a ngeo.Popup object.
+ *
+ * Example:
  *
  *     var popup = ngeoCreatePopup();
  *     popup.setTitle("A title");
