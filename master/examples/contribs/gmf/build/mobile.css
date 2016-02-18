@@ -9636,147 +9636,6 @@ nav.nav-right .slide.slide-out {
 .gmf-icon.gmf-icon-check-o:after {
   content: '\e604';
 }
-.mobiledisplayqueries {
-  max-height: 400px;
-  width: 350px;
-  max-width: 350px;
-  margin-left: -175px;
-  position: fixed;
-  right: 5px;
-  bottom: 5px;
-  z-index: 3;
-}
-.mobiledisplayqueries .collapse-button {
-  background-color: white;
-  border: solid 1px black;
-  border-bottom-width: 0;
-  border-radius: 4px 4px 0 0;
-  line-height: 0.5;
-  height: 28px;
-  width: 48px;
-}
-.mobiledisplayqueries .collapse-button.up:after {
-  content: "\f077";
-}
-.mobiledisplayqueries .collapse-button.down:after {
-  content: "\f078";
-}
-.mobiledisplayqueries .displayqueries-container {
-  background-color: white;
-  border: solid 1px black;
-}
-.mobiledisplayqueries .animation-container {
-  position: relative;
-  overflow: hidden;
-  height: 60px;
-  margin: 0 15px;
-  -webkit-transition: 0.3s ease-in all;
-  transition: 0.3s ease-in all;
-}
-.mobiledisplayqueries .animation-container.detailed {
-  height: 160px;
-}
-.mobiledisplayqueries .animation-container .slide-animation {
-  height: 100%;
-  padding: 5px 5px 0;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-.mobiledisplayqueries .animation-container .slide-animation.ng-enter,
-.mobiledisplayqueries .animation-container .slide-animation.ng-leave {
-  -webkit-transition: 0.3s ease-in all;
-  transition: 0.3s ease-in all;
-}
-.mobiledisplayqueries .next .slide-animation.ng-enter {
-  left: 100%;
-}
-.mobiledisplayqueries .next .slide-animation.ng-enter-active,
-.mobiledisplayqueries .next .slide-animation.ng-leave {
-  left: 0;
-}
-.mobiledisplayqueries .next .slide-animation.ng-leave-active {
-  left: -100%;
-}
-.mobiledisplayqueries .previous .slide-animation.ng-enter {
-  left: -100%;
-}
-.mobiledisplayqueries .previous .slide-animation.ng-enter-active,
-.mobiledisplayqueries .previous .slide-animation.ng-leave {
-  left: 0;
-}
-.mobiledisplayqueries .previous .slide-animation.ng-leave-active {
-  left: 100%;
-}
-.mobiledisplayqueries .header .title {
-  font-weight: bold;
-}
-.mobiledisplayqueries .header .subtitle {
-  margin-left: 10px;
-  height: 2ex;
-}
-.mobiledisplayqueries .details {
-  height: 65%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  margin-left: 10px;
-  padding-bottom: 10px;
-}
-.mobiledisplayqueries .details table {
-  font-size: 0.9em;
-}
-.mobiledisplayqueries .details .key {
-  padding-right: 25px;
-}
-.mobiledisplayqueries .details .slide-animation.ng-enter-active .details .value {
-  white-space: nowrap;
-}
-.mobiledisplayqueries .navigate {
-  border-top: solid 1px black;
-  text-align: center;
-  margin-top: 10px;
-  padding-top: 5px;
-  height: 32px;
-}
-.mobiledisplayqueries button {
-  background: none;
-  border: none;
-  font-family: FontAwesome;
-  height: initial;
-  width: 32px;
-}
-.mobiledisplayqueries button.close {
-  padding: 5px 5px 0 0;
-}
-.mobiledisplayqueries button.close:after {
-  content: "\f00d";
-}
-.mobiledisplayqueries .navigate .previous {
-  float: left;
-}
-.mobiledisplayqueries .navigate .previous:after {
-  content: "\f053";
-}
-.mobiledisplayqueries .navigate .next {
-  float: right;
-}
-.mobiledisplayqueries .navigate .next:after {
-  content: "\f054";
-}
-@media (max-width: 768px) {
-  .mobiledisplayqueries {
-    width: 100%;
-    max-width: 100%;
-    margin-left: -50%;
-    right: 50%;
-    left: 50%;
-    bottom: 0;
-  }
-}
 main > * {
   position: absolute;
 }
@@ -9955,6 +9814,12 @@ gmf-map .tooltip-static:before {
   span.twitter-typeahead input {
     padding: 0 5px !important;
   }
+  .tt-menu {
+    border-top: 1px solid black;
+    border-right: inherit;
+    border-bottom: inherit;
+    border-left: inherit;
+  }
 }
 .ol-control button,
 .ol-touch .ol-control button {
@@ -9986,5 +9851,11 @@ button[ngeo-mobile-geolocation] {
   }
   button[ngeo-mobile-geolocation] button:after {
     content: 'b';
+  }
+  .tt-menu {
+    border-top: inherit;
+    border-right: 1px solid black;
+    border-bottom: inherit;
+    border-left: 1px solid black;
   }
 }

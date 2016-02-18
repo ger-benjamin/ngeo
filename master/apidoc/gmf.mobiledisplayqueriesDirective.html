@@ -56,6 +56,11 @@ features on the map using the ngeoFeatureOverlayMgr.</p>
 'gmfMobiledisplayqueriesTemplateUrl'.</p>
 <p>Features displayed on the map use a default style but you can override these
 styles by passing ol.style.Style objects as attributes of this directive.</p>
+<p>Example:</p>
+<pre class="prettyprint source"><code> &lt;gmf-mobiledisplayqueries
+   gmf-mobiledisplayqueries-featuresstyle=&quot;ctrl.styleForAllFeatures&quot;
+   gmf-mobiledisplayqueries-selectedfeaturestyle=&quot;ctrl.styleForTheCurrentFeature&quot;>
+ &lt;/gmf-mobiledisplayqueries></code></pre>
 </div>
 
 
@@ -175,7 +180,7 @@ styles by passing ol.style.Style objects as attributes of this directive.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="contribs_gmf_src_directives_mobiledisplayqueries.js.html">contribs/gmf/src/directives/mobiledisplayqueries.js</a>, <a href="contribs_gmf_src_directives_mobiledisplayqueries.js.html#line55">line 55</a>
+        <a href="contribs_gmf_src_directives_mobiledisplayqueries.js.html">contribs/gmf/src/directives/mobiledisplayqueries.js</a>, <a href="contribs_gmf_src_directives_mobiledisplayqueries.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -220,14 +225,6 @@ styles by passing ol.style.Style objects as attributes of this directive.</p>
 </dl>
 
     
-
-
-    <h5>Example</h5>
-    
-    <pre class="prettyprint"><code>&lt;gmf-mobiledisplayqueries
-    gmf-mobiledisplayqueries-featuresstyle="ctrl.styleForAllFeatures"
-    gmf-mobiledisplayqueries-selectedfeaturestyle="ctrl.styleForTheCurrentFeature">
-&lt;/gmf-mobiledisplayqueries></code></pre>
 
 
 

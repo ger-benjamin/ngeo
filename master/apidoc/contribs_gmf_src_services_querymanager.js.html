@@ -26,12 +26,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @fileoverview This file defines the QueryManager service, which uses the
- * c2cgeoportal's themes to configure ngeo's query service with each layer
- * found.
- */
-goog.provide('gmf.QueryManager');
+            <pre class="prettyprint source linenums"><code>goog.provide('gmf.QueryManager');
 
 goog.require('gmf');
 goog.require('gmf.Themes');
@@ -39,6 +34,9 @@ goog.require('ngeo.Query');
 
 
 /**
+ * The QueryManager service, uses the
+ * c2cgeoportal's themes to configure ngeo's query service with each layer
+ * found.
  * @constructor
  * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @param {gmf.Themes} gmfThemes The gmf Themes service.
@@ -124,21 +122,6 @@ gmf.QueryManager.prototype.createSources_ = function(node) {
     }
   } else {
     if (!this.cache_[id]) {
-
-      // Some nodes have child layers, i.e. a list of layer names that are
-      // part of a group.  The name of the group itself can't be used 'as-is'
-      // as an identifier of the layers for this source.  For example, a
-      // group named 'osm' might result in returning 'restaurant' features.
-      // This override makes sure that those layer names are used instead of
-      // the original one.
-      if (node.childLayers) {
-        var childLayerNames = [];
-        node.childLayers.forEach(function(childLayer) {
-          childLayerNames.push(childLayer.name);
-        }, this);
-        layers = childLayerNames.join(',');
-      }
-
       var source = {
         'id': id,
         'identifierAttributeField': identifierAttributeField,
