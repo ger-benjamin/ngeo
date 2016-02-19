@@ -12,7 +12,7 @@ var app = {};
 
 
 /** @type {!angular.Module} **/
-app.module = angular.module('app', ['gmf', 'ngAnimate']);
+app.module = angular.module('app', ['gmf']);
 
 
 app.module.constant('ngeoQueryOptions', {
