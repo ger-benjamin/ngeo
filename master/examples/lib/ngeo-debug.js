@@ -110519,11 +110519,13 @@ ngeo.module.value('ngeoQueryResult', /** @type {ngeo.QueryResult} */ ({
  * @param {ngeo.QueryResult} ngeoQueryResult The ngeo query result service.
  * @param {ngeox.QueryOptions|undefined} ngeoQueryOptions The options to
  *     configure the ngeo query service with.
+ * @param {ngeo.LayerHelper} ngeoLayerHelper Ngeo Layer Helper.
  * @ngdoc service
  * @ngname ngeoQuery
  * @ngInject
  */
-ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions) {
+ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions,
+    ngeoLayerHelper) {
 
   var options = ngeoQueryOptions !== undefined ? ngeoQueryOptions : {};
 
@@ -110539,6 +110541,19 @@ ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions) {
    */
   this.sourceIdProperty_ = options.sourceIdProperty !== undefined ?
       options.sourceIdProperty : ngeo.Query.DEFAULT_SOURCE_ID_PROPERTY_;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.sourceIdsProperty_ = options.sourceIdsProperty !== undefined ?
+      options.sourceIdsProperty : ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_;
+
+  /**
+   * @type {ngeo.LayerHelper}
+   * @private
+   */
+  this.ngeoLayerHelper_ = ngeoLayerHelper;
 
   /**
    * @type {angular.$http}
@@ -110571,6 +110586,13 @@ ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions) {
  * @private
  */
 ngeo.Query.DEFAULT_SOURCE_ID_PROPERTY_ = 'querySourceId';
+
+
+/**
+ * @const
+ * @private
+ */
+ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_ = 'querySourceIds';
 
 
 /**
@@ -110743,6 +110765,7 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
   var projCode = view.getProjection().getCode();
 
   var id;
+  var ids;
   var infoFormat;
   var url;
   var item;
@@ -110753,37 +110776,71 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
 
   var resolution = /** @type {number} */ (view.getResolution());
 
-  map.getLayers().forEach(function(layer) {
+  var layers = this.ngeoLayerHelper_.getFlatLayers(map.getLayerGroup());
 
-    // skip layers that are not visible
+  layers.forEach(function(layer) {
+
+    // Skip layers that are not visible
     if (!layer.getVisible()) {
       return;
     }
 
-    // skip layers that don't have a source configured
+    // Skip layers that don't have one or more sources configured
     id = this.getLayerSourceId_(layer);
-    if (!id || !this.cache_[id]) {
+    ids = this.getLayerSourceIds_(layer);
+    if ((!id || !this.cache_[id]) && !ids.length) {
       return;
     }
 
-    item = this.cache_[id];
-    item['resultSource'].pending = true;
-    infoFormat = item.source.infoFormat;
-
-    // sources that use GML as info format are combined together if they
-    // share the same server url
-    if (infoFormat === ngeo.QueryInfoFormatType.GML) {
-      url = item.source.wmsSource.getUrl();
-      goog.asserts.assertString(url);
-      if (!itemsByUrl[url]) {
-        itemsByUrl[url] = [];
-      }
-      itemsByUrl[url].push(item);
-    } else {
-      // TODO - support other kinds of infoFormats
-      item['resultSource'].pending = false;
+    if (id) {
+      ids.push(id);
     }
 
+    for (var i = 0, len = ids.length; i < len; i++) {
+      id = ids[i];
+      item = this.cache_[id];
+
+      // If `validateLayerParams` is set, then the source config layer in the
+      // LAYERS params must be in the current LAYERS params of the layer
+      // wms source object.
+      if (item.source.validateLayerParams) {
+        goog.asserts.assert(
+            layer instanceof ol.layer.Image ||
+            layer instanceof ol.layer.Tile,
+            'The layer should be an Image or Tile when using the ' +
+            'validateLayerParams option.'
+        );
+        var layerSource = layer.getSource();
+        goog.asserts.assert(
+            layerSource instanceof ol.source.ImageWMS ||
+            layerSource instanceof ol.source.TileWMS,
+            'The layer source should be a WMS one when using the ' +
+            'validateLayerParams option.'
+        );
+        var layerLayers = layerSource.getParams()['LAYERS'].split(',');
+        var cfgLayer = item.source.wmsSource.getParams()['LAYERS'];
+        if (layerLayers.indexOf(cfgLayer) === -1) {
+          continue;
+        }
+      }
+
+      item['resultSource'].pending = true;
+      infoFormat = item.source.infoFormat;
+
+      // Sources that use GML as info format are combined together if they
+      // share the same server url
+      if (infoFormat === ngeo.QueryInfoFormatType.GML) {
+        url = item.source.wmsSource.getUrl();
+        goog.asserts.assertString(url);
+        if (!itemsByUrl[url]) {
+          itemsByUrl[url] = [];
+        }
+        itemsByUrl[url].push(item);
+      } else {
+        // TODO - support other kinds of infoFormats
+        item['resultSource'].pending = false;
+      }
+    }
   }, this);
 
   goog.object.forEach(itemsByUrl, function(items) {
@@ -110851,6 +110908,21 @@ ngeo.Query.prototype.getLayerSourceId_ = function(layer) {
   var id = layer.get(this.sourceIdProperty_);
   id = goog.isNumber(id) || goog.isString(id) ? id : '';
   return id;
+};
+
+
+/**
+ * Returns the source ids from an ol3 layer object.
+ * @param {ol.layer.Base} layer The ol3 layer object.
+ * @return {Array.<number|string>} ids The ids of the sources bound to that
+ *     layer.
+ * @private
+ */
+ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
+  var ids = layer.get(this.sourceIdsProperty_) || [];
+  goog.asserts.assertArray(ids);
+  var clone = ids.slice()
+  return clone;
 };
 
 
@@ -121416,7 +121488,10 @@ ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
 
 
 /**
- * TODO
+ * Retrieve (or create if it doesn't exist) and return a group of layer from
+ * the base array of layers of a map. The given name is used as unique
+ * identifier. If the group is created, it will be automatically added to
+ * the map.
  * @param {ol.Map} map A map.
  * @param {string} groupName The name of the group.
  * @return {ol.layer.Group} The group corresponding to the given name.

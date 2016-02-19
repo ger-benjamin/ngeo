@@ -9581,11 +9581,11 @@ nav.nav-right .slide.slide-out {
   border: none;
 }
 .nav-left-trigger {
-  left: calc( 1em  + 2px);
+  left: calc(1em  + 1px);
   box-shadow: 3px 0 5px -2px #bbb;
 }
 .nav-right-trigger {
-  right: calc( 1em  + 2px);
+  right: calc(1em  + 1px);
   box-shadow: -3px 0 5px -2px #bbb;
 }
 @media (min-width: 768px) {
@@ -9636,6 +9636,150 @@ nav.nav-right .slide.slide-out {
 .gmf-icon.gmf-icon-check-o:after {
   content: '\e604';
 }
+.mobiledisplayqueries {
+  max-height: 400px;
+  width: 350px;
+  max-width: 350px;
+  margin-left: -175px;
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  z-index: 3;
+}
+.mobiledisplayqueries .collapse-button {
+  background-color: white;
+  border: solid 1px black;
+  border-bottom-width: 0;
+  border-radius: 4px 4px 0 0;
+  line-height: 0.5;
+  height: 28px;
+  width: 48px;
+}
+.mobiledisplayqueries .collapse-button.up:after {
+  content: "\f077";
+}
+.mobiledisplayqueries .collapse-button.down:after {
+  content: "\f078";
+}
+.mobiledisplayqueries .displayqueries-container {
+  background-color: white;
+  border: solid 1px black;
+}
+.mobiledisplayqueries .animation-container {
+  position: relative;
+  overflow: hidden;
+  height: 60px;
+  margin: 0 15px;
+  -webkit-transition: 0.3s ease-in all;
+  transition: 0.3s ease-in all;
+}
+.mobiledisplayqueries .animation-container.detailed {
+  height: 160px;
+}
+.mobiledisplayqueries .animation-container .slide-animation {
+  height: 100%;
+  padding: 5px 5px 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.mobiledisplayqueries .animation-container .slide-animation.ng-enter,
+.mobiledisplayqueries .animation-container .slide-animation.ng-leave {
+  -webkit-transition: 0.3s ease-in all;
+  transition: 0.3s ease-in all;
+}
+.mobiledisplayqueries .next .slide-animation.ng-enter {
+  left: 100%;
+}
+.mobiledisplayqueries .next .slide-animation.ng-enter-active,
+.mobiledisplayqueries .next .slide-animation.ng-leave {
+  left: 0;
+}
+.mobiledisplayqueries .next .slide-animation.ng-leave-active {
+  left: -100%;
+}
+.mobiledisplayqueries .previous .slide-animation.ng-enter {
+  left: -100%;
+}
+.mobiledisplayqueries .previous .slide-animation.ng-enter-active,
+.mobiledisplayqueries .previous .slide-animation.ng-leave {
+  left: 0;
+}
+.mobiledisplayqueries .previous .slide-animation.ng-leave-active {
+  left: 100%;
+}
+.mobiledisplayqueries .header .title {
+  font-weight: bold;
+}
+.mobiledisplayqueries .header .subtitle {
+  margin-left: 10px;
+  height: 2ex;
+}
+.mobiledisplayqueries .details {
+  height: 65%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-left: 10px;
+  padding-bottom: 10px;
+}
+.mobiledisplayqueries .details table {
+  font-size: 0.9em;
+}
+.mobiledisplayqueries .details .key {
+  padding-right: 25px;
+}
+.mobiledisplayqueries .details .slide-animation.ng-enter-active .details .value {
+  white-space: nowrap;
+}
+.mobiledisplayqueries .navigate {
+  border-top: solid 1px black;
+  text-align: center;
+  margin-top: 10px;
+  padding-top: 5px;
+  height: 32px;
+}
+.mobiledisplayqueries button {
+  background-color: white;
+  border: none;
+  font-family: FontAwesome;
+  height: initial;
+  width: 32px;
+}
+.mobiledisplayqueries button:hover {
+  background-color: white;
+}
+.mobiledisplayqueries button.close {
+  padding: 5px 5px 0 0;
+}
+.mobiledisplayqueries button.close:after {
+  content: "\f00d";
+}
+.mobiledisplayqueries .navigate .previous {
+  float: left;
+}
+.mobiledisplayqueries .navigate .previous:after {
+  content: "\f053";
+}
+.mobiledisplayqueries .navigate .next {
+  float: right;
+}
+.mobiledisplayqueries .navigate .next:after {
+  content: "\f054";
+}
+@media (max-width: 768px) {
+  .mobiledisplayqueries {
+    width: 100%;
+    max-width: 100%;
+    margin-left: -50%;
+    right: 50%;
+    left: 50%;
+    bottom: 0;
+  }
+}
 main > * {
   position: absolute;
 }
@@ -9661,12 +9805,13 @@ span.twitter-typeahead:after {
   font-family: FontAwesome;
   color: grey;
   position: absolute;
-  top: 0;
-  left: .25em;
-  line-height: 2.8em;
+  top: 0.3em;
+  left: 0;
+  font-size: 1.4em;
 }
 span.twitter-typeahead input {
-  padding-left: 1.5em;
+  padding-left: 1em;
+  margin-left: 0;
 }
 .tt-menu {
   position: fixed!important;
@@ -9687,6 +9832,7 @@ span.twitter-typeahead input {
   border-bottom: solid 1px black;
   margin: 0;
   padding: 10px 1em;
+  padding-left: 4rem;
   text-align: left;
 }
 .tt-menu .search-datum:hover {
@@ -9738,10 +9884,22 @@ span.twitter-typeahead input {
   content: '\f00d';
   color: grey;
   font-family: FontAwesome;
-  font-size: 1.5em;
+  font-size: 2em;
 }
 .search .clear-button:hover {
   cursor: pointer;
+}
+.search .form-control {
+  box-shadow: none;
+  background: initial !important;
+  border: none;
+  outline: none;
+}
+.search .form-control:focus {
+  box-shadow: none;
+}
+.search .form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
+  left: 1em !important;
 }
 #measure-tools .measure-tools-button {
   display: block;
@@ -9784,6 +9942,9 @@ gmf-map .tooltip-static:before {
   border-top-color: #ffcc33;
 }
 @media (min-width: 768px) {
+  span.twitter-typeahead {
+    left: -2.2rem;
+  }
   .tt-menu {
     top: 4em !important;
     width: 18em;
@@ -9800,7 +9961,8 @@ gmf-map .tooltip-static:before {
   .search input {
     margin: 0;
     border: none;
-    width: calc( 18em  - 2px);
+    width: 13.3em;
+    left: 15px;
   }
   .search .clear-button {
     right: 0;
@@ -9840,6 +10002,17 @@ button[ngeo-mobile-geolocation] {
   right: 1em;
   left: auto;
 }
+@media (min-width: 375px) {
+  .twitter-typeahead {
+    width: 100%;
+    margin-left: 2.5em;
+  }
+  .search .clear-button {
+    left: inherit;
+    margin-left: inherit;
+    right: 3em;
+  }
+}
 @media (min-width: 768px) {
   .ol-zoom {
     top: auto;
@@ -9858,4 +10031,19 @@ button[ngeo-mobile-geolocation] {
     border-bottom: inherit;
     border-left: 1px solid black;
   }
+}
+.gmf-theme-selector .gmf-icon-check:after,
+.gmf-mobile-background-layer-selector .gmf-icon-check:after {
+  font-size: 1.2rem;
+  position: relative;
+  bottom: 0.8rem;
+}
+.gmf-theme-selector .gmf-text,
+.gmf-mobile-background-layer-selector .gmf-text {
+  margin: 3% 10px 0 0;
+}
+.gmf-theme-selector .gmf-thumb,
+.gmf-mobile-background-layer-selector .gmf-thumb {
+  height: auto;
+  width: 25%;
 }
