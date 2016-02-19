@@ -12,7 +12,7 @@ var app = {};
 
 
 /** @type {!angular.Module} **/
-app.module = angular.module('app', ['gmf']);
+app.module = angular.module('app', ['gmf', 'ngTouch']);
 
 
 app.module.constant('ngeoQueryOptions', {

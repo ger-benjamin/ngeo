@@ -56,12 +56,33 @@ It can filter and group results by a feature's property.</p>
 <p>This directive uses the ngeoFeatureOverlayMgr to create a feature overlay
 for drawing features on the map. The application is responsible to
 initialize the ngeoFeatureOverlayMgr with the map.</p>
-<p>Example:</p>
+<p>Example flat results:</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-currenttheme=&quot;ctrl.theme&quot;
    gmf-search-clearbutton=&quot;true&quot;>
- &lt;/gmf-search></code></pre>
+ &lt;/gmf-search>
+ &lt;script>
+   (function() {
+     var module = angular.module('app');
+     module.constant('fulltextsearchUrl', '${request.route_url('fulltextsearch', _query={&quot;limit&quot;: 20}) | n}');
+     module.constant('gmfSearchGroups', []);
+     module.constant('gmfSearchActions', ['add_theme', 'add_group', 'add_layer']);
+   })();
+ &lt;/script></code></pre><p>Example with categories:</p>
+<pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
+   gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
+   gmf-search-currenttheme=&quot;ctrl.theme&quot;
+   gmf-search-clearbutton=&quot;true&quot;>
+ &lt;/gmf-search>
+ &lt;script>
+   (function() {
+     var module = angular.module('app');
+     module.constant('fulltextsearchUrl', '${request.route_url('fulltextsearch', _query={&quot;limit&quot;: 30, &quot;partitionlimit&quot;: 5}) | n}');
+     module.constant('gmfSearchGroups', ${dumps(fulltextsearch_groups) | n});
+     module.constant('gmfSearchActions', []);
+   })();
+ &lt;/script></code></pre>
 </div>
 
 
@@ -227,7 +248,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js">contribs/gmf/src/directives/search.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L61">line 61</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L85">line 85</a>
     </li></ul></dd>
     
 
