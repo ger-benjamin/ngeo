@@ -9637,13 +9637,14 @@ nav.nav-right .slide.slide-out {
   content: '\e604';
 }
 .mobiledisplayqueries {
+  width: 100%;
+  max-width: 100%;
+  margin-left: -50%;
+  right: 50%;
+  left: 50%;
+  bottom: 0;
   max-height: 400px;
-  width: 350px;
-  max-width: 350px;
-  margin-left: -175px;
   position: fixed;
-  right: 5px;
-  bottom: 5px;
   z-index: 3;
 }
 .mobiledisplayqueries .collapse-button {
@@ -9669,7 +9670,7 @@ nav.nav-right .slide.slide-out {
   position: relative;
   overflow: hidden;
   height: 60px;
-  margin: 0 15px;
+  margin: 0 5px;
   -webkit-transition: 0.3s ease-in all;
   transition: 0.3s ease-in all;
 }
@@ -9730,7 +9731,17 @@ nav.nav-right .slide.slide-out {
   font-size: 0.9em;
 }
 .mobiledisplayqueries .details .key {
-  padding-right: 25px;
+  padding-right: 5px;
+  /** prevent glitch for swipe animation **/
+  min-width: calc(30vw - 30px);
+  max-width: calc(30vw - 30px);
+}
+.mobiledisplayqueries .details .value {
+  white-space: pre-wrap;
+  word-break: break-all;
+  /** prevent glitch for swipe animation **/
+  min-width: calc(70vw - 30px);
+  max-width: calc(70vw - 30px);
 }
 .mobiledisplayqueries .details .slide-animation.ng-enter-active .details .value {
   white-space: nowrap;
@@ -9738,25 +9749,8 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries .navigate {
   border-top: solid 1px black;
   text-align: center;
-  margin-top: 10px;
   padding-top: 5px;
   height: 32px;
-}
-.mobiledisplayqueries button {
-  background-color: white;
-  border: none;
-  font-family: FontAwesome;
-  height: initial;
-  width: 32px;
-}
-.mobiledisplayqueries button:hover {
-  background-color: white;
-}
-.mobiledisplayqueries button.close {
-  padding: 5px 5px 0 0;
-}
-.mobiledisplayqueries button.close:after {
-  content: "\f00d";
 }
 .mobiledisplayqueries .navigate .previous {
   float: left;
@@ -9770,14 +9764,42 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries .navigate .next:after {
   content: "\f054";
 }
-@media (max-width: 768px) {
+.mobiledisplayqueries button {
+  background-color: white;
+  border: none;
+  font-family: FontAwesome;
+  height: initial;
+  width: 32px;
+}
+.mobiledisplayqueries button:hover {
+  background-color: white;
+}
+.mobiledisplayqueries button.close {
+  z-index: 3;
+  position: absolute;
+  top: calc(34px);
+  right: 5px;
+}
+.mobiledisplayqueries button.close:after {
+  content: "\f00d";
+}
+@media (min-width: 768px) {
   .mobiledisplayqueries {
-    width: 100%;
-    max-width: 100%;
-    margin-left: -50%;
-    right: 50%;
-    left: 50%;
-    bottom: 0;
+    width: 350px;
+    max-width: 350px;
+    margin-left: -175px;
+    right: calc(1em + 3.1em + 1em + 2px);
+    left: initial;
+    bottom: 5px;
+    /** prevent glitch for swipe animation **/
+  }
+  .mobiledisplayqueries .details table .key {
+    min-width: calc(325px * 0.34);
+    max-width: calc(325px * 0.34);
+  }
+  .mobiledisplayqueries .details table .value {
+    min-width: calc(325px * 0.67);
+    max-width: calc(335px * 0.67);
   }
 }
 main > * {
