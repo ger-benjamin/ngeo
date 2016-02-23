@@ -9191,35 +9191,27 @@ gmf-layertree ul .treenode a {
 gmf-layertree ul .treenode a::after {
   display: none;
 }
-gmf-layertree ul .treenode .state,
 gmf-layertree ul .treenode .rightButtons *::after {
   background: none;
   color: black;
   display: inline;
-}
-gmf-layertree ul .treenode .rightButtons *::after {
   font-family: FontAwesome;
 }
 gmf-layertree ul .treenode .state {
   font-family: gmf-icons;
+  color: #334136;
 }
-gmf-layertree ul .treenode .leaf .state {
-  font-family: gmf-icons;
+gmf-layertree ul .treenode .state.off {
+  color: #b1c2b5;
 }
 gmf-layertree ul .treenode .leaf .state::after {
   content: "\e603";
 }
-gmf-layertree ul .treenode .leaf .state.off {
-  opacity: 0.5;
-}
-gmf-layertree ul .treenode .group .state.on::after {
-  content: "\f14a";
-}
-gmf-layertree ul .treenode .group .state.off::after {
-  content: "\f096";
+gmf-layertree ul .treenode .group .state::after {
+  content: "\e600";
 }
 gmf-layertree ul .treenode .group .state.indeterminate::after {
-  content: "\f147";
+  color: #6b8972;
 }
 gmf-layertree ul .treenode .group .layerIcon {
   display: none;
@@ -9275,6 +9267,9 @@ gmf-layertree ul .treenode .outOfResolution .rightButtons .zoom {
 }
 gmf-layertree ul .treenode .outOfResolution .rightButtons .legendButton {
   display: none;
+}
+gmf-layertree ul .treenode .outOfResolution.leaf .state::after {
+  content: "\e604";
 }
 gmf-layertree ul .treenode .legendButton a {
   padding: 0;
