@@ -9201,17 +9201,18 @@ gmf-layertree ul .treenode .state {
   font-family: gmf-icons;
   color: #334136;
 }
-gmf-layertree ul .treenode .state.off {
-  color: #b1c2b5;
+gmf-layertree ul .treenode .off,
+gmf-layertree ul .treenode .off .legend img {
+  opacity: 0.5;
+}
+gmf-layertree ul .treenode .indeterminate .state::after {
+  color: #5c996a;
 }
 gmf-layertree ul .treenode .leaf .state::after {
   content: "\e603";
 }
 gmf-layertree ul .treenode .group .state::after {
   content: "\e600";
-}
-gmf-layertree ul .treenode .group .state.indeterminate::after {
-  color: #6b8972;
 }
 gmf-layertree ul .treenode .group .layerIcon {
   display: none;
@@ -9258,9 +9259,6 @@ gmf-layertree ul .treenode .noSource {
 }
 gmf-layertree ul .treenode .noSource::after {
   content: "(source not available)";
-}
-gmf-layertree ul .treenode .outOfResolution {
-  opacity: 0.6;
 }
 gmf-layertree ul .treenode .outOfResolution .rightButtons .zoom {
   display: inline;
