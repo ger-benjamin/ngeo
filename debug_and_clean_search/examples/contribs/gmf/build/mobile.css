@@ -9887,7 +9887,7 @@ span.twitter-typeahead input {
   padding: 0 5px;
   border-width: 0;
   border-radius: 0;
-  height: 2.8em;
+  height: 3em;
 }
 .search input::-ms-clear {
   display: none;
@@ -9913,16 +9913,16 @@ span.twitter-typeahead input {
 .search .twitter-typeahead {
   width: 100%;
 }
-.form-control {
+.search .form-control {
   box-shadow: none;
   background: initial !important;
   border: none;
   outline: none;
 }
-.form-control:focus {
+.search .form-control:focus {
   box-shadow: none;
 }
-.form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
+.search .form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
   display: none;
 }
 #measure-tools .measure-tools-button {
@@ -10037,7 +10037,7 @@ button[ngeo-mobile-geolocation] {
     right: 0;
   }
   span.twitter-typeahead input {
-    width: 18em;
+    width: 14em;
     margin-right: 0;
     padding-left: 0.6em;
     left: 1.2em;
