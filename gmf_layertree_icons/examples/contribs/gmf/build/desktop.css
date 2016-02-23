@@ -9199,14 +9199,14 @@ gmf-layertree ul .treenode .rightButtons *::after {
 }
 gmf-layertree ul .treenode .state {
   font-family: gmf-icons;
-  color: #334136;
+  color: #555;
+}
+gmf-layertree ul .treenode .on .state {
+  color: #5c996a;
 }
 gmf-layertree ul .treenode .off,
 gmf-layertree ul .treenode .off .legend img {
   opacity: 0.5;
-}
-gmf-layertree ul .treenode .indeterminate .state::after {
-  color: #5c996a;
 }
 gmf-layertree ul .treenode .leaf .state::after {
   content: "\e603";
