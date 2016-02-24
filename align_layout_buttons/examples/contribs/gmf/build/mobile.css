@@ -9698,6 +9698,7 @@ nav.nav-right .slide.slide-out {
 }
 .nav-trigger .fa,
 .nav-trigger .gmf-icon {
+  text-align: center;
   font-size: 1.5em;
 }
 .nav-left-trigger {
