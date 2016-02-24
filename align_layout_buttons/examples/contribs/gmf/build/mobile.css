@@ -9733,28 +9733,28 @@ nav.nav-right .slide.slide-out {
  */
 .gmf-icon:after,
 .gmf-icon:before {
-  font-family: gmf-icons;
+  font-family: "Times New Roman", Georgia, Serif;
   font-size: inherit;
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
 }
 .gmf-icon.gmf-icon-layers:after {
-  content: '\e600';
+  content: 'x';
 }
 .gmf-icon.gmf-icon-list:after {
-  content: '\e602';
+  content: 'x';
 }
 .gmf-icon.gmf-icon-map:after {
-  content: '\f279';
+  content: 'x';
 }
 .gmf-icon.gmf-icon-map-o:after {
-  content: '\f278';
+  content: 'x';
 }
 .gmf-icon.gmf-icon-check:after {
-  content: '\e603';
+  content: 'x';
 }
 .gmf-icon.gmf-icon-check-o:after {
-  content: '\e604';
+  content: 'x';
 }
 .mobiledisplayqueries {
   width: 100%;
