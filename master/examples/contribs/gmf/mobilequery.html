@@ -235,7 +235,10 @@
   </head>
   <body ng-controller="MainController as ctrl">
 
-    <gmf-map gmf-map-map="ctrl.map"></gmf-map>
+    <gmf-map gmf-map-map="ctrl.map"
+        ngeo-mobile-query="" ngeo-mobile-query-map="::ctrl.map"
+        ngeo-mobile-query-active="ctrl.queryActive">
+    </gmf-map>
 
     <div id="tree-container">
       <div>
@@ -268,11 +271,8 @@
       display all selected features.</p>
     </p>
 
-    <span
-      ngeo-mobile-query=""
-      ngeo-mobile-query-map="::ctrl.map"
-      ngeo-mobile-query-active="::true">
-    </span>
+    <input type="checkbox"
+       ng-model="ctrl.queryActive" /> Query-Tool active
 
     <gmf-mobiledisplayqueries
       gmf-mobiledisplayqueries-featuresstyle="ctrl.featureStyle">
@@ -281,6 +281,7 @@
     <script src="../../lib/jquery.min.js"></script>
     <script src="../../lib/angular.min.js"></script>
     <script src="../../lib/angular-animate.min.js"></script>
+    <script src="../../lib/angular-touch.min.js"></script>
     <script src="../../lib/bootstrap.min.js"></script>
     <script src="../../lib/angular-gettext.min.js"></script>
     <script src="../../lib/proj4.js"></script>

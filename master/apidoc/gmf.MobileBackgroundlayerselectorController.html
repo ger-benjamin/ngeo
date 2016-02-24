@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: MobiledisplayqueriesController <small>Controller:GmfMobiledisplayqueriesController</small></title>
+    <title>JSDoc: Class: MobileBackgroundlayerselectorController <small>controller:GmfMobileBackgroundlayerselectorController</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: MobiledisplayqueriesController <small>Controller:GmfMobiledisplayqueriesController</small></h1>
+    <h1 class="page-title">Class: MobileBackgroundlayerselectorController <small>controller:GmfMobileBackgroundlayerselectorController</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="MobiledisplayqueriesController">
-            <span class="ancestors">gmf.</span>MobiledisplayqueriesController
+        <h2 id="MobileBackgroundlayerselectorController">
+            <span class="ancestors">gmf.</span>MobileBackgroundlayerselectorController
         </h2>
         
     
@@ -42,7 +42,7 @@
 
     
 
-    <h4 class="name" id="MobiledisplayqueriesController"><span class="type-signature"></span>new MobiledisplayqueriesController<span class="signature">($scope, ngeoQueryResult, ngeoFeatureOverlayMgr)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="MobileBackgroundlayerselectorController"><span class="type-signature"></span>new MobileBackgroundlayerselectorController<span class="signature">(ngeoBackgroundLayerMgr, gmfPermalink, gmfThemes)</span><span class="type-signature"></span></h4>
 
     
 
@@ -81,13 +81,13 @@
 
         <tr>
             
-                <td class="name"><code>$scope</code></td>
+                <td class="name"><code>ngeoBackgroundLayerMgr</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="https://docs.angularjs.org/guide/scope">angular.Scope</a></span>
+<span class="param-type"><a href="ngeo.BackgroundLayerMgr.html">ngeo.BackgroundLayerMgr</a></span>
 
 
             
@@ -97,20 +97,21 @@
 
             
 
-            <td class="description last"><p>Angular scope.</p></td>
+            <td class="description last"><p>Background layer
+    manager.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>ngeoQueryResult</code></td>
+                <td class="name"><code>gmfPermalink</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ngeo.html#QueryResult">ngeo.QueryResult</a></span>
+<span class="param-type"><a href="gmf.Permalink.html">gmf.Permalink</a></span>
 
 
             
@@ -120,20 +121,20 @@
 
             
 
-            <td class="description last"><p>ngeo query result.</p></td>
+            <td class="description last"><p>The gmf permalink service.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>ngeoFeatureOverlayMgr</code></td>
+                <td class="name"><code>gmfThemes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ngeo.FeatureOverlayMgr.html">ngeo.FeatureOverlayMgr</a></span>
+<span class="param-type"><a href="gmf.Themes.html">gmf.Themes</a></span>
 
 
             
@@ -143,8 +144,7 @@
 
             
 
-            <td class="description last"><p>The ngeo feature
-    overlay manager service.</p></td>
+            <td class="description last"><p>Themes service.</p></td>
         </tr>
 
     
@@ -188,8 +188,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L88">line 88</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L72">line 72</a>
     </li></ul></dd>
     
 
@@ -233,7 +233,7 @@
 
         
             
-<h4 class="name" id="animate"><span class="type-signature"></span>animate<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+<h4 class="name" id="bgLayer"><span class="type-signature"></span>bgLayer<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.layer.Base.html">ol.layer.Base</a></span></h4>
 
 
 
@@ -244,7 +244,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.layer.Base.html">ol.layer.Base</a></span>
 
 
         </li>
@@ -284,8 +284,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L165">line 165</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L92">line 92</a>
     </li></ul></dd>
     
 
@@ -303,7 +303,7 @@
 
         
             
-<h4 class="name" id="currentResult"><span class="type-signature"></span>currentResult<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+<h4 class="name" id="bgLayers"><span class="type-signature"></span>bgLayers<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="http://openlayers.org/en/master/apidoc/ol.layer.Base.html">ol.layer.Base</a>></span></h4>
 
 
 
@@ -314,7 +314,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="http://openlayers.org/en/master/apidoc/ol.layer.Base.html">ol.layer.Base</a>></span>
 
 
         </li>
@@ -354,8 +354,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L153">line 153</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L98">line 98</a>
     </li></ul></dd>
     
 
@@ -373,7 +373,7 @@
 
         
             
-<h4 class="name" id="feature"><span class="type-signature"></span>feature<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span></h4>
+<h4 class="name" id="map"><span class="type-signature"></span>map<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span></h4>
 
 
 
@@ -384,7 +384,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
 
 
         </li>
@@ -424,8 +424,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L147">line 147</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L79">line 79</a>
     </li></ul></dd>
     
 
@@ -443,10 +443,14 @@
 
         
             
-<h4 class="name" id="isNext"><span class="type-signature"></span>isNext<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
+<h4 class="name" id="select"><span class="type-signature"></span>select<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span></h4>
 
 
 
+
+<div class="description">
+    <p>Function called when a layer was selected by the user.</p>
+</div>
 
 
 
@@ -454,7 +458,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span>
 
 
         </li>
@@ -494,148 +498,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L159">line 159</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="open"><span class="type-signature"></span>open<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L171">line 171</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="source"><span class="type-signature">(nullable) </span>source<span class="type-signature"> :<a href="ngeo.html#QueryResultSource">ngeo.QueryResultSource</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="ngeo.html#QueryResultSource">ngeo.QueryResultSource</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L141">line 141</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L86">line 86</a>
     </li></ul></dd>
     
 
@@ -662,16 +526,12 @@
 
     
 
-    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="setLayer"><span class="type-signature"></span>setLayer<span class="signature">(layer, opt_silent<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
-<div class="description">
-    <p>Remove the current selected feature and source and remove all features
-from the map.</p>
-</div>
 
 
 
@@ -680,570 +540,96 @@ from the map.</p>
 
 
 
-
-
-
-
-
-
-
-<dl class="details">
-
+    <h5>Parameters:</h5>
     
 
-    
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L363">line 363</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <th>Type</th>
 
         
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
             
 
-    
-
-    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.layer.Base.html">ol.layer.Base</a></span>
 
 
-<div class="description">
-    <p>Remove the current selected feature and source and remove all features
-from the map.</p>
-</div>
+            
+            </td>
 
+            
+                <td class="attributes">
+                
 
+                
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L352">line 352</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
+                
+                </td>
             
 
-    
-
-    <h4 class="name" id="getFeatureValues"><span class="type-signature"></span>getFeatureValues<span class="signature">()</span><span class="type-signature"> &rarr; (nullable) {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Get the properties in the current feature.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L290">line 290</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>properties of the current feature or null.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
             
 
-    
-
-    <h4 class="name" id="getResultLength"><span class="type-signature"></span>getResultLength<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Get the total count of features in the result of the query.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
+            <td class="description last"><p>Layer.</p></td>
+        </tr>
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L280">line 280</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Total number of features.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
+        <tr>
+            
+                <td class="name"><code>opt_silent</code></td>
             
 
-    
-
-    <h4 class="name" id="next"><span class="type-signature"></span>next<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
+            <td class="type">
+            
+                
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
 
 
-<div class="description">
-    <p>Select the logical next source and feature then highlight this feature on
-the map.</p>
-</div>
+            
+            </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L262">line 262</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
+                
+                </td>
             
 
-    
-
-    <h4 class="name" id="previous"><span class="type-signature"></span>previous<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Select the logical previous source and feature then highlight this feature on
-the map.</p>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L245">line 245</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
             
 
+            <td class="description last"><p>Do not notify listeners.</p></td>
+        </tr>
+
     
-
-    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">()</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>Remove current displayed results then get new results from the
-ngeoQueryResult sevice. Display all results on the map and display,
-highlight the first feature.</p>
-</div>
-
-
-
-
-
-
-
+    </tbody>
+</table>
 
 
 
@@ -1282,8 +668,8 @@ highlight the first feature.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js">contribs/gmf/src/directives/mobiledisplayqueries.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobiledisplayqueries.js#L193">line 193</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js">contribs/gmf/src/directives/mobilebackgroundlayerselector.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/mobilebackgroundlayerselector.js#L149">line 149</a>
     </li></ul></dd>
     
 

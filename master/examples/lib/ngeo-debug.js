@@ -108976,6 +108976,8 @@ goog.require('ngeo');
  *
  *     <div ngeo-btn-group ngeo-btn-group-active="ctrl.drawToolActive">
  *
+ * @htmlAttribute {*} ngeo-btn-group-active Any property of the scope.
+ * Tells whether at least one button of the group is active.
  * @param {angular.$parse} $parse Angular parse service.
  * @return {angular.Directive} The directive specs.
  * @ngInject
@@ -109072,6 +109074,7 @@ ngeo.module.controller('ngeoBtnGroupController', ngeo.BtnGroupController);
  * This example is about creating a Bootstrap button that can pressed/depressed
  * to activate/deactivate an OpenLayers 3 interaction.
  *
+ * @htmlAttribute {*} ng-model Any property on the scope. Ideally a boolean.
  * @param {angular.$parse} $parse Angular parse service.
  * @return {angular.Directive} The directive specs.
  * @ngInject
@@ -109147,6 +109150,7 @@ goog.require('ol.control.Control');
  * instance, and the expression passed to "ngeo-control-map" should
  * evaluate to a map instance.
  *
+ * @htmlAttribute {ol.Map} ngeo-control-map The map.
  * @return {angular.Directive} The directive specs.
  * @ngInject
  * @ngdoc directive
@@ -109535,6 +109539,18 @@ goog.require('ol.geom.Point');
 
 
 /**
+ * @enum {string}
+ * @export
+ */
+ngeo.DesktopGeolocationEventType = {
+  /**
+   * Triggered when an error occures.
+   */
+  ERROR: 'desktop-geolocation-error'
+};
+
+
+/**
  * Provide a "desktop geolocation" directive.
  *
  * Example:
@@ -109544,6 +109560,8 @@ goog.require('ol.geom.Point');
  *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
  *      </button>
  *
+ * @htmlAttribute {ol.Map} gmf-geolocation-map The map.
+ * @htmlAttribute {ngeox.DesktopGeolocationDirectiveOptions} gmf-geolocation-options The options.
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -109598,6 +109616,12 @@ ngeo.DesktopGeolocationController = function($scope, $element,
   goog.asserts.assertObject(options);
 
   /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.$scope_ = $scope;
+
+  /**
    * @type {ngeo.FeatureOverlay}
    * @private
    */
@@ -109610,6 +109634,12 @@ ngeo.DesktopGeolocationController = function($scope, $element,
   this.geolocation_ = new ol.Geolocation({
     projection: map.getView().getProjection()
   });
+
+  // handle geolocation error.
+  this.geolocation_.on('error', function(error) {
+    this.deactivate_();
+    $scope.$emit(ngeo.DesktopGeolocationEventType.ERROR, error);
+  }, this);
 
   /**
    * @type {ol.Feature}
@@ -109702,6 +109732,16 @@ ngeo.DesktopGeolocationController.prototype.deactivate_ = function() {
  */
 ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
   var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
+
+  // if user is using Firefox and selects the "not now" option, OL geolocation
+  // doesn't return an error
+  if (!goog.isDef(position)) {
+    this.deactivate_();
+    this.$scope_.$emit(ngeo.DesktopGeolocationEventType.ERROR, null);
+    return;
+  }
+
+  goog.asserts.assert(goog.isDef(position));
   var point = new ol.geom.Point(position);
 
   this.positionFeature_.setGeometry(point);
@@ -109735,6 +109775,8 @@ goog.require('ngeo');
  *      <input type="file" ngeo-filereader="ctrl.fileContent"
  *        ngeo-filereader-supported="ctrl.supported"/>
  *
+ * @htmlAttribute {string} ngeo-filereader The content of the file read.
+ * @htmlAttribute {boolean=} ngeo-filereader-supported Whether the FileReader API is supported.
  * @param {angular.$window} $window The Angular $window service.
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
@@ -109858,6 +109900,26 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  * controller: "layertreeCtrl". You can refer to that property in a custom
  * template for example.
  *
+ * @htmlAttribute {Object} ngeo-layertree One theme (JSON).
+ * @htmlAttribute {string} ngeo-layertree-templateurl The template URL.
+ * @htmlAttribute {ol.Map} ngeo-layertree-map The map.
+ * @htmlAttribute {string} ngeo-layertree-nodelayer Expression that will be parsed
+ *      to be a {@link Function} that return a {@link ol.layer.Layer}
+ *      with the argument:
+ *      {
+ *          'node': {@link Object}|undefined,
+ *          'depth': {@link number}
+ *      }
+ * @htmlAttribute {string} ngeo-layertree-nodelayerexpr Expression that will be parsed
+ *      to be a {@link ngeo-layertree-nodelayer}.
+ * @htmlAttribute {string} ngeo-layertree-listeners Expression that will be parsed
+ *      to be a {@link Function} with the argument:
+ *      {
+ *          'treeScope': !{@link angular.Scope},
+ *          'treeCtrl': {@link ngeo.LayertreeController}
+ *      }
+ * @htmlAttribute {string} ngeo-layertree-listenersexpr Expression that will be parsed
+ *      to be a {@link ngeo-layertree-listeners}.
  * @param {angular.$compile} $compile Angular compile service.
  * @param {string|function(!angular.JQLite=, !angular.Attributes=)}
  *     ngeoLayertreeTemplateUrl Template URL for the directive.
@@ -110031,6 +110093,7 @@ goog.require('ol.Map');
  *
  *      <div ngeo-map="ctrl.map"></div>
  *
+ * @htmlAttribute {ol.Map} ngeo-map The map.
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -110073,15 +110136,28 @@ goog.require('ol.geom.Point');
 
 
 /**
+ * @enum {string}
+ * @export
+ */
+ngeo.MobileGeolocationEventType = {
+  /**
+   * Triggered when an error occures.
+   */
+  ERROR: 'mobile-geolocation-error'
+};
+
+/**
  * Provide a "mobile geolocation" directive.
  *
  * Example:
  *
- *      <button ngeo-mobile-geolocation=""
+ *      <button ngeo-mobile-geolocation
  *        ngeo-mobile-geolocation-map="ctrl.map"
  *        ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
  *      </button>
  *
+ * @htmlAttribute {ol.Map} ngeo-mobile-geolocation-map The map.
+ * @htmlAttribute {ngeox.MobileGeolocationDirectiveOptions} ngeo-mobile-geolocation-options The options.
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -110125,6 +110201,12 @@ ngeo.MobileGeolocationController = function($scope, $element,
   goog.asserts.assertInstanceof(map, ol.Map);
 
   /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.$scope_ = $scope;
+
+  /**
    * @type {!ol.Map}
    * @private
    */
@@ -110146,6 +110228,12 @@ ngeo.MobileGeolocationController = function($scope, $element,
   this.geolocation_ = new ol.Geolocation({
     projection: map.getView().getProjection()
   });
+
+  // handle geolocation error.
+  this.geolocation_.on('error', function(error) {
+    this.untrack_();
+    $scope.$emit(ngeo.MobileGeolocationEventType.ERROR, error);
+  }, this);
 
   /**
    * @type {ol.Feature}
@@ -110236,6 +110324,14 @@ ngeo.MobileGeolocationController.prototype.toggleTracking = function() {
   if (this.geolocation_.getTracking()) {
     // if map center is different than geolocation position, then track again
     var currentPosition = this.geolocation_.getPosition();
+    // if user is using Firefox and selects the "not now" option, OL geolocation
+    // doesn't return an error
+    if (!goog.isDef(currentPosition)) {
+      this.untrack_();
+      this.$scope_.$emit(ngeo.MobileGeolocationEventType.ERROR, null);
+      return;
+    }
+    goog.asserts.assert(goog.isDef(currentPosition));
     var center = this.map_.getView().getCenter();
     if (currentPosition[0] === center[0] &&
         currentPosition[1] === center[1]) {
@@ -110784,7 +110880,6 @@ ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
 
 ngeo.module.service('ngeoQuery', ngeo.Query);
 
-goog.provide('ngeo.MobileQueryController');
 goog.provide('ngeo.mobileQueryDirective');
 
 goog.require('ngeo');
@@ -110810,116 +110905,64 @@ goog.require('ngeo.Query');
  *        ngeo-mobile-query-active="ctrl.queryActive">
  *      </span>
  *
+ * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
  * @ngdoc directive
  * @ngname ngeoMobileQuery
  */
-ngeo.mobileQueryDirective = function() {
+ngeo.mobileQueryDirective = function(ngeoQuery) {
   return {
     restrict: 'A',
-    scope: {
-      'active': '=ngeoMobileQueryActive',
-      'map': '=ngeoMobileQueryMap'
-    },
-    bindToController: true,
-    controller: 'NgeoMobileQueryController',
-    controllerAs: 'ctrl'
+    scope: false,
+    link: function(scope, elem, attrs) {
+      var map = scope.$eval(attrs['ngeoMobileQueryMap']);
+      var clickEventKey_ = null;
+
+      /**
+       * Called when the map is clicked while this controller is active. Issue
+       * a request to the query service using the coordinate that was clicked.
+       * @param {ol.MapBrowserEvent} evt The map browser event being fired.
+       */
+      var handleMapClick_ = function(evt) {
+        ngeoQuery.issue(map, evt.coordinate);
+      };
+
+      /**
+       * Listen to the map 'click' event.
+       */
+      var activate_ = function() {
+        clickEventKey_ = ol.events.listen(map,
+            ol.events.EventType.CLICK, handleMapClick_);
+      };
+
+
+      /**
+       * Unlisten the map 'click' event.
+       */
+      var deactivate_ = function() {
+        if (clickEventKey_ !== null) {
+          ol.events.unlistenByKey(clickEventKey_);
+          clickEventKey_ = null;
+        }
+        ngeoQuery.clear();
+      };
+
+      // watch 'active' property -> activate/deactivate accordingly
+      scope.$watch(attrs['ngeoMobileQueryActive'],
+          function(newVal, oldVal) {
+            if (newVal) {
+              activate_();
+            } else {
+              deactivate_();
+            }
+          }
+      );
+    }
   };
 };
 
-
 ngeo.module.directive('ngeoMobileQuery', ngeo.mobileQueryDirective);
-
-
-/**
- * @constructor
- * @param {angular.Scope} $scope Scope.
- * @param {ngeo.Query} ngeoQuery The ngeo Query service.
- * @export
- * @ngInject
- * @ngdoc controller
- * @ngname NgeoMobileQueryController
- */
-ngeo.MobileQueryController = function($scope, ngeoQuery) {
-
-  /**
-   * @type {ol.Map}
-   * @export
-   */
-  this.map;
-
-  /**
-   * @type {boolean}
-   * @export
-   */
-  this.active;
-
-  /**
-   * @type {ngeo.Query}
-   * @private
-   */
-  this.query_ = ngeoQuery;
-
-  /**
-   * The key for map click event.
-   * @type {?ol.events.Key}
-   * @private
-   */
-  this.clickEventKey_ = null;
-
-  // watch 'active' property -> activate/deactivate accordingly
-  $scope.$watch(
-      function() {
-        return this.active;
-      }.bind(this),
-      function() {
-        if (this.active) {
-          this.activate_();
-        } else {
-          this.deactivate_();
-        }
-      }.bind(this)
-  );
-
-};
-
-
-/**
- * Listen to the map 'click' event.
- * @private
- */
-ngeo.MobileQueryController.prototype.activate_ = function() {
-  this.clickEventKey_ = ol.events.listen(this.map,
-      ol.events.EventType.CLICK, this.handleMapClick_, this);
-};
-
-
-/**
- * Unlisten the map 'click' event.
- * @private
- */
-ngeo.MobileQueryController.prototype.deactivate_ = function() {
-  if (this.clickEventKey_ !== null) {
-    ol.events.unlistenByKey(this.clickEventKey_);
-    this.clickEventKey_ = null;
-  }
-  this.query_.clear();
-};
-
-
-/**
- * Called when the map is clicked while this controller is active. Issue
- * a request to the query service using the coordinate that was clicked.
- * @param {ol.MapBrowserEvent} evt The map browser event being fired.
- * @private
- */
-ngeo.MobileQueryController.prototype.handleMapClick_ = function(evt) {
-  this.query_.issue(this.map, evt.coordinate);
-};
-
-
-ngeo.module.controller('NgeoMobileQueryController', ngeo.MobileQueryController);
 
 goog.provide('ngeo.modalDirective');
 
@@ -111098,6 +111141,11 @@ goog.require('ngeo.profile');
  * processed by {@link ngeox.profile.ElevationExtractor} and
  * {@link ngeox.profile.PoiExtractor}.
  *
+ * @htmlAttribute {?Object} ngeo-profile The profile data.
+ * @htmlAttribute {ngeox.profile.ProfileOptions} ngeo-profile-options The options.
+ * @htmlAttribute {?Array} ngeo-profile-pois The data for POIs.
+ * @htmlAttribute {*} ngeo-profile-highlight Any property on the scope which
+ * evaluated value may correspond to distance from origin.
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -111219,6 +111267,7 @@ goog.require('ngeo');
  *        <option ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</option>
  *      </select>
  *
+ * @htmlAttribute {ol.Map} ngeo-recenter-map The map.
  * @return {angular.Directive} Directive Definition Object.
  * @ngdoc directive
  * @ngname ngeoRecenter
@@ -114423,6 +114472,8 @@ ngeo.ScaleselectorOptions;
  * The directive doesn't create any watcher. In particular the object including
  * the scales information is now watched.
  *
+ * @htmlAttribute {Object.<string, string>} ngeo-scaleselector-scales The available scales (key: scale, value: display text).
+ * @htmlAttribute {ol.Map} ngeo-scaleselector-map The map.
  * @param {string|function(!angular.JQLite=, !angular.Attributes=)}
  *     ngeoScaleselectorTemplateUrl Template URL for the directive.
  * @return {angular.Directive} Directive Definition Object.
@@ -114636,6 +114687,9 @@ goog.require('ngeo');
  *        ngeo-search-datasets="ctrl.typeaheadDatasets"
  *        ngeo-search-listeners="crtl.typeaheadListeners">
  *
+ * @htmlAttribute {TypeaheadOptions} ngeo-search The options.
+ * @htmlAttribute {Array.<TypeaheadDataset>} ngeo-search-datasets The sources datasets.
+ * @htmlAttribute {ngeox.SearchDirectiveListeners} ngeo-search-listeners The listeners.
  * @return {angular.Directive} Directive Definition Object.
  * @ngInject
  * @ngdoc directive
@@ -117947,6 +118001,8 @@ ngeo.SortableOptions;
  * if some outside code adds/removes elements to/from the "sortable" array,
  * the "ngeoSortable" directive will pick it up.
  *
+ * @htmlAttribute {Array.<ol.layer.Base>} ngeo-sortable The layers to sort.
+ * @htmlAttribute {!ngeo.SortableOptions} ngeo-sortable The options.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @return {angular.Directive} The directive specs.
  * @ngInject

@@ -9134,32 +9134,32 @@ button[ngeo-mobile-geolocation] {
   top: 135px;
 }
 .gmf-theme-selector,
-.gmf-mobile-background-layer-selector {
+.gmf-mobile-backgroundlayerselector {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .gmf-theme-selector li,
-.gmf-mobile-background-layer-selector li {
+.gmf-mobile-backgroundlayerselector li {
   cursor: pointer;
   margin-bottom: 10px;
 }
 .gmf-theme-selector .gmf-check,
-.gmf-mobile-background-layer-selector .gmf-check,
+.gmf-mobile-backgroundlayerselector .gmf-check,
 .gmf-theme-selector .gmf-text,
-.gmf-mobile-background-layer-selector .gmf-text,
+.gmf-mobile-backgroundlayerselector .gmf-text,
 .gmf-theme-selector .gmf-thumb,
-.gmf-mobile-background-layer-selector .gmf-thumb {
+.gmf-mobile-backgroundlayerselector .gmf-thumb {
   float: left;
 }
 .gmf-theme-selector .gmf-check,
-.gmf-mobile-background-layer-selector .gmf-check {
+.gmf-mobile-backgroundlayerselector .gmf-check {
   height: 20px;
   margin: 15px 5px 0 0;
   width: 20px;
 }
 .gmf-theme-selector .gmf-text,
-.gmf-mobile-background-layer-selector .gmf-text {
+.gmf-mobile-backgroundlayerselector .gmf-text {
   margin: 15px 10px 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9167,12 +9167,12 @@ button[ngeo-mobile-geolocation] {
   white-space: nowrap;
 }
 .gmf-theme-selector .gmf-thumb,
-.gmf-mobile-background-layer-selector .gmf-thumb {
+.gmf-mobile-backgroundlayerselector .gmf-thumb {
   height: 60px;
   width: 60px;
 }
 .gmf-theme-selector .gmf-eol,
-.gmf-mobile-background-layer-selector .gmf-eol {
+.gmf-mobile-backgroundlayerselector .gmf-eol {
   clear: left;
 }
 gmf-layertree div {
@@ -9191,27 +9191,28 @@ gmf-layertree ul .treenode a {
 gmf-layertree ul .treenode a::after {
   display: none;
 }
-gmf-layertree ul .treenode .state,
 gmf-layertree ul .treenode .rightButtons *::after {
   background: none;
   color: black;
   display: inline;
   font-family: FontAwesome;
 }
-gmf-layertree ul .treenode .leaf .state.on::after {
-  content: "\f058";
+gmf-layertree ul .treenode .state {
+  font-family: gmf-icons;
+  color: #555;
 }
-gmf-layertree ul .treenode .leaf .state.off::after {
-  content: "\f1db";
+gmf-layertree ul .treenode .on .state {
+  color: #5c996a;
 }
-gmf-layertree ul .treenode .group .state.on::after {
-  content: "\f14a";
+gmf-layertree ul .treenode .off,
+gmf-layertree ul .treenode .off .legend img {
+  opacity: 0.5;
 }
-gmf-layertree ul .treenode .group .state.off::after {
-  content: "\f096";
+gmf-layertree ul .treenode .leaf .state::after {
+  content: "\e603";
 }
-gmf-layertree ul .treenode .group .state.indeterminate::after {
-  content: "\f147";
+gmf-layertree ul .treenode .group .state::after {
+  content: "\e600";
 }
 gmf-layertree ul .treenode .group .layerIcon {
   display: none;
@@ -9259,14 +9260,14 @@ gmf-layertree ul .treenode .noSource {
 gmf-layertree ul .treenode .noSource::after {
   content: "(source not available)";
 }
-gmf-layertree ul .treenode .outOfResolution {
-  opacity: 0.6;
-}
 gmf-layertree ul .treenode .outOfResolution .rightButtons .zoom {
   display: inline;
 }
 gmf-layertree ul .treenode .outOfResolution .rightButtons .legendButton {
   display: none;
+}
+gmf-layertree ul .treenode .outOfResolution.leaf .state::after {
+  content: "\e604";
 }
 gmf-layertree ul .treenode .legendButton a {
   padding: 0;

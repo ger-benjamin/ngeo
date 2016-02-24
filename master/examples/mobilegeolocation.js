@@ -10,12 +10,13 @@ app.module = angular.module('app', ['ngeo']);
 
 
 /**
+ * @param {angular.Scope} $scope Scope.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
  *     overlay manager service.
  * @constructor
  * @ngInject
  */
-app.MainController = function(ngeoFeatureOverlayMgr) {
+app.MainController = function($scope, ngeoFeatureOverlayMgr) {
 
   var positionFeatureStyle = new ol.style.Style({
     image: new ol.style.Circle({
@@ -57,6 +58,11 @@ app.MainController = function(ngeoFeatureOverlayMgr) {
   });
 
   ngeoFeatureOverlayMgr.init(this.map);
+
+  $scope.$on(ngeo.MobileGeolocationEventType.ERROR, function(event, error) {
+    event.stopPropagation();
+    alert('Geo-location failed');
+  }.bind(this));
 };
 
 

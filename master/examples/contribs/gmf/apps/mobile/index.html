@@ -11,12 +11,10 @@
                    'nav-left-is-visible': mainCtrl.leftNavIsVisible(),
                    'nav-right-is-visible': mainCtrl.rightNavIsVisible()}">
     <main>
-      <gmf-map gmf-map-map="mainCtrl.map"></gmf-map>
-      <span
+      <gmf-map gmf-map-map="mainCtrl.map"
         ngeo-mobile-query=""
         ngeo-mobile-query-map="::mainCtrl.map"
-        ngeo-mobile-query-active="::mainCtrl.queryActive">
-      </span>
+        ngeo-mobile-query-active="::mainCtrl.queryActive"></gmf-map>
       <gmf-mobiledisplayqueries
         gmf-mobiledisplayqueries-featuresstyle="::mainCtrl.queryFeatureStyle">
       </gmf-mobiledisplayqueries>
@@ -77,10 +75,10 @@
         </ul>
       </div>
       <div id="background" class="slide" data-header-title="Background">
-        <gmf-mobile-background-layer-selector
-          gmf-mobile-background-layer-selector-map="::mainCtrl.map"
-          gmf-mobile-background-layer-selector-select="mainCtrl.hideNav()">
-        </gmf-mobile-background-layer-selector>
+        <gmf-mobile-backgroundlayerselector
+          gmf-mobile-backgroundlayerselector-map="::mainCtrl.map"
+          gmf-mobile-backgroundlayerselector-select="mainCtrl.hideNav()">
+        </gmf-mobile-backgroundlayerselector>
       </div>
       <gmf-themeselector
         id="themes"
@@ -108,12 +106,18 @@
       <div id="measure-tools" class="slide" data-header-title="Measure tools">
         <a ngeo-btn
           ng-click="mainCtrl.hideNav()"
-          class="btn btn-default measure-tools-button"
-          ng-model="mainCtrl.measurePointActive">Coordinate</a>
+          class="measure-tools-button"
+          ng-model="mainCtrl.measurePointActive">
+          <span class="fa fa-fw" ng-class="{'fa-check': mainCtrl.measurePointActive}"></span>
+          Coordinate
+        </a>
         <a ngeo-btn
           ng-click="mainCtrl.hideNav()"
-          class="btn btn-default measure-tools-button"
-          ng-model="mainCtrl.measureLengthActive">Length</a>
+          class="measure-tools-button"
+          ng-model="mainCtrl.measureLengthActive">
+          <span class="fa fa-fw" ng-class="{'fa-check': mainCtrl.measureLengthActive}"></span>
+          Length
+        </a>
       </div>
       <gmf-authentication id="login" class="slide" data-header-title="Login">
       </gmf-authentication>
