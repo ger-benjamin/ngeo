@@ -109539,6 +109539,18 @@ goog.require('ol.geom.Point');
 
 
 /**
+ * @enum {string}
+ * @export
+ */
+ngeo.DesktopGeolocationEventType = {
+  /**
+   * Triggered when an error occures.
+   */
+  ERROR: 'desktop-geolocation-error'
+};
+
+
+/**
  * Provide a "desktop geolocation" directive.
  *
  * Example:
@@ -109604,6 +109616,12 @@ ngeo.DesktopGeolocationController = function($scope, $element,
   goog.asserts.assertObject(options);
 
   /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.$scope_ = $scope;
+
+  /**
    * @type {ngeo.FeatureOverlay}
    * @private
    */
@@ -109616,6 +109634,12 @@ ngeo.DesktopGeolocationController = function($scope, $element,
   this.geolocation_ = new ol.Geolocation({
     projection: map.getView().getProjection()
   });
+
+  // handle geolocation error.
+  this.geolocation_.on('error', function(error) {
+    this.deactivate_();
+    $scope.$emit(ngeo.DesktopGeolocationEventType.ERROR, error);
+  }, this);
 
   /**
    * @type {ol.Feature}
@@ -109708,6 +109732,16 @@ ngeo.DesktopGeolocationController.prototype.deactivate_ = function() {
  */
 ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
   var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
+
+  // if user is using Firefox and selects the "not now" option, OL geolocation
+  // doesn't return an error
+  if (!goog.isDef(position)) {
+    this.deactivate_();
+    this.$scope_.$emit(ngeo.DesktopGeolocationEventType.ERROR, null);
+    return;
+  }
+
+  goog.asserts.assert(goog.isDef(position));
   var point = new ol.geom.Point(position);
 
   this.positionFeature_.setGeometry(point);
@@ -110102,6 +110136,17 @@ goog.require('ol.geom.Point');
 
 
 /**
+ * @enum {string}
+ * @export
+ */
+ngeo.MobileGeolocationEventType = {
+  /**
+   * Triggered when an error occures.
+   */
+  ERROR: 'mobile-geolocation-error'
+};
+
+/**
  * Provide a "mobile geolocation" directive.
  *
  * Example:
@@ -110156,6 +110201,12 @@ ngeo.MobileGeolocationController = function($scope, $element,
   goog.asserts.assertInstanceof(map, ol.Map);
 
   /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.$scope_ = $scope;
+
+  /**
    * @type {!ol.Map}
    * @private
    */
@@ -110177,6 +110228,12 @@ ngeo.MobileGeolocationController = function($scope, $element,
   this.geolocation_ = new ol.Geolocation({
     projection: map.getView().getProjection()
   });
+
+  // handle geolocation error.
+  this.geolocation_.on('error', function(error) {
+    this.untrack_();
+    $scope.$emit(ngeo.MobileGeolocationEventType.ERROR, error);
+  }, this);
 
   /**
    * @type {ol.Feature}
@@ -110267,6 +110324,14 @@ ngeo.MobileGeolocationController.prototype.toggleTracking = function() {
   if (this.geolocation_.getTracking()) {
     // if map center is different than geolocation position, then track again
     var currentPosition = this.geolocation_.getPosition();
+    // if user is using Firefox and selects the "not now" option, OL geolocation
+    // doesn't return an error
+    if (!goog.isDef(currentPosition)) {
+      this.untrack_();
+      this.$scope_.$emit(ngeo.MobileGeolocationEventType.ERROR, null);
+      return;
+    }
+    goog.asserts.assert(goog.isDef(currentPosition));
     var center = this.map_.getView().getCenter();
     if (currentPosition[0] === center[0] &&
         currentPosition[1] === center[1]) {
@@ -110815,7 +110880,6 @@ ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
 
 ngeo.module.service('ngeoQuery', ngeo.Query);
 
-goog.provide('ngeo.MobileQueryController');
 goog.provide('ngeo.mobileQueryDirective');
 
 goog.require('ngeo');
@@ -110841,116 +110905,64 @@ goog.require('ngeo.Query');
  *        ngeo-mobile-query-active="ctrl.queryActive">
  *      </span>
  *
+ * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
  * @ngInject
  * @ngdoc directive
  * @ngname ngeoMobileQuery
  */
-ngeo.mobileQueryDirective = function() {
+ngeo.mobileQueryDirective = function(ngeoQuery) {
   return {
     restrict: 'A',
-    scope: {
-      'active': '=ngeoMobileQueryActive',
-      'map': '=ngeoMobileQueryMap'
-    },
-    bindToController: true,
-    controller: 'NgeoMobileQueryController',
-    controllerAs: 'ctrl'
+    scope: false,
+    link: function(scope, elem, attrs) {
+      var map = scope.$eval(attrs['ngeoMobileQueryMap']);
+      var clickEventKey_ = null;
+
+      /**
+       * Called when the map is clicked while this controller is active. Issue
+       * a request to the query service using the coordinate that was clicked.
+       * @param {ol.MapBrowserEvent} evt The map browser event being fired.
+       */
+      var handleMapClick_ = function(evt) {
+        ngeoQuery.issue(map, evt.coordinate);
+      };
+
+      /**
+       * Listen to the map 'click' event.
+       */
+      var activate_ = function() {
+        clickEventKey_ = ol.events.listen(map,
+            ol.events.EventType.CLICK, handleMapClick_);
+      };
+
+
+      /**
+       * Unlisten the map 'click' event.
+       */
+      var deactivate_ = function() {
+        if (clickEventKey_ !== null) {
+          ol.events.unlistenByKey(clickEventKey_);
+          clickEventKey_ = null;
+        }
+        ngeoQuery.clear();
+      };
+
+      // watch 'active' property -> activate/deactivate accordingly
+      scope.$watch(attrs['ngeoMobileQueryActive'],
+          function(newVal, oldVal) {
+            if (newVal) {
+              activate_();
+            } else {
+              deactivate_();
+            }
+          }
+      );
+    }
   };
 };
 
-
 ngeo.module.directive('ngeoMobileQuery', ngeo.mobileQueryDirective);
-
-
-/**
- * @constructor
- * @param {angular.Scope} $scope Scope.
- * @param {ngeo.Query} ngeoQuery The ngeo Query service.
- * @export
- * @ngInject
- * @ngdoc controller
- * @ngname NgeoMobileQueryController
- */
-ngeo.MobileQueryController = function($scope, ngeoQuery) {
-
-  /**
-   * @type {ol.Map}
-   * @export
-   */
-  this.map;
-
-  /**
-   * @type {boolean}
-   * @export
-   */
-  this.active;
-
-  /**
-   * @type {ngeo.Query}
-   * @private
-   */
-  this.query_ = ngeoQuery;
-
-  /**
-   * The key for map click event.
-   * @type {?ol.events.Key}
-   * @private
-   */
-  this.clickEventKey_ = null;
-
-  // watch 'active' property -> activate/deactivate accordingly
-  $scope.$watch(
-      function() {
-        return this.active;
-      }.bind(this),
-      function() {
-        if (this.active) {
-          this.activate_();
-        } else {
-          this.deactivate_();
-        }
-      }.bind(this)
-  );
-
-};
-
-
-/**
- * Listen to the map 'click' event.
- * @private
- */
-ngeo.MobileQueryController.prototype.activate_ = function() {
-  this.clickEventKey_ = ol.events.listen(this.map,
-      ol.events.EventType.CLICK, this.handleMapClick_, this);
-};
-
-
-/**
- * Unlisten the map 'click' event.
- * @private
- */
-ngeo.MobileQueryController.prototype.deactivate_ = function() {
-  if (this.clickEventKey_ !== null) {
-    ol.events.unlistenByKey(this.clickEventKey_);
-    this.clickEventKey_ = null;
-  }
-  this.query_.clear();
-};
-
-
-/**
- * Called when the map is clicked while this controller is active. Issue
- * a request to the query service using the coordinate that was clicked.
- * @param {ol.MapBrowserEvent} evt The map browser event being fired.
- * @private
- */
-ngeo.MobileQueryController.prototype.handleMapClick_ = function(evt) {
-  this.query_.issue(this.map, evt.coordinate);
-};
-
-
-ngeo.module.controller('NgeoMobileQueryController', ngeo.MobileQueryController);
 
 goog.provide('ngeo.modalDirective');
 

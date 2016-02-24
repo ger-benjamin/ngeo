@@ -9134,32 +9134,32 @@ button[ngeo-mobile-geolocation] {
   top: 135px;
 }
 .gmf-theme-selector,
-.gmf-mobile-background-layer-selector {
+.gmf-mobile-backgroundlayerselector {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .gmf-theme-selector li,
-.gmf-mobile-background-layer-selector li {
+.gmf-mobile-backgroundlayerselector li {
   cursor: pointer;
   margin-bottom: 10px;
 }
 .gmf-theme-selector .gmf-check,
-.gmf-mobile-background-layer-selector .gmf-check,
+.gmf-mobile-backgroundlayerselector .gmf-check,
 .gmf-theme-selector .gmf-text,
-.gmf-mobile-background-layer-selector .gmf-text,
+.gmf-mobile-backgroundlayerselector .gmf-text,
 .gmf-theme-selector .gmf-thumb,
-.gmf-mobile-background-layer-selector .gmf-thumb {
+.gmf-mobile-backgroundlayerselector .gmf-thumb {
   float: left;
 }
 .gmf-theme-selector .gmf-check,
-.gmf-mobile-background-layer-selector .gmf-check {
+.gmf-mobile-backgroundlayerselector .gmf-check {
   height: 20px;
   margin: 15px 5px 0 0;
   width: 20px;
 }
 .gmf-theme-selector .gmf-text,
-.gmf-mobile-background-layer-selector .gmf-text {
+.gmf-mobile-backgroundlayerselector .gmf-text {
   margin: 15px 10px 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9167,13 +9167,128 @@ button[ngeo-mobile-geolocation] {
   white-space: nowrap;
 }
 .gmf-theme-selector .gmf-thumb,
-.gmf-mobile-background-layer-selector .gmf-thumb {
+.gmf-mobile-backgroundlayerselector .gmf-thumb {
   height: 60px;
   width: 60px;
 }
 .gmf-theme-selector .gmf-eol,
-.gmf-mobile-background-layer-selector .gmf-eol {
+.gmf-mobile-backgroundlayerselector .gmf-eol {
   clear: left;
+}
+.search {
+  top: 1em;
+  height: 3em;
+  left: 0;
+  right: 0;
+  margin-left: 1em;
+  margin-right: 1em;
+  padding: 0 10px;
+  background-color: white;
+  border: solid 1px black;
+  z-index: 2;
+}
+.search input {
+  height: 3em;
+}
+.search input::-ms-clear {
+  display: none;
+}
+.search .clear-button {
+  position: absolute;
+  top: 0;
+  right: 3.5em;
+  height: 3em;
+}
+.search .clear-button:after {
+  content: '\f00d';
+  color: #555;
+  font-family: FontAwesome;
+  font-size: 2em;
+}
+.search .clear-button:hover {
+  cursor: pointer;
+}
+.search .twitter-typeahead {
+  width: 100%;
+}
+.search .form-control {
+  box-shadow: none;
+  border: none;
+}
+.search .form-control:focus {
+  box-shadow: none;
+}
+.search .form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
+  display: none;
+}
+span.twitter-typeahead input {
+  padding-left: 3em;
+}
+.tt-menu {
+  position: fixed!important;
+  left: 0;
+  right: 0;
+  top: 5em !important;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: white;
+  border: solid 1px black;
+}
+.tt-menu .search-header {
+  display: none;
+}
+.tt-menu .search-datum {
+  border-bottom: solid 1px black;
+  padding: 10px 1em;
+  padding-left: 2.5em;
+  text-align: left;
+}
+.tt-menu .search-datum:hover {
+  cursor: pointer;
+  background-color: #cccccc;
+}
+.tt-menu .search-datum p {
+  margin: 0;
+}
+.tt-menu .search-datum .search-label {
+  color: black;
+}
+.tt-menu .search-datum .search-group {
+  color: #555;
+  font-size: 0.8em;
+}
+@media (min-width: 768px) {
+  .search {
+    left: 4em;
+    width: 18em;
+  }
+  .search .clear-button {
+    margin-right: 10px;
+    right: 0;
+  }
+  .tt-menu {
+    border-top: inherit;
+    border-bottom: inherit;
+    top: 4em !important;
+    left: 5em !important;
+    bottom: auto;
+    width: 18em;
+  }
+  span.twitter-typeahead:after {
+    content: '\f002';
+    font-family: FontAwesome;
+    color: #555;
+    position: absolute;
+    top: 0.3em;
+    left: 0;
+    font-size: 1.4em;
+  }
+  span.twitter-typeahead input {
+    width: 14em;
+    padding-left: 10px;
+    left: 1em;
+  }
 }
 gmf-layertree div {
   margin-right: 10px;
@@ -9820,111 +9935,6 @@ gmf-map > div {
   bottom: 0;
   left: 0;
 }
-/**
- * Search (typeahead)
- */
-span.twitter-typeahead:after {
-  content: '\f002';
-  font-family: FontAwesome;
-  color: grey;
-  position: absolute;
-  top: 0.3em;
-  left: 0;
-  font-size: 1.4em;
-}
-span.twitter-typeahead input {
-  padding-left: 3em;
-}
-.tt-menu {
-  position: fixed!important;
-  left: 0;
-  right: 0;
-  top: 5em !important;
-  bottom: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  width: 100vw;
-  background-color: white;
-  border: solid 1px black;
-}
-.tt-menu .search-header {
-  display: none;
-}
-.tt-menu .search-datum {
-  border-bottom: solid 1px black;
-  padding: 10px 1em;
-  padding-left: 2.5em;
-  text-align: left;
-}
-.tt-menu .search-datum:hover {
-  cursor: pointer;
-  background-color: #cccccc;
-}
-.tt-menu .search-datum p {
-  margin: 0;
-}
-.tt-menu .search-datum .search-label {
-  color: black;
-}
-.tt-menu .search-datum .search-group {
-  color: #808080;
-  font-size: 0.8em;
-}
-.search {
-  top: 1em;
-  height: 3em;
-  left: 0;
-  right: 0;
-  margin-left: 1em;
-  margin-right: 1em;
-  padding: 0 10px;
-  background-color: white;
-  border: solid 1px black;
-  z-index: 2;
-}
-.search input {
-  width: calc(100% - 5em);
-  padding: 0 5px;
-  border-width: 0;
-  border-radius: 0;
-  height: 3em;
-}
-.search input::-ms-clear {
-  display: none;
-}
-.search .clear-button {
-  position: absolute;
-  top: 0;
-  right: 3.5em;
-  margin-left: calc(97px);
-  height: 3em;
-  width: 3em;
-  line-height: 3em;
-}
-.search .clear-button:after {
-  content: '\f00d';
-  color: grey;
-  font-family: FontAwesome;
-  font-size: 2em;
-}
-.search .clear-button:hover {
-  cursor: pointer;
-}
-.search .twitter-typeahead {
-  width: 100%;
-}
-.search .form-control {
-  box-shadow: none;
-  background: initial !important;
-  border: none;
-  outline: none;
-}
-.search .form-control:focus {
-  box-shadow: none;
-}
-.search .form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
-  display: none;
-}
 #measure-tools .measure-tools-button {
   display: block;
   margin-bottom: 5px;
@@ -10016,30 +10026,5 @@ button[ngeo-mobile-geolocation] {
   }
   button[ngeo-mobile-geolocation] button:after {
     content: 'b';
-  }
-  .tt-menu {
-    border-top: inherit;
-    border-right: 1px solid black;
-    border-bottom: inherit;
-    border-left: 1px solid black;
-    top: 4em !important;
-    width: 18em !important;
-    left: 5em !important;
-    bottom: auto;
-  }
-  .search {
-    left: 4em;
-    width: 18em;
-  }
-  .search .clear-button {
-    left: inherit;
-    margin-left: inherit;
-    right: 0;
-  }
-  span.twitter-typeahead input {
-    width: 14em;
-    margin-right: 0;
-    padding-left: 0.6em;
-    left: 1.2em;
   }
 }
