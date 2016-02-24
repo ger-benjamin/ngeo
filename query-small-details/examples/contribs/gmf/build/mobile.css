@@ -9855,6 +9855,8 @@ nav.nav-right .slide.slide-out {
   /** prevent glitch for swipe animation **/
   min-width: calc(33vw - 30px);
   max-width: calc(33vw - 30px);
+  overflow-x: hidden;
+  text-overflow: ellipsis;
 }
 .mobiledisplayqueries .details .value {
   white-space: pre-wrap;
