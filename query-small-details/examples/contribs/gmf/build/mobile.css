@@ -9853,8 +9853,8 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries .details .key {
   padding-right: 5px;
   /** prevent glitch for swipe animation **/
-  min-width: calc(33vw - 30px);
-  max-width: calc(33vw - 30px);
+  min-width: calc(30vw - 30px);
+  max-width: calc(30vw - 30px);
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
@@ -9862,8 +9862,8 @@ nav.nav-right .slide.slide-out {
   white-space: pre-wrap;
   word-break: break-all;
   /** prevent glitch for swipe animation **/
-  min-width: calc(67vw - 30px);
-  max-width: calc(67vw - 30px);
+  min-width: calc(70vw - 30px);
+  max-width: calc(70vw - 30px);
 }
 .mobiledisplayqueries .details .slide-animation.ng-enter-active .details .value {
   white-space: nowrap;
