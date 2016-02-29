@@ -9765,7 +9765,7 @@ nav.nav-right .slide.slide-out {
   bottom: 0;
   max-height: 400px;
   position: fixed;
-  z-index: 3;
+  z-index: 4;
 }
 .mobiledisplayqueries .collapse-button {
   background-color: white;
