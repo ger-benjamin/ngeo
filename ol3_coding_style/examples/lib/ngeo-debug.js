@@ -109300,7 +109300,7 @@ ngeo.FeatureOverlayMgr = function() {
    */
   this.layer_ = new ol.layer.Vector({
     source: this.source_,
-    style: goog.bind(this.styleFunction_, this),
+    style: this.styleFunction_.bind(this),
     updateWhileAnimating: true,
     updateWhileInteracting: true
   });
@@ -109601,7 +109601,7 @@ ngeo.module.directive('ngeoDesktopGeolocation',
 ngeo.DesktopGeolocationController = function($scope, $element,
     ngeoDecorateGeolocation, ngeoFeatureOverlayMgr) {
 
-  $element.on('click', goog.bind(this.toggle, this));
+  $element.on('click', this.toggle.bind(this));
 
   var map = $scope['getDesktopMapFn']();
   goog.asserts.assertInstanceof(map, ol.Map);
@@ -109971,9 +109971,9 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
   this.node = undefined;
 
   if (isRoot) {
-    $scope.$watch(nodeExpr, goog.bind(function(newVal, oldVal) {
+    $scope.$watch(nodeExpr, function(newVal, oldVal) {
       this.node = newVal;
-    }, this));
+    }.bind(this));
   } else {
     this.node = /** @type {Object} */ ($scope.$eval(nodeExpr));
     goog.asserts.assert(this.node !== undefined);
@@ -110195,7 +110195,7 @@ ngeo.module.directive('ngeoMobileGeolocation', ngeo.mobileGeolocationDirective);
 ngeo.MobileGeolocationController = function($scope, $element,
     ngeoDecorateGeolocation, ngeoFeatureOverlayMgr) {
 
-  $element.on('click', goog.bind(this.toggleTracking, this));
+  $element.on('click', this.toggleTracking.bind(this));
 
   var map = $scope['getMobileMapFn']();
   goog.asserts.assertInstanceof(map, ol.Map);
@@ -110821,18 +110821,15 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
     wmsGetFeatureInfoUrl =
         goog.uri.utils.setParam(wmsGetFeatureInfoUrl, 'QUERY_LAYERS', lyrStr);
 
-    this.$http_.get(wmsGetFeatureInfoUrl).then(goog.bind(
-        function(items, response) {
-          items.forEach(function(item) {
-            var format = item.source.format;
-            var features = format.readFeatures(response.data);
-            item['resultSource'].pending = false;
-            item['resultSource'].features = features;
-            this.result_.total += features.length;
-          }, this);
-        },
-        this,
-        items));
+    this.$http_.get(wmsGetFeatureInfoUrl).then(function(items, response) {
+      items.forEach(function(item) {
+        var format = item.source.format;
+        var features = format.readFeatures(response.data);
+        item['resultSource'].pending = false;
+        item['resultSource'].features = features;
+        this.result_.total += features.length;
+      }, this);
+    }.bind(this, items));
   }, this);
 };
 
@@ -114637,11 +114634,9 @@ ngeo.ScaleselectorController.prototype.handleResolutionChange_ = function(e) {
   //
   // For that reason we use $applyAsync instead of $apply here.
 
-  this.$scope_.$applyAsync(
-      /** @type {function(?)} */ (
-      goog.bind(function() {
-        this.currentScale = currentScale;
-      }, this)));
+  this.$scope_.$applyAsync(function() {
+    this.currentScale = currentScale;
+  }.bind(this));
 };
 
 
@@ -119559,12 +119554,12 @@ ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
   this.changeEventKey_ = ol.events.listen(geometry,
       ol.events.EventType.CHANGE,
       function() {
-        this.handleMeasure(goog.bind(function(measure, coord) {
+        this.handleMeasure(function(measure, coord) {
           if (coord !== null) {
             this.measureTooltipElement_.innerHTML = measure;
             this.measureTooltipOverlay_.setPosition(coord);
           }
-        }, this));
+        }.bind(this));
       }, this);
 };
 
