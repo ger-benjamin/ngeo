@@ -9223,7 +9223,7 @@ gmf-layertree ul .treenode .layerIcon {
   display: -ms-inline-flexbox;
   display: inline-flex;
   height: 1rem;
-  width: calc(2rem);
+  width: 2rem;
 }
 gmf-layertree ul .treenode .name {
   white-space: normal;
@@ -9507,7 +9507,7 @@ main {
   display: block;
   float: left;
   background-color: #d3e5d7;
-  width: 320px;
+  width: 32rem;
   height: 100%;
   display: -webkit-box;
   display: -webkit-flex;
@@ -9532,7 +9532,7 @@ main {
   margin: 1rem;
 }
 .data-panel gmf-themeselector {
-  width: 640px;
+  width: 64rem;
   margin: 0;
   padding: 1rem;
   padding-right: 0;
@@ -9552,8 +9552,8 @@ gmf-layertree ul .treenode {
 }
 .tools .tools-content {
   padding: 1rem;
-  width: 250px;
-  margin-right: -246px;
+  width: 25rem;
+  margin-right: -21rem;
   -webkit-transition: margin-right 0.2s ease;
   transition: margin-right 0.2s ease;
 }

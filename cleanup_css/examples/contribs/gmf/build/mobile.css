@@ -9344,7 +9344,7 @@ gmf-layertree ul .treenode .layerIcon {
   display: -ms-inline-flexbox;
   display: inline-flex;
   height: 1rem;
-  width: calc(2rem);
+  width: 2rem;
 }
 gmf-layertree ul .treenode .name {
   white-space: normal;
@@ -9460,7 +9460,7 @@ gmf-layertree ul .treenode .legend img {
 main {
   position: fixed;
   background-color: #e2e3df;
-  box-shadow: 0px 0px 1rem black;
+  box-shadow: 0 0 1rem black;
   width: 100%;
   height: 100%;
   z-index: 2;
@@ -9926,12 +9926,12 @@ nav.nav-right .slide.slide-out {
     /** prevent glitch for swipe animation **/
   }
   .mobiledisplayqueries .details table .key {
-    min-width: calc(8.6rem);
-    max-width: calc(8.6rem);
+    min-width: 8.6rem;
+    max-width: 8.6rem;
   }
   .mobiledisplayqueries .details table .value {
-    min-width: calc(21.4rem);
-    max-width: calc(21.4rem);
+    min-width: 21.4rem;
+    max-width: 21.4rem;
   }
 }
 /**
@@ -9968,6 +9968,11 @@ gmf-map > div {
 .measure-tools-control {
   bottom: 1rem;
   right: 1rem;
+}
+.measure-tools-control a {
+  display: block;
+  float: left;
+  margin-left: 0.2rem;
 }
 gmf-map .tooltip {
   position: relative;
@@ -10033,12 +10038,15 @@ button[ngeo-mobile-geolocation] {
   width: 25%;
 }
 @media (min-width: 768px) {
+  .measure-tools-control {
+    right: 6rem;
+  }
   .ol-zoom {
     top: auto;
-    bottom: calc(5rem);
+    bottom: 5rem;
   }
   button[ngeo-mobile-geolocation] {
     top: auto;
-    bottom: calc(1rem);
+    bottom: 1rem;
   }
 }
