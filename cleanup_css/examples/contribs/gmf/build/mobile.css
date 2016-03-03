@@ -9189,6 +9189,7 @@ button[ngeo-mobile-geolocation] .fa {
 }
 .search input {
   height: 4rem;
+  font-size: 1.4rem!important;
 }
 .search input::-ms-clear {
   display: none;
@@ -9228,6 +9229,7 @@ button[ngeo-mobile-geolocation] .fa {
 span.twitter-typeahead input {
   padding-left: 1rem;
 }
+/** Some "!important" notation because some rules are in typeahead's html */
 .tt-menu {
   position: fixed!important;
   left: 0;
@@ -9260,7 +9262,7 @@ span.twitter-typeahead input {
 }
 .tt-menu .search-datum .search-group {
   color: #7b7b7b;
-  font-size: 0.8em;
+  font-size: 80%;
 }
 @media (min-width: 768px) {
   .search {
@@ -9273,6 +9275,7 @@ span.twitter-typeahead input {
     margin-right: 1rem;
     right: 0;
   }
+  /** Some "!important" notation because some rules are in typeahead's html */
   .tt-menu {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     border-top: inherit;
@@ -9474,12 +9477,12 @@ main {
   will-change: transform;
 }
 .nav-left-is-visible main {
-  -webkit-transform: translateX(260px);
-          transform: translateX(260px);
+  -webkit-transform: translateX(26rem);
+          transform: translateX(26rem);
 }
 .nav-right-is-visible main {
-  -webkit-transform: translateX(-260px);
-          transform: translateX(-260px);
+  -webkit-transform: translateX(-26rem);
+          transform: translateX(-26rem);
 }
 main .overlay {
   /* shadow layer visible when navigation is active */
@@ -9514,7 +9517,7 @@ nav.nav-left,
 nav.nav-right {
   position: fixed;
   top: 0;
-  width: 260px;
+  width: 26rem;
   height: 100%;
   background-color: white;
   overflow-x: hidden;
@@ -9559,8 +9562,8 @@ nav.nav-right header .go-back::after {
 nav.nav-left header > nav,
 nav.nav-right header > nav {
   position: absolute;
-  width: 260px;
-  left: 260px;
+  width: 26rem;
+  left: 26rem;
   -webkit-transform: translateX(0);
           transform: translateX(0);
   -webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
@@ -9660,7 +9663,7 @@ nav.nav-left .slide,
 nav.nav-right .slide {
   position: fixed;
   height: calc(100% - 5rem);
-  width: 260px;
+  width: 26rem;
   -webkit-transform: translateX(100%);
           transform: translateX(100%);
   -webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
@@ -9770,7 +9773,7 @@ nav.nav-right .slide.slide-out {
   right: 50%;
   left: 50%;
   bottom: 0;
-  max-height: calc(40rem);
+  max-height: 40rem;
   position: fixed;
   z-index: 4;
 }
@@ -10013,7 +10016,7 @@ gmf-map .tooltip-static:before {
 }
 .ol-zoom .ol-zoom-in,
 .ol-zoom .ol-zoom-out {
-  font-size: 1.5em;
+  font-size: 2rem;
   border-radius: 0;
 }
 .ol-scale-line {
