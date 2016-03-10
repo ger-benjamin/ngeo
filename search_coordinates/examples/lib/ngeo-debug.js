@@ -120842,7 +120842,6 @@ goog.require('ol.extent');
 goog.require('ol.proj');
 
 /**
- * TODO
  * @constructor
  * @ngdoc service
  * @ngname ngeoAutoProjection
@@ -120851,27 +120850,31 @@ ngeo.AutoProjection = function() {};
 
 
 /**
- * TODO
- * @param {string} str TODO
- * @return {?ol.Coordinate} TODO
+ * Parse a tring and return a coordinate if the result is valid. Given string
+ * must be a two numbers separated by a space.
+ * @param {string} str the string to parse.
+ * @return {?ol.Coordinate} A coordinate or null if the format is not valid.
  * @export
  */
 ngeo.AutoProjection.prototype.stringToCoordinates = function(str) {
   var coords = str.match(/([\d\.']+)[\s,]+([\d\.']+)/);
   if (coords) {
-    return [
-      parseFloat(coords[1].replace('\'', '')),
-      parseFloat(coords[2].replace('\'', ''))
-    ];
+    var x = parseFloat(coords[1].replace('\'', ''));
+    var y = parseFloat(coords[2].replace('\'', ''));
+    if (!isNaN(x) && !isNaN(y)) {
+      return [x, y];
+    }
   }
   return null
 };
 
 
 /**
- * TODO
- * @param {Array.<string>} projectionsCodes TODO
- * @return {?Array.<ol.proj.Projection>} TODO
+ * Get an array of projections corresponding to their EPSG codes. Log an error
+ *     for each code that are not defined in ol projections.
+ * @param {Array.<string>} projectionsCodes EPSG codes (f.i 'EPSG:3857',
+ *     'epsg:3857' or '3857').
+ * @return {?Array.<ol.proj.Projection>} An array of projections.
  * @export
  */
 ngeo.AutoProjection.prototype.getProjectionList = function(projectionsCodes) {
@@ -120894,22 +120897,27 @@ ngeo.AutoProjection.prototype.getProjectionList = function(projectionsCodes) {
 
 
 /**
- * TODO
- * @param {ol.Coordinate} coordinates TODO
- * @param {ol.proj.Projection} projection TODO
- * @param {Array.<ol.proj.Projection>=} opt_projections TODO
- * @return {?ol.Coordinate} TODO
+ * It projects the point using the projection array and finds the first one for
+ * which it falls inside of the viewProjection extent.
+ * @param {ol.Coordinate} coordinates The point to test.
+ * @param {ol.proj.Projection} viewProjection projection used in by your
+ *     ol.view.
+ * @param {Array.<ol.proj.Projection>=} opt_projections optionnal array of
+ *     projections. The point is tested in each projection, in the order of the
+ *     array.
+ * @return {?ol.Coordinate} A coordinates in the view's projection if it match
+ *     in one of the given projection, or null else.
  * @export
  */
-ngeo.AutoProjection.prototype.tryProjections = function(coordinates, projection,
-    opt_projections) {
-  var extent = projection.getExtent();
+ngeo.AutoProjection.prototype.tryProjections = function(coordinates,
+    viewProjection, opt_projections) {
+  var extent = viewProjection.getExtent();
   var position;
   if (opt_projections === undefined) {
-    opt_projections = [projection];
+    opt_projections = [viewProjection];
   }
   opt_projections.some(function(proj) {
-    position = ol.proj.transform(coordinates, proj, projection);
+    position = ol.proj.transform(coordinates, proj, viewProjection);
     if (ol.extent.containsCoordinate(extent, position)) {
       return true;
     }
