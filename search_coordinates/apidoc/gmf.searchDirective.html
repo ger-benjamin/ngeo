@@ -60,6 +60,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-currenttheme=&quot;ctrl.theme&quot;
+   gmf-search-coordinatesprojections=&quot;'EPSG:21781,EPSG:4326'&quot;
    gmf-search-clearbutton=&quot;true&quot;>
  &lt;/gmf-search>
  &lt;script>
@@ -73,6 +74,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-currenttheme=&quot;ctrl.theme&quot;
+   gmf-search-coordinatesprojections=&quot;'EPSG:21781,EPSG:4326'&quot;
    gmf-search-clearbutton=&quot;true&quot;>
  &lt;/gmf-search>
  &lt;script>
@@ -160,6 +162,32 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
             
 
             <td class="description last">The datasources.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gmf-search-coordinatesprojections</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">codes of supported
+     projections for coordinates search (projections must be defined in ol3).
+     If not provided, only the map's view projection format will be
+     supported.</td>
         </tr>
 
     
@@ -271,7 +299,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js">contribs/gmf/src/directives/search.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L92">line 92</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L98">line 98</a>
     </li></ul></dd>
     
 

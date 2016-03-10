@@ -459,7 +459,7 @@ must be a two numbers separated by a space.</p>
 
     
 
-    <h4 class="name" id="tryProjections"><span class="type-signature"></span>tryProjections<span class="signature">(coordinates, viewProjection, opt_projections<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; (nullable) {<a href="http://openlayers.org/en/master/apidoc/ol.html#.Coordinate">ol.Coordinate</a>}</span></h4>
+    <h4 class="name" id="tryProjections"><span class="type-signature"></span>tryProjections<span class="signature">(coordinates, extent, viewProjection, opt_projections<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; (nullable) {<a href="http://openlayers.org/en/master/apidoc/ol.html#.Coordinate">ol.Coordinate</a>}</span></h4>
 
     
 
@@ -536,6 +536,37 @@ which it falls inside of the viewProjection extent.</p>
 
         <tr>
             
+                <td class="name"><code>extent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.html#.Extent">ol.Extent</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Limits in which coordinates can be valid.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>viewProjection</code></td>
             
 
@@ -560,8 +591,7 @@ which it falls inside of the viewProjection extent.</p>
 
             
 
-            <td class="description last"><p>projection used in by your
-    ol.view.</p></td>
+            <td class="description last"><p>Target projection the point.</p></td>
         </tr>
 
     
@@ -594,9 +624,9 @@ which it falls inside of the viewProjection extent.</p>
 
             
 
-            <td class="description last"><p>optionnal array of
-    projections. The point is tested in each projection, in the order of the
-    array.</p></td>
+            <td class="description last"><p>optional array of
+    projections. The point is tested in each projection, in the order of
+    the array.</p></td>
         </tr>
 
     

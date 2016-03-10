@@ -120838,7 +120838,7 @@ if (typeof proj4 == 'function') {
 goog.provide('ngeo.AutoProjection');
 
 goog.require('ngeo');
-goog.require('ol.extent');
+goog.require('ol.Extent');
 goog.require('ol.proj');
 
 /**
@@ -120900,24 +120900,23 @@ ngeo.AutoProjection.prototype.getProjectionList = function(projectionsCodes) {
  * It projects the point using the projection array and finds the first one for
  * which it falls inside of the viewProjection extent.
  * @param {ol.Coordinate} coordinates The point to test.
- * @param {ol.proj.Projection} viewProjection projection used in by your
- *     ol.view.
- * @param {Array.<ol.proj.Projection>=} opt_projections optionnal array of
- *     projections. The point is tested in each projection, in the order of the
- *     array.
+ * @param {ol.Extent} extent Limits in which coordinates can be valid.
+ * @param {ol.proj.Projection} viewProjection Target projection the point.
+ * @param {Array.<ol.proj.Projection>=} opt_projections optional array of
+ *     projections. The point is tested in each projection, in the order of
+ *     the array.
  * @return {?ol.Coordinate} A coordinates in the view's projection if it match
  *     in one of the given projection, or null else.
  * @export
  */
 ngeo.AutoProjection.prototype.tryProjections = function(coordinates,
-    viewProjection, opt_projections) {
-  var extent = viewProjection.getExtent();
+    extent, viewProjection, opt_projections) {
   var position;
   if (opt_projections === undefined) {
     opt_projections = [viewProjection];
   }
-  opt_projections.some(function(proj) {
-    position = ol.proj.transform(coordinates, proj, viewProjection);
+  opt_projections.some(function(projection) {
+    position = ol.proj.transform(coordinates, projection, viewProjection);
     if (ol.extent.containsCoordinate(extent, position)) {
       return true;
     }
