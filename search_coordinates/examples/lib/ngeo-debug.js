@@ -120926,6 +120926,31 @@ ngeo.AutoProjection.prototype.tryProjections = function(coordinates,
 };
 
 
+/**
+ * Same as AutoProjection.tryProjections but if tryProjections return null,
+ * re-call it with coordinates in reverse order.
+ * @param {ol.Coordinate} coordinates The point to test.
+ * @param {ol.Extent} extent Limits in which coordinates can be valid.
+ * @param {ol.proj.Projection} viewProjection Target projection the point.
+ * @param {Array.<ol.proj.Projection>=} opt_projections optional array of
+ *     projections. The point is tested in each projection, in the order of
+ *     the array.
+ * @return {?ol.Coordinate} A coordinates in the view's projection if it match
+ *     in one of the given projection, or null else.
+ * @export
+ */
+ngeo.AutoProjection.prototype.tryProjectionsWithInversion = function(
+    coordinates, extent, viewProjection, opt_projections) {
+  var position = this.tryProjections(coordinates, extent, viewProjection,
+        opt_projections);
+  if (position === null) {
+    position = this.tryProjections(coordinates.reverse(), extent,
+        viewProjection, opt_projections);
+  }
+  return position;
+};
+
+
 ngeo.module.service('ngeoAutoProjection', ngeo.AutoProjection);
 
 goog.provide('ngeo.BackgroundEvent');

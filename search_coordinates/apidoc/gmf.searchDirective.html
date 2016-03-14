@@ -60,7 +60,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-currenttheme=&quot;ctrl.theme&quot;
-   gmf-search-coordinatesprojections=&quot;'EPSG:21781,EPSG:4326'&quot;
+   gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
    gmf-search-clearbutton=&quot;true&quot;>
  &lt;/gmf-search>
  &lt;script>
@@ -74,7 +74,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-currenttheme=&quot;ctrl.theme&quot;
-   gmf-search-coordinatesprojections=&quot;'EPSG:21781,EPSG:4326'&quot;
+   gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
    gmf-search-clearbutton=&quot;true&quot;>
  &lt;/gmf-search>
  &lt;script>
@@ -174,7 +174,7 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
             <td class="type">
             
                 
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span>
 
 
             
@@ -184,10 +184,10 @@ initialize the ngeoFeatureOverlayMgr with the map.</p>
 
             
 
-            <td class="description last">codes of supported
-     projections for coordinates search (projections must be defined in ol3).
-     If not provided, only the map's view projection format will be
-     supported.</td>
+            <td class="description last">codes
+     of supported projections for coordinates search (projections must be
+     defined in ol3). If not provided, only the map's view projection
+     format will be supported.</td>
         </tr>
 
     
