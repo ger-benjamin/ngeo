@@ -80,14 +80,15 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
    * @type {string}
    * @export
    */
-  this.modeFlush = 'flush';
+  this.modeFlush = 'lush';
 
   /**
    * @type {function()}
    * @export
    */
   this.setModeFlush = function() {
-    this.gmfTreeManager.modeFlush = this.modeFlush == 'flush' ? true : false;
+    var isModeFlush = this.modeFlush == 'flush' ? true : false;
+    this.gmfTreeManager.setModeFlush(isModeFlush);
   }
 
   /**
