@@ -78,7 +78,7 @@
   <body ng-controller="MainController as ctrl">
     <div class="container-fluid">
       <div id="map" ngeo-map="ctrl.map"></div>
-      <p>Search for « 45 did » for example…<p>
+      <p>Search for 'lausanne' for example…<p>
       <app-search app-search-map="ctrl.map"></app-search>
       <p id="desc">This example shows how to use the <code>ngeo-search</code> directive, which
       is based on Twitter's <code>typeahead</code> component.</p>
@@ -86,6 +86,7 @@
     <script src="lib/jquery.min.js"></script>
     <script src="lib/angular.min.js"></script>
     <script src="lib/typeahead.bundle.min.js"></script>
+    <script src="lib/proj4.js"></script>
     <script src="lib/ngeo.js"></script>
     <script src="search.js"></script>
     <script src="lib/watchwatchers.js"></script>

@@ -4935,9 +4935,9 @@ output {
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 .form-control:focus {
-  border-color: #94ac9a;
+  border-color: #86a08c;
   outline: 0;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(148, 172, 154, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(134, 160, 140, 0.6);
 }
 .form-control::-moz-placeholder {
   color: #999;
@@ -9087,15 +9087,15 @@ a {
 }
 .ol-zoom button {
   margin: 0;
-  margin-bottom: 3px;
-  height: 3em;
-  width: 3em;
+  margin-bottom: 0.2rem;
+  height: 4rem;
+  width: 4rem;
   background-color: white;
   border: solid 1px black;
   color: black;
 }
 .ol-zoom button:hover {
-  background-color: #cccccc;
+  background-color: #d9d9d9;
 }
 .ol-zoom button:focus {
   background-color: white;
@@ -9112,7 +9112,7 @@ a {
  */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   .ol-zoom button:active {
-    background-color: #cccccc;
+    background-color: #d9d9d9;
     outline: -webkit-focus-ring-color auto 5px;
   }
 }
@@ -9130,82 +9130,87 @@ button[ngeo-mobile-geolocation] {
   background-color: white;
   border: solid 1px black;
   color: black;
-  right: 13px;
-  top: 135px;
+}
+button[ngeo-mobile-geolocation] .fa {
+  font-size: 2rem;
 }
 .gmf-theme-selector,
 .gmf-mobile-backgroundlayerselector {
   list-style: none;
-  margin: 0;
-  padding: 0;
 }
 .gmf-theme-selector li,
 .gmf-mobile-backgroundlayerselector li {
+  width: 100%;
   cursor: pointer;
-  margin-bottom: 10px;
+  padding: 1rem 0;
+  color: #555;
 }
 .gmf-theme-selector .gmf-check,
 .gmf-mobile-backgroundlayerselector .gmf-check,
 .gmf-theme-selector .gmf-text,
-.gmf-mobile-backgroundlayerselector .gmf-text,
-.gmf-theme-selector .gmf-thumb,
-.gmf-mobile-backgroundlayerselector .gmf-thumb {
+.gmf-mobile-backgroundlayerselector .gmf-text {
   float: left;
 }
 .gmf-theme-selector .gmf-check,
 .gmf-mobile-backgroundlayerselector .gmf-check {
-  height: 20px;
-  margin: 15px 5px 0 0;
-  width: 20px;
+  position: relative;
+  height: 1px;
+  top: 1rem;
+  width: 2rem;
 }
 .gmf-theme-selector .gmf-text,
 .gmf-mobile-backgroundlayerselector .gmf-text {
-  margin: 15px 10px 0 0;
+  margin: 1rem 1rem 1rem 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 140px;
   white-space: nowrap;
 }
 .gmf-theme-selector .gmf-thumb,
 .gmf-mobile-backgroundlayerselector .gmf-thumb {
-  height: 60px;
-  width: 60px;
+  height: auto;
+  width: 8rem;
+  float: right;
 }
 .gmf-theme-selector .gmf-eol,
 .gmf-mobile-backgroundlayerselector .gmf-eol {
   clear: left;
 }
 .search {
-  top: 1em;
-  height: 3em;
+  top: 1rem;
+  height: 4rem;
   left: 0;
   right: 0;
-  margin-left: 1em;
-  margin-right: 1em;
-  padding: 0 10px;
+  margin: 0 5rem;
+  padding: 0 1rem;
   background-color: white;
-  border: solid 1px black;
+  border: solid 0 black;
+  border-width: 1px 0;
   z-index: 2;
 }
 .search input {
-  height: 3em;
+  height: 4rem;
+  font-size: 1.4rem!important;
 }
 .search input::-ms-clear {
   display: none;
 }
 .search .clear-button {
   position: absolute;
-  top: 0;
-  right: 3.5em;
-  height: 3em;
+  top: 0.5rem;
+  right: 1rem;
+  height: 4rem;
+  opacity: 0.5;
 }
 .search .clear-button:after {
+  position: absolute;
   content: '\f00d';
-  color: #555;
+  color: black;
   font-family: FontAwesome;
-  font-size: 2em;
+  font-size: 2rem;
+  right: 0;
 }
 .search .clear-button:hover {
+  opacity: 1;
   cursor: pointer;
 }
 .search .twitter-typeahead {
@@ -9221,14 +9226,18 @@ button[ngeo-mobile-geolocation] {
 .search .form-control.ng-pristine.ng-untouched.ng-valid.tt-hint {
   display: none;
 }
-span.twitter-typeahead input {
-  padding-left: 3em;
+.search-is-active .search {
+  z-index: 5;
 }
+span.twitter-typeahead input {
+  padding-left: 1rem;
+}
+/** Some "!important" notation because some rules are in typeahead's html */
 .tt-menu {
   position: fixed!important;
   left: 0;
   right: 0;
-  top: 5em !important;
+  top: 6rem !important;
   bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -9240,64 +9249,67 @@ span.twitter-typeahead input {
 }
 .tt-menu .search-datum {
   border-bottom: solid 1px black;
-  padding: 10px 1em;
-  padding-left: 2.5em;
+  padding: 1rem;
+  padding-left: 4rem;
   text-align: left;
 }
 .tt-menu .search-datum:hover {
   cursor: pointer;
-  background-color: #cccccc;
+  background-color: #d9d9d9;
 }
 .tt-menu .search-datum p {
   margin: 0;
 }
 .tt-menu .search-datum .search-label {
-  color: black;
+  color: #555;
 }
 .tt-menu .search-datum .search-group {
-  color: #555;
-  font-size: 0.8em;
+  color: #7b7b7b;
+  font-size: 80%;
 }
 @media (min-width: 768px) {
   .search {
-    left: 4em;
-    width: 18em;
+    margin: 0;
+    left: calc(6rem);
+    width: 24rem;
+    border-width: 1px;
   }
   .search .clear-button {
-    margin-right: 10px;
+    margin-right: 1rem;
     right: 0;
   }
+  /** Some "!important" notation because some rules are in typeahead's html */
   .tt-menu {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
     border-top: inherit;
     border-bottom: inherit;
-    top: 4em !important;
-    left: 5em !important;
+    top: 5rem !important;
+    left: 6rem !important;
     bottom: auto;
-    width: 18em;
+    width: 24rem;
   }
-  span.twitter-typeahead:after {
+  span.twitter-typeahead:before {
     content: '\f002';
     font-family: FontAwesome;
     color: #555;
     position: absolute;
-    top: 0.3em;
     left: 0;
-    font-size: 1.4em;
+    font-size: 2rem;
+    top: 0.5rem;
   }
   span.twitter-typeahead input {
-    width: 14em;
-    padding-left: 10px;
-    left: 1em;
+    width: 23rem;
+    padding-left: 3rem;
   }
 }
 gmf-layertree div {
-  margin-right: 10px;
+  margin-right: 1rem;
 }
 gmf-layertree ul .treenode {
-  padding-top: 10px;
+  padding-top: 1rem;
 }
 gmf-layertree ul .treenode a {
-  color: black;
+  color: #555;
   display: inline;
   line-height: inherit;
   padding-left: 0;
@@ -9337,8 +9349,8 @@ gmf-layertree ul .treenode .layerIcon {
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
   display: inline-flex;
-  height: 10px;
-  width: 20px;
+  height: 1rem;
+  width: 2rem;
 }
 gmf-layertree ul .treenode .name {
   white-space: normal;
@@ -9396,18 +9408,18 @@ gmf-layertree ul .treenode .legend a::before {
   display: none;
 }
 gmf-layertree ul .treenode .legend img {
-  padding-left: 15px;
+  padding-left: 1.5rem;
 }
 [ngeo-popup].popover {
   position: fixed;
   top: 0;
   left: auto;
   right: auto;
-  max-width: 96%;
-  width: 96%;
-  height: 96%;
-  max-height: 96%;
-  margin: 2%;
+  max-width: calc(100vw - 2rem);
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  max-height: calc(100vh - 2rem);
+  margin: 1rem;
   border-radius: 0;
 }
 [ngeo-popup] .popover-title {
@@ -9425,18 +9437,18 @@ gmf-layertree ul .treenode .legend img {
      * popup's height - popover-title's height
      * should be computed using bootstrap variables
      */
-  max-height: 90%;
+  max-height: 90vh;
   -webkit-overflow-scrolling: touch;
 }
 @media (min-width: 768px) {
   [ngeo-popup].popover {
-    top: 20px;
-    max-width: 350px;
-    width: 350px;
-    margin-left: -175px;
+    top: 5rem;
+    max-width: 32rem;
+    width: 32rem;
+    margin-left: - 16rem;
     left: 50%;
     right: 50%;
-    max-height: 400px;
+    max-height: 36rem;
     position: fixed;
   }
   [ngeo-popup] .popover-content {
@@ -9445,7 +9457,7 @@ gmf-layertree ul .treenode .legend img {
        * popup's height - popover-title's height
        * should be computed using bootstrap variables
        */
-    max-height: calc(362px);
+    max-height: 32rem;
   }
 }
 /**
@@ -9454,7 +9466,7 @@ gmf-layertree ul .treenode .legend img {
 main {
   position: fixed;
   background-color: #e2e3df;
-  box-shadow: 0px 0px 15px black;
+  box-shadow: 0 0 1rem black;
   width: 100%;
   height: 100%;
   z-index: 2;
@@ -9468,19 +9480,19 @@ main {
   will-change: transform;
 }
 .nav-left-is-visible main {
-  -webkit-transform: translateX(260px);
-          transform: translateX(260px);
+  -webkit-transform: translateX(26rem);
+          transform: translateX(26rem);
 }
 .nav-right-is-visible main {
-  -webkit-transform: translateX(-260px);
-          transform: translateX(-260px);
+  -webkit-transform: translateX(-26rem);
+          transform: translateX(-26rem);
 }
 main .overlay {
   /* shadow layer visible when navigation is active */
   position: absolute;
-  z-index: 3;
-  height: 100%;
-  width: 100%;
+  z-index: 6;
+  height: 100vh;
+  width: 100vw;
   top: 0;
   left: 0;
   cursor: pointer;
@@ -9496,6 +9508,29 @@ main .overlay {
   visibility: visible;
   opacity: 1;
 }
+.search-overlay {
+  /* shadow layer visible when search is active */
+  position: absolute;
+  z-index: 4;
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  background-color: white;
+  visibility: hidden;
+  opacity: 0;
+  -webkit-transition: opacity 0.3s, visibility 0.3s;
+  transition: opacity 0.3s, visibility 0.3s;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+@media (max-width: 767px) {
+  .search-is-active .search-overlay {
+    visibility: visible;
+    opacity: 1;
+  }
+}
 .nav-left-is-visible nav.nav-right,
 .nav-right-is-visible nav.nav-left {
   display: none;
@@ -9508,7 +9543,7 @@ nav.nav-left,
 nav.nav-right {
   position: fixed;
   top: 0;
-  width: 260px;
+  width: 26rem;
   height: 100%;
   background-color: white;
   overflow-x: hidden;
@@ -9535,7 +9570,7 @@ nav.nav-right header .go-back {
   opacity: 0;
   visibility: hidden;
   height: 50px;
-  width: 30px;
+  width: 4rem;
 }
 nav.nav-left header .go-back.active,
 nav.nav-right header .go-back.active {
@@ -9548,13 +9583,13 @@ nav.nav-left header .go-back::after,
 nav.nav-right header .go-back::after {
   -webkit-transform-origin: 1px 50%;
           transform-origin: 1px 50%;
-  left: 10px;
+  left: 1rem;
 }
 nav.nav-left header > nav,
 nav.nav-right header > nav {
   position: absolute;
-  width: 260px;
-  left: 260px;
+  width: 26rem;
+  left: 26rem;
   -webkit-transform: translateX(0);
           transform: translateX(0);
   -webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
@@ -9595,7 +9630,7 @@ nav.nav-right header.back > nav.slide-out {
 nav.nav-left a[data-toggle],
 nav.nav-right a[data-toggle] {
   position: relative;
-  padding-right: 40px;
+  padding-right: 4rem;
 }
 nav.nav-left a[data-toggle]::before,
 nav.nav-right a[data-toggle]::before,
@@ -9621,8 +9656,8 @@ nav.nav-right a[data-toggle=slide-in]::after {
   margin-top: -1px;
   display: inline-block;
   height: 2px;
-  width: 10px;
-  background: #cccccc;
+  width: 1rem;
+  background: #d9d9d9;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
@@ -9645,7 +9680,7 @@ nav.nav-right ul a[data-toggle=slide-in] {
   display: block;
   height: 50px;
   line-height: 50px;
-  color: #808080;
+  color: #5c996a;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -9654,7 +9689,7 @@ nav.nav-left .slide,
 nav.nav-right .slide {
   position: fixed;
   height: calc(100% - 50px);
-  width: 260px;
+  width: 26rem;
   -webkit-transform: translateX(100%);
           transform: translateX(100%);
   -webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
@@ -9664,7 +9699,7 @@ nav.nav-right .slide {
   will-change: transform, opacity;
   opacity: 0;
   overflow-y: auto;
-  padding: 10px;
+  padding: 1rem;
 }
 nav.nav-left .slide.active,
 nav.nav-right .slide.active {
@@ -9689,43 +9724,44 @@ nav.nav-right .slide.slide-out {
  * Buttons to open right and left navigation menus
  */
 .nav-trigger {
-  top: 1em;
+  top: 1rem;
   background: white;
-  z-index: 3;
-  height: calc( 3em  - 3px);
-  margin-top: 2px;
-  border: none;
+  z-index: 6;
+  height: 4rem;
+  border: 1px solid black;
 }
 .nav-trigger .fa,
 .nav-trigger .gmf-icon {
-  font-size: 1.5em;
+  font-size: 2rem;
 }
 .nav-left-trigger {
-  left: calc(1em  + 1px);
+  left: 1rem;
+  border-right: none;
   box-shadow: 3px 0 5px -2px #bbb;
 }
 .nav-right-trigger {
-  right: calc(1em  + 1px);
+  right: 1rem;
+  border-left: none;
   box-shadow: -3px 0 5px -2px #bbb;
 }
 @media (min-width: 768px) {
   main button:hover {
-    background-color: #cccccc;
+    background-color: #d9d9d9;
   }
   .nav-trigger {
-    top: 1em;
+    top: 1rem;
     margin: 0;
     background-color: white;
     border: solid 1px black;
     box-shadow: none;
-    height: 3em;
+    height: 4rem;
   }
   .nav-left-trigger {
-    left: 1em;
+    left: 1rem;
   }
   .nav-right-trigger {
     left: auto;
-    right: 1em;
+    right: 1rem;
   }
 }
 /**
@@ -9763,7 +9799,7 @@ nav.nav-right .slide.slide-out {
   right: 50%;
   left: 50%;
   bottom: 0;
-  max-height: 400px;
+  max-height: 40rem;
   position: fixed;
   z-index: 4;
 }
@@ -9771,10 +9807,10 @@ nav.nav-right .slide.slide-out {
   background-color: white;
   border: solid 1px black;
   border-bottom-width: 0;
-  border-radius: 4px 4px 0 0;
+  border-radius: 0.5rem 0.5rem 0 0;
   line-height: 0.5;
-  height: 28px;
-  width: 48px;
+  height: 4rem;
+  width: 6.66666667rem;
 }
 .mobiledisplayqueries .collapse-button.up:after {
   content: "\f077";
@@ -9789,17 +9825,17 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries .animation-container {
   position: relative;
   overflow: hidden;
-  height: 60px;
-  margin: 0 5px;
+  height: calc(3.5rem + 2em);
+  margin: 0;
   -webkit-transition: 0.3s ease-in all;
   transition: 0.3s ease-in all;
 }
 .mobiledisplayqueries .animation-container.detailed {
-  height: 170px;
+  height: 33vh;
 }
 .mobiledisplayqueries .animation-container .slide-animation {
   height: 100%;
-  padding: 5px 5px 0;
+  padding: 1rem 1rem 0;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -9837,24 +9873,27 @@ nav.nav-right .slide.slide-out {
   font-weight: bold;
 }
 .mobiledisplayqueries .header .subtitle {
-  margin-left: 10px;
-  height: 2ex;
+  margin-left: 1rem;
+  min-height: 1em;
+}
+.mobiledisplayqueries .header p {
+  margin-bottom: 1rem;
 }
 .mobiledisplayqueries .details {
   height: 65%;
   overflow-x: hidden;
   overflow-y: auto;
-  margin-left: 10px;
-  padding-bottom: 10px;
+  margin-left: 1rem;
+  padding-bottom: 1rem;
 }
 .mobiledisplayqueries .details table {
-  font-size: 0.9em;
+  font-size: 90%;
 }
 .mobiledisplayqueries .details .key {
-  padding-right: 5px;
+  padding-right: 1rem;
   /** prevent glitch for swipe animation **/
-  min-width: calc(30vw - 30px);
-  max-width: calc(30vw - 30px);
+  min-width: calc(30vw - 2rem);
+  max-width: calc(30vw - 2rem);
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
@@ -9862,8 +9901,8 @@ nav.nav-right .slide.slide-out {
   white-space: pre-wrap;
   word-break: break-all;
   /** prevent glitch for swipe animation **/
-  min-width: calc(70vw - 30px);
-  max-width: calc(70vw - 30px);
+  min-width: calc(70vw - 2rem);
+  max-width: calc(70vw - 2rem);
 }
 .mobiledisplayqueries .details .slide-animation.ng-enter-active .details .value {
   white-space: nowrap;
@@ -9871,8 +9910,8 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries .navigate {
   border-top: solid 1px black;
   text-align: center;
-  padding-top: 5px;
-  height: 32px;
+  padding-top: 1rem;
+  height: 4rem;
 }
 .mobiledisplayqueries .navigate .previous {
   float: left;
@@ -9891,7 +9930,7 @@ nav.nav-right .slide.slide-out {
   border: none;
   font-family: FontAwesome;
   height: initial;
-  width: 32px;
+  width: 4rem;
 }
 .mobiledisplayqueries button:hover {
   background-color: white;
@@ -9899,37 +9938,41 @@ nav.nav-right .slide.slide-out {
 .mobiledisplayqueries button.close {
   z-index: 3;
   position: absolute;
-  top: calc(34px);
-  right: 5px;
+  top: 5rem;
+  right: 0;
 }
 .mobiledisplayqueries button.close:after {
   content: "\f00d";
 }
 @media (min-width: 768px) {
   .mobiledisplayqueries {
-    width: 350px;
-    max-width: 350px;
-    margin-left: -175px;
-    right: calc(5.1em + 2px);
+    width: 32rem;
+    max-width: 32rem;
+    margin-left: -16rem;
+    right: 6rem;
     left: initial;
-    bottom: 5px;
+    bottom: 1rem;
     /** prevent glitch for swipe animation **/
   }
   .mobiledisplayqueries .details table .key {
-    min-width: calc(110.5px);
-    max-width: calc(110.5px);
+    min-width: 8.6rem;
+    max-width: 8.6rem;
   }
   .mobiledisplayqueries .details table .value {
-    min-width: calc(217.75px);
-    max-width: calc(224.45px);
+    min-width: 21.4rem;
+    max-width: 21.4rem;
   }
 }
+/**
+ * Mobile specific css only !
+ * Please, use shared less files to describe desktop-mobile shared css
+ */
 main > * {
   position: absolute;
 }
 main button {
-  height: 3em;
-  width: 3em;
+  height: 4rem;
+  width: 4rem;
 }
 gmf-map {
   position: initial;
@@ -9943,8 +9986,8 @@ gmf-map > div {
 }
 #measure-tools .measure-tools-button {
   display: block;
-  padding: 5px 0;
-  margin: 5px 0;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0;
   color: #555;
 }
 #measure-tools .measure-tools-button:hover {
@@ -9952,15 +9995,20 @@ gmf-map > div {
   text-decoration: none;
 }
 .measure-tools-control {
-  bottom: 1em;
-  right: 1em;
+  bottom: 1rem;
+  right: 1rem;
+}
+.measure-tools-control a {
+  display: block;
+  float: left;
+  margin-left: 0.2rem;
 }
 gmf-map .tooltip {
   position: relative;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
+  border-radius: 0.5rem;
   color: white;
-  padding: 4px 8px;
+  padding: 0.5rem 1rem;
   opacity: 0.7;
   white-space: nowrap;
 }
@@ -9970,67 +10018,64 @@ gmf-map .tooltip-measure {
 }
 gmf-map .tooltip-static {
   background-color: #ffcc33;
-  color: black;
+  color: #555;
   border: 1px solid white;
 }
 gmf-map .tooltip-measure:before,
 gmf-map .tooltip-static:before {
-  border-top: 6px solid rgba(0, 0, 0, 0.5);
-  border-right: 6px solid transparent;
-  border-left: 6px solid transparent;
+  border-top: 0.5rem solid black;
+  border-right: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
   content: "";
   position: absolute;
-  bottom: -6px;
-  margin-left: -7px;
+  bottom: -0.5rem;
+  margin-left: -0.5rem;
   left: 50%;
 }
 gmf-map .tooltip-static:before {
   border-top-color: #ffcc33;
 }
 .ol-zoom {
-  top: 5em;
-  right: 1em;
+  top: 6rem;
+  right: 1rem;
   left: auto;
 }
 .ol-zoom .ol-zoom-in,
 .ol-zoom .ol-zoom-out {
-  font-size: 1.5em;
+  font-size: 2rem;
   border-radius: 0;
-  height: 42px;
-  width: 42px;
+}
+.ol-scale-line {
+  bottom: 1rem;
+  left: 1rem;
 }
 button[ngeo-mobile-geolocation] {
-  right: 1em;
-  top: 11.5em;
+  right: 1rem;
+  top: calc(14.4rem);
 }
-button[ngeo-mobile-geolocation] .fa {
-  font-size: 1.5em;
-}
-.gmf-theme-selector .gmf-icon-check:after,
-.gmf-mobile-backgroundlayerselector .gmf-icon-check:after {
-  font-size: 1.2rem;
-  position: relative;
-  bottom: 0.8rem;
+.gmf-theme-selector .gmf-check,
+.gmf-mobile-backgroundlayerselector .gmf-check {
+  top: 0.5rem;
 }
 .gmf-theme-selector .gmf-text,
 .gmf-mobile-backgroundlayerselector .gmf-text {
-  margin: 3% 10px 0 0;
+  margin: 0.5rem 1rem 0 0;
+  width: calc(100% - 9rem);
 }
 .gmf-theme-selector .gmf-thumb,
 .gmf-mobile-backgroundlayerselector .gmf-thumb {
-  height: auto;
   width: 25%;
 }
 @media (min-width: 768px) {
+  .measure-tools-control {
+    right: 6rem;
+  }
   .ol-zoom {
     top: auto;
-    bottom: 8.5em;
+    bottom: 5rem;
   }
   button[ngeo-mobile-geolocation] {
     top: auto;
-    bottom: 5.5em;
-  }
-  button[ngeo-mobile-geolocation] button:after {
-    content: 'b';
+    bottom: 1rem;
   }
 }

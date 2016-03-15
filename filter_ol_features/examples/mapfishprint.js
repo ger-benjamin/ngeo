@@ -1,12 +1,6 @@
 
 
 
-proj4.defs('EPSG:21781',
-    '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' +
-    '+x_0=600000 +y_0=200000 +ellps=bessel ' +
-    '+towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs');
-
-
 /** @const **/
 var app = {};
 
@@ -189,8 +183,9 @@ app.MainController.prototype.print = function() {
   });
 
   this.print_.createReport(spec).then(
-      angular.bind(this, this.handleCreateReportSuccess_),
-      angular.bind(this, this.handleCreateReportError_));
+      this.handleCreateReportSuccess_.bind(this),
+      this.handleCreateReportError_.bind(this)
+  );
 };
 
 
@@ -210,8 +205,9 @@ app.MainController.prototype.handleCreateReportSuccess_ = function(resp) {
  */
 app.MainController.prototype.getStatus_ = function(ref) {
   this.print_.getStatus(ref).then(
-      angular.bind(this, this.handleGetStatusSuccess_, ref),
-      angular.bind(this, this.handleGetStatusError_));
+      this.handleGetStatusSuccess_.bind(this, ref),
+      this.handleGetStatusError_.bind(this)
+  );
 };
 
 
