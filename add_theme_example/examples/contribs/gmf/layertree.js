@@ -80,7 +80,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
    * @type {string}
    * @export
    */
-  this.modeFlush = 'lush';
+  this.modeFlush = 'flush';
 
   /**
    * @type {function()}
