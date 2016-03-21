@@ -48,7 +48,7 @@ app.MainController = function(gmfThemes) {
         image = new ol.style.Circle({fill: fill, radius: 5, stroke: stroke});
         stroke = new ol.style.Stroke({color: [50, 150, 200, 1], width: 2});
         break;
-      case gmf.SearchController.COORDINATES_LAYER_NAME:
+      case gmf.COORDINATES_LAYER_NAME:
         image = new ol.style.RegularShape({
           stroke: new ol.style.Stroke({color: [0, 0, 0, 0.7], width: 2}),
           points: 4,
