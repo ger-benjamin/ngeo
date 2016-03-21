@@ -59,7 +59,7 @@ is responsible to initialize the <a href="ngeo.FeatureOverlayMgr.html"><code>nge
 with the map.</p>
 <p>Example flat results:</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
-   gmf-search-style=&quot;ctrl.searchStyle&quot;
+   gmf-search-styles=&quot;ctrl.searchStyles&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
    gmf-search-clearbutton=&quot;true&quot;>
@@ -73,7 +73,7 @@ with the map.</p>
    })();
  &lt;/script></code></pre><p>Example with categories:</p>
 <pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
-   gmf-search-style=&quot;ctrl.searchStyle&quot;
+   gmf-search-styles=&quot;ctrl.searchStyles&quot;
    gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
    gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
    gmf-search-clearbutton=&quot;true&quot;>
@@ -169,19 +169,13 @@ with the map.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-search-style</code></td>
+                <td class="name"><code>gmf-search-styles</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
-|
-
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a>></span>
-|
-
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.html#.StyleFunction">ol.style.StyleFunction</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a>></span>
 
 
             
@@ -191,7 +185,11 @@ with the map.</p>
 
             
 
-            <td class="description last">The style to apply on searched features.</td>
+            <td class="description last">A map of styles to apply on searched features. Keys
+     must be the 'layer_name' propertie of features except for coordinates
+     where the key ifor its style is the value of the constant
+     'gmf.COORDINATES_LAYER_NAME'. The 'default' key is used to apply the
+     default style.</td>
         </tr>
 
     
@@ -306,7 +304,7 @@ with the map.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js">contribs/gmf/src/directives/search.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L99">line 99</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L107">line 107</a>
     </li></ul></dd>
     
 
