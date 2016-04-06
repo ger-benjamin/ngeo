@@ -18,14 +18,15 @@
         gmf-mobile-backgroundlayerselector-map="::mainCtrl.map"
         style="display: none;">
       </gmf-mobile-backgroundlayerselector>
-      <div class="data-panel">
+      <div class="data-panel" ng-cloak>
         <div class="header">
           <div class="dropdown">
             <a href class="btn btn-default btn-block"
               data-toggle="dropdown">
               <span class="fa fa-grid"></span>
               <span translate>Theme:</span>
-              <b ng-bind="mainCtrl.theme['name']" translate>Loading...</b>
+              <b ng-if="!mainCtrl.theme.name" translate>Loading...</b>
+              <b ng-if="mainCtrl.theme.name">{{mainCtrl.theme.name|translate}}</b>
               <span class="caret"></span>
             </a>
             <gmf-themeselector class="dropdown-menu"
@@ -56,33 +57,39 @@
           </button>
           <button ngeo-btn class="btn btn-default" ng-model="measureActive"
             data-toggle="tooltip" data-placement="left" data-original-title="{{'Measure tools'|translate}}">
-            <span class="fa fa-circle">
+            <span class="fa fa-circle"></span>
           </button>
         </div>
         <div class="tools-content container-fluid" ng-class="{active: mainCtrl.toolsActive}">
           <div class="row">
             <div class="col-sm-12">
-              <div ng-show="loginActive">
-                <div class="tools-content-heading">
-                  Login
-                  <a class="btn close" ng-click="loginActive = false">&times;</a>
+              <div ng-show="mainCtrl.loginActive" class="row">
+                <div class="col-sm-12">
+                  <div class="tools-content-heading">
+                    Login
+                    <a class="btn close" ng-click="mainCtrl.loginActive = false">&times;</a>
+                  </div>
+                  <gmf-authentication></gmf-authentication>
                 </div>
-                <gmf-authentication></gmf-authentication>
               </div>
-              <div ng-show="printActive">
-                <a class="btn close" ng-click="printActive = false">&times;</a>
-                <div class="tools-content-heading">
-                  Print
+              <div ng-show="printActive" class="row">
+                <div class="col-sm-12">
+                  <div class="tools-content-heading">
+                    Print
+                    <a class="btn close" ng-click="printActive = false">&times;</a>
+                  </div>
+                  <gmf-print
+                    gmf-print-map="mainCtrl.map"
+                    gmf-print-active="printActive">
+                  </gmf-print>
                 </div>
-                <gmf-print
-                  gmf-print-map="mainCtrl.map"
-                  gmf-print-active="printActive">
-                </gmf-print>
               </div>
-              <div ng-show="measureActive">
-                <a class="btn close" ng-click="measureActive = false">&times;</a>
-                <div class="tools-content-heading">
-                  Measure
+              <div ng-show="measureActive" class="row">
+                <div class="col-sm-12">
+                  <div class="tools-content-heading">
+                    Measure
+                    <a class="btn close" ng-click="measureActive = false">&times;</a>
+                  </div>
                 </div>
               </div>
             </div>
