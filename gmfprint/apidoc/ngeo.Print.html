@@ -42,7 +42,7 @@
 
     
 
-    <h4 class="name" id="Print"><span class="type-signature"></span>new Print<span class="signature">(url, $http)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Print"><span class="type-signature"></span>new Print<span class="signature">(url, $http, ngeoLayerHelper)</span><span class="type-signature"></span></h4>
 
     
 
@@ -67,7 +67,7 @@ var dpi = 72;
 var layout = 'A4 portrait';
 var reportSpec = print.createSpec(map, scale, dpi, layout, {
   'title': 'A title for my report',
-  'rotation': 45
+  'rotation': 45 // degree
 });</code></pre><p>See our live example: <code>../examples/mapfishprint.html</code></p>
 <p>TODO and limitations:</p>
 <ul>
@@ -157,6 +157,29 @@ as MapFish Print does not support sprite icons.</li>
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>ngeoLayerHelper</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ngeo.LayerHelper.html">ngeo.LayerHelper</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Ngeo Layer Helper.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -198,7 +221,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L104">line 104</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L105">line 105</a>
     </li></ul></dd>
     
 
@@ -394,7 +417,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L133">line 133</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L140">line 140</a>
     </li></ul></dd>
     
 
@@ -594,7 +617,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L803">line 803</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L811">line 811</a>
     </li></ul></dd>
     
 
@@ -843,7 +866,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L152">line 152</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L159">line 159</a>
     </li></ul></dd>
     
 
@@ -1042,7 +1065,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L216">line 216</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L224">line 224</a>
     </li></ul></dd>
     
 
@@ -1189,7 +1212,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L847">line 847</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L855">line 855</a>
     </li></ul></dd>
     
 
@@ -1346,7 +1369,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L837">line 837</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L845">line 845</a>
     </li></ul></dd>
     
 
@@ -1546,7 +1569,7 @@ as MapFish Print does not support sprite icons.</li>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js">src/services/print.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L823">line 823</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/print.js#L831">line 831</a>
     </li></ul></dd>
     
 
