@@ -104543,7 +104543,7 @@ goog.provide('ngeo');
 
 
 /** @type {!angular.Module} */
-ngeo.module = angular.module('ngeo', []);
+ngeo.module = angular.module('ngeo', ['gettext']);
 
 
 /**
@@ -104574,12 +104574,12 @@ ngeo.FeatureProperties = {
  * @enum {string}
  */
 ngeo.GeometryType = {
-  CIRCLE: 'circle',
-  LINESTRING: 'linestring',
-  POINT: 'point',
-  POLYGON: 'polygon',
-  RECTANGLE: 'rectangle',
-  TEXT: 'text'
+  CIRCLE: 'Circle',
+  LINE_STRING: 'LineString',
+  POINT: 'Point',
+  POLYGON: 'Polygon',
+  RECTANGLE: 'Rectangle',
+  TEXT: 'Text'
 };
 
 goog.provide('ngeo.BtnGroupController');
@@ -105509,6 +105509,2524 @@ ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
 
 ngeo.module.controller('NgeoDesktopGeolocationController',
     ngeo.DesktopGeolocationController);
+
+goog.provide('ngeo.DecorateInteraction');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+
+
+/**
+ * Provides a function that adds an "active" property (using
+ * `Object.defineProperty`) to an interaction, making it possible to use ngModel
+ * to activate/deactivate interactions.
+ *
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="interaction.active" />
+ *
+ * See our live example: {@link ../examples/interactiontoggle.html}
+ *
+ * @typedef {function(ol.interaction.Interaction)}
+ * @ngdoc service
+ * @ngname ngeoDecorateInteraction
+ */
+ngeo.DecorateInteraction;
+
+
+/**
+ * @param {ol.interaction.Interaction} interaction Interaction to decorate.
+ */
+ngeo.decorateInteraction = function(interaction) {
+  goog.asserts.assertInstanceof(interaction, ol.interaction.Interaction);
+
+  Object.defineProperty(interaction, 'active', {
+    get: function() {
+      return interaction.getActive();
+    },
+    set: function(val) {
+      interaction.setActive(val);
+    }
+  });
+};
+
+
+ngeo.module.value('ngeoDecorateInteraction', ngeo.decorateInteraction);
+
+// Copyright 2012 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Utilities for detecting, adding and removing classes.  Prefer
+ * this over goog.dom.classes for new code since it attempts to use classList
+ * (DOMTokenList: http://dom.spec.whatwg.org/#domtokenlist) which is faster
+ * and requires less code.
+ *
+ * Note: these utilities are meant to operate on HTMLElements
+ * and may have unexpected behavior on elements with differing interfaces
+ * (such as SVGElements).
+ */
+
+
+goog.provide('goog.dom.classlist');
+
+goog.require('goog.array');
+
+
+/**
+ * Override this define at build-time if you know your target supports it.
+ * @define {boolean} Whether to use the classList property (DOMTokenList).
+ */
+goog.define('goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST', false);
+
+
+/**
+ * Gets an array-like object of class names on an element.
+ * @param {Element} element DOM node to get the classes of.
+ * @return {!IArrayLike<?>} Class names on {@code element}.
+ */
+goog.dom.classlist.get = function(element) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    return element.classList;
+  }
+
+  var className = element.className;
+  // Some types of elements don't have a className in IE (e.g. iframes).
+  // Furthermore, in Firefox, className is not a string when the element is
+  // an SVG element.
+  return goog.isString(className) && className.match(/\S+/g) || [];
+};
+
+
+/**
+ * Sets the entire class name of an element.
+ * @param {Element} element DOM node to set class of.
+ * @param {string} className Class name(s) to apply to element.
+ */
+goog.dom.classlist.set = function(element, className) {
+  element.className = className;
+};
+
+
+/**
+ * Returns true if an element has a class.  This method may throw a DOM
+ * exception for an invalid or empty class name if DOMTokenList is used.
+ * @param {Element} element DOM node to test.
+ * @param {string} className Class name to test for.
+ * @return {boolean} Whether element has the class.
+ */
+goog.dom.classlist.contains = function(element, className) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    return element.classList.contains(className);
+  }
+  return goog.array.contains(goog.dom.classlist.get(element), className);
+};
+
+
+/**
+ * Adds a class to an element.  Does not add multiples of class names.  This
+ * method may throw a DOM exception for an invalid or empty class name if
+ * DOMTokenList is used.
+ * @param {Element} element DOM node to add class to.
+ * @param {string} className Class name to add.
+ */
+goog.dom.classlist.add = function(element, className) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    element.classList.add(className);
+    return;
+  }
+
+  if (!goog.dom.classlist.contains(element, className)) {
+    // Ensure we add a space if this is not the first class name added.
+    element.className +=
+        element.className.length > 0 ? (' ' + className) : className;
+  }
+};
+
+
+/**
+ * Convenience method to add a number of class names at once.
+ * @param {Element} element The element to which to add classes.
+ * @param {IArrayLike<string>} classesToAdd An array-like object
+ * containing a collection of class names to add to the element.
+ * This method may throw a DOM exception if classesToAdd contains invalid
+ * or empty class names.
+ */
+goog.dom.classlist.addAll = function(element, classesToAdd) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    goog.array.forEach(classesToAdd, function(className) {
+      goog.dom.classlist.add(element, className);
+    });
+    return;
+  }
+
+  var classMap = {};
+
+  // Get all current class names into a map.
+  goog.array.forEach(goog.dom.classlist.get(element), function(className) {
+    classMap[className] = true;
+  });
+
+  // Add new class names to the map.
+  goog.array.forEach(
+      classesToAdd, function(className) { classMap[className] = true; });
+
+  // Flatten the keys of the map into the className.
+  element.className = '';
+  for (var className in classMap) {
+    element.className +=
+        element.className.length > 0 ? (' ' + className) : className;
+  }
+};
+
+
+/**
+ * Removes a class from an element.  This method may throw a DOM exception
+ * for an invalid or empty class name if DOMTokenList is used.
+ * @param {Element} element DOM node to remove class from.
+ * @param {string} className Class name to remove.
+ */
+goog.dom.classlist.remove = function(element, className) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    element.classList.remove(className);
+    return;
+  }
+
+  if (goog.dom.classlist.contains(element, className)) {
+    // Filter out the class name.
+    element.className = goog.array
+                            .filter(
+                                goog.dom.classlist.get(element),
+                                function(c) { return c != className; })
+                            .join(' ');
+  }
+};
+
+
+/**
+ * Removes a set of classes from an element.  Prefer this call to
+ * repeatedly calling {@code goog.dom.classlist.remove} if you want to remove
+ * a large set of class names at once.
+ * @param {Element} element The element from which to remove classes.
+ * @param {IArrayLike<string>} classesToRemove An array-like object
+ * containing a collection of class names to remove from the element.
+ * This method may throw a DOM exception if classesToRemove contains invalid
+ * or empty class names.
+ */
+goog.dom.classlist.removeAll = function(element, classesToRemove) {
+  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
+    goog.array.forEach(classesToRemove, function(className) {
+      goog.dom.classlist.remove(element, className);
+    });
+    return;
+  }
+  // Filter out those classes in classesToRemove.
+  element.className =
+      goog.array
+          .filter(
+              goog.dom.classlist.get(element),
+              function(className) {
+                // If this class is not one we are trying to remove,
+                // add it to the array of new class names.
+                return !goog.array.contains(classesToRemove, className);
+              })
+          .join(' ');
+};
+
+
+/**
+ * Adds or removes a class depending on the enabled argument.  This method
+ * may throw a DOM exception for an invalid or empty class name if DOMTokenList
+ * is used.
+ * @param {Element} element DOM node to add or remove the class on.
+ * @param {string} className Class name to add or remove.
+ * @param {boolean} enabled Whether to add or remove the class (true adds,
+ *     false removes).
+ */
+goog.dom.classlist.enable = function(element, className, enabled) {
+  if (enabled) {
+    goog.dom.classlist.add(element, className);
+  } else {
+    goog.dom.classlist.remove(element, className);
+  }
+};
+
+
+/**
+ * Adds or removes a set of classes depending on the enabled argument.  This
+ * method may throw a DOM exception for an invalid or empty class name if
+ * DOMTokenList is used.
+ * @param {!Element} element DOM node to add or remove the class on.
+ * @param {?IArrayLike<string>} classesToEnable An array-like object
+ *     containing a collection of class names to add or remove from the element.
+ * @param {boolean} enabled Whether to add or remove the classes (true adds,
+ *     false removes).
+ */
+goog.dom.classlist.enableAll = function(element, classesToEnable, enabled) {
+  var f = enabled ? goog.dom.classlist.addAll : goog.dom.classlist.removeAll;
+  f(element, classesToEnable);
+};
+
+
+/**
+ * Switches a class on an element from one to another without disturbing other
+ * classes. If the fromClass isn't removed, the toClass won't be added.  This
+ * method may throw a DOM exception if the class names are empty or invalid.
+ * @param {Element} element DOM node to swap classes on.
+ * @param {string} fromClass Class to remove.
+ * @param {string} toClass Class to add.
+ * @return {boolean} Whether classes were switched.
+ */
+goog.dom.classlist.swap = function(element, fromClass, toClass) {
+  if (goog.dom.classlist.contains(element, fromClass)) {
+    goog.dom.classlist.remove(element, fromClass);
+    goog.dom.classlist.add(element, toClass);
+    return true;
+  }
+  return false;
+};
+
+
+/**
+ * Removes a class if an element has it, and adds it the element doesn't have
+ * it.  Won't affect other classes on the node.  This method may throw a DOM
+ * exception if the class name is empty or invalid.
+ * @param {Element} element DOM node to toggle class on.
+ * @param {string} className Class to toggle.
+ * @return {boolean} True if class was added, false if it was removed
+ *     (in other words, whether element has the class after this function has
+ *     been called).
+ */
+goog.dom.classlist.toggle = function(element, className) {
+  var add = !goog.dom.classlist.contains(element, className);
+  goog.dom.classlist.enable(element, className, add);
+  return add;
+};
+
+
+/**
+ * Adds and removes a class of an element.  Unlike
+ * {@link goog.dom.classlist.swap}, this method adds the classToAdd regardless
+ * of whether the classToRemove was present and had been removed.  This method
+ * may throw a DOM exception if the class names are empty or invalid.
+ *
+ * @param {Element} element DOM node to swap classes on.
+ * @param {string} classToRemove Class to remove.
+ * @param {string} classToAdd Class to add.
+ */
+goog.dom.classlist.addRemove = function(element, classToRemove, classToAdd) {
+  goog.dom.classlist.remove(element, classToRemove);
+  goog.dom.classlist.add(element, classToAdd);
+};
+
+goog.provide('ngeo.MeasureEvent');
+goog.provide('ngeo.MeasureEventType');
+goog.provide('ngeo.interaction.Measure');
+
+goog.require('goog.asserts');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
+goog.require('ol.Feature');
+goog.require('ol.MapBrowserEvent');
+goog.require('ol.Overlay');
+goog.require('ol.events');
+goog.require('ol.interaction.DrawEvent');
+goog.require('ol.interaction.DrawEventType');
+goog.require('ol.interaction.Interaction');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+goog.require('ol.sphere.WGS84');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Stroke');
+goog.require('ol.style.Style');
+
+
+/**
+ * Interactions for measure tools base class.
+ * @typedef {{
+ *    decimals: (number|undefined),
+ *    displayHelpTooltip: (boolean|undefined),
+ *    startMsg: (Element|undefined),
+ *    style: (ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined),
+ *    sketchStyle: (ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined)
+ * }}
+ */
+ngeo.interaction.MeasureBaseOptions;
+
+
+/**
+ * @enum {string}
+ */
+ngeo.MeasureEventType = {
+  /**
+   * Triggered upon feature draw end
+   * @event ngeo.MeasureEvent#measureend
+   */
+  MEASUREEND: 'measureend'
+};
+
+
+/**
+ * @classdesc
+ * Events emitted by {@link ngeo.interaction.Interaction} instances are
+ * instances of this type.
+ *
+ * @constructor
+ * @extends {ol.events.Event}
+ * @implements {ngeox.MeasureEvent}
+ * @param {ngeo.MeasureEventType} type Type.
+ * @param {ol.Feature} feature The feature drawn.
+ */
+ngeo.MeasureEvent = function(type, feature) {
+
+  goog.base(this, type);
+
+  /**
+   * The feature being drawn.
+   * @type {ol.Feature}
+   * @api stable
+   */
+  this.feature = feature;
+
+};
+goog.inherits(ngeo.MeasureEvent, ol.events.Event);
+
+
+/**
+ * Interaction that allows measuring (length, area, ...).
+ *
+ * @constructor
+ * @extends {ol.interaction.Interaction}
+ * @param {ngeo.interaction.MeasureBaseOptions=} opt_options Options
+ */
+ngeo.interaction.Measure = function(opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, {
+    handleEvent: ngeo.interaction.Measure.handleEvent_
+  });
+
+  /**
+   * The help tooltip element.
+   * @type {Element}
+   * @private
+   */
+  this.helpTooltipElement_ = null;
+
+
+  /**
+   * Overlay to show the help messages.
+   * @type {ol.Overlay}
+   * @private
+   */
+  this.helpTooltipOverlay_ = null;
+
+
+  /**
+   * The measure tooltip element.
+   * @type {Element}
+   * @private
+   */
+  this.measureTooltipElement_ = null;
+
+
+  /**
+   * Overlay to show the measurement.
+   * @type {ol.Overlay}
+   * @private
+   */
+  this.measureTooltipOverlay_ = null;
+
+
+  /**
+   * The sketch feature.
+   * @type {ol.Feature}
+   * @protected
+   */
+  this.sketchFeature = null;
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {?Element}
+   */
+  this.continueMsg = null;
+
+  /**
+   * Defines the number of decimals to keep in the measurement. If not defined,
+   * then the default behaviour occurs depending on the measure type.
+   * @type {?number}
+   * @protected
+   */
+  this.decimals = options.decimals !== undefined ? options.decimals : null;
+
+  /**
+   * Whether or not to display any tooltip
+   * @type {boolean}
+   * @private
+   */
+  this.displayHelpTooltip_ = options.displayHelpTooltip !== undefined ?
+      options.displayHelpTooltip : true;
+
+  /**
+   * The message to show when user is about to start drawing.
+   * @type {Element}
+   */
+  this.startMsg = options.startMsg !== undefined ? options.startMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {}, 'Click to start drawing.');
+
+  /**
+   * The key for geometry change event.
+   * @type {?ol.events.Key}
+   * @private
+   */
+  this.changeEventKey_ = null;
+
+  var style = options.style !== undefined ? options.style : [
+    new ol.style.Style({
+      fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 255, 0.2)'
+      })
+    }),
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: 'white',
+        width: 5
+      })
+    }),
+    new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: '#ffcc33',
+        width: 3
+      })
+    })
+  ];
+
+  /**
+   * The vector layer used to show final measure features.
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.vectorLayer_ = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: style
+  });
+
+  /**
+   * The draw interaction to be used.
+   * @type {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
+   * @private
+   */
+  this.drawInteraction_ = this.createDrawInteraction(options.sketchStyle,
+      this.vectorLayer_.getSource());
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.shouldHandleDrawInteractionActiveChange_ = true;
+
+  ol.events.listen(this.drawInteraction_,
+      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
+      this.handleDrawInteractionActiveChange_, this);
+  ol.events.listen(this.drawInteraction_,
+      ol.interaction.DrawEventType.DRAWSTART, this.onDrawStart_, this);
+  ol.events.listen(this.drawInteraction_,
+      ol.interaction.DrawEventType.DRAWEND, this.onDrawEnd_, this);
+
+  ol.events.listen(this,
+      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
+      this.updateState_, this);
+};
+goog.inherits(ngeo.interaction.Measure, ol.interaction.Interaction);
+
+
+/**
+ * Calculate the area of the passed polygon and return a formatted string
+ * of the area.
+ * @param {ol.geom.Polygon} polygon Polygon.
+ * @param {ol.proj.Projection} projection Projection of the polygon coords.
+ * @param {?number} decimals Decimals.
+ * @return {string} Formatted string of the area.
+ * @export
+ */
+ngeo.interaction.Measure.getFormattedArea = function(
+    polygon, projection, decimals) {
+  var geom = /** @type {ol.geom.Polygon} */ (
+      polygon.clone().transform(projection, 'EPSG:4326'));
+  var coordinates = geom.getLinearRing(0).getCoordinates();
+  var area = Math.abs(ol.sphere.WGS84.geodesicArea(coordinates));
+  var output;
+  if (area > 1000000) {
+    if (decimals !== null) {
+      output = goog.string.padNumber(area / 1000000, 0, decimals);
+    } else {
+      output = parseFloat((area / 1000000).toPrecision(3));
+    }
+    output += ' ' + 'km²';
+  } else {
+    if (decimals !== null) {
+      output = goog.string.padNumber(area, 0, decimals);
+    } else {
+      output = parseFloat(area.toPrecision(3));
+    }
+    output += ' ' + 'm²';
+  }
+  return output;
+};
+
+
+/**
+ * Calculate the area of the passed circle and return a formatted string
+ * of the area.
+ * @param {ol.geom.Circle} circle Circle
+ * @param {?number} decimals Decimals.
+ * @return {string} Formatted string of the area.
+ * @export
+ */
+ngeo.interaction.Measure.getFormattedCircleArea = function(
+    circle, decimals) {
+  var area = Math.PI * Math.pow(circle.getRadius(), 2);
+  var output;
+  if (area > 1000000) {
+    if (decimals !== null) {
+      output = goog.string.padNumber(area / 1000000, 0, decimals);
+    } else {
+      output = parseFloat((area / 1000000).toPrecision(3));
+    }
+    output += ' ' + 'km²';
+  } else {
+    if (decimals !== null) {
+      output = goog.string.padNumber(area, 0, decimals);
+    } else {
+      output = parseFloat(area.toPrecision(3));
+    }
+    output += ' ' + 'm²';
+  }
+  return output;
+};
+
+
+/**
+ * Calculate the length of the passed line string and return a formatted
+ * string of the length.
+ * @param {ol.geom.LineString} lineString Line string.
+ * @param {ol.proj.Projection} projection Projection of the line string coords.
+ * @param {?number} decimals Decimals.
+ * @return {string} Formatted string of length.
+ * @export
+ */
+ngeo.interaction.Measure.getFormattedLength = function(lineString, projection,
+    decimals) {
+  var length = 0;
+  var coordinates = lineString.getCoordinates();
+  for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+    var c1 = ol.proj.transform(coordinates[i], projection, 'EPSG:4326');
+    var c2 = ol.proj.transform(coordinates[i + 1], projection, 'EPSG:4326');
+    length += ol.sphere.WGS84.haversineDistance(c1, c2);
+  }
+  var output;
+  if (length > 1000) {
+    if (decimals !== null) {
+      output = goog.string.padNumber(length / 1000, 0, decimals);
+    } else {
+      output = parseFloat((length / 1000).toPrecision(3));
+    }
+    output += ' ' + 'km';
+  } else {
+    if (decimals !== null) {
+      output = goog.string.padNumber(length, 0, decimals);
+    } else {
+      output = parseFloat(length.toPrecision(3));
+    }
+    output += ' ' + 'm';
+  }
+  return output;
+};
+
+
+/**
+ * Return a formatted string of the point.
+ * @param {ol.geom.Point} point Point.
+ * @param {ol.proj.Projection} projection Projection of the line string coords.
+ * @param {?number} decimals Decimals.
+ * @return {string} Formatted string of coordinate.
+ */
+ngeo.interaction.Measure.getFormattedPoint = function(
+    point, projection, decimals) {
+  var coordinates = point.getCoordinates();
+  var x = coordinates[0];
+  var y = coordinates[1];
+  decimals = decimals !== null ? decimals : 0;
+  x = goog.string.padNumber(x, 0, decimals);
+  y = goog.string.padNumber(y, 0, decimals);
+  return ['X: ', x, ', Y: ', y].join('');
+};
+
+
+/**
+ * Handle map browser event.
+ * @param {ol.MapBrowserEvent} evt Map browser event.
+ * @return {boolean} `false` if event propagation should be stopped.
+ * @this {ngeo.interaction.Measure}
+ * @private
+ */
+ngeo.interaction.Measure.handleEvent_ = function(evt) {
+  if (evt.type != ol.MapBrowserEvent.EventType.POINTERMOVE || evt.dragging) {
+    return true;
+  }
+
+  var helpMsg = this.startMsg;
+  if (this.sketchFeature !== null) {
+    helpMsg = this.continueMsg;
+  }
+
+  if (this.displayHelpTooltip_) {
+    goog.dom.removeChildren(this.helpTooltipElement_);
+    goog.dom.appendChild(this.helpTooltipElement_, helpMsg);
+    this.helpTooltipOverlay_.setPosition(evt.coordinate);
+  }
+
+  return true;
+};
+
+
+/**
+ * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw} The draw interaction.
+ * @export
+ */
+ngeo.interaction.Measure.prototype.getDrawInteraction = function() {
+  return this.drawInteraction_;
+};
+
+
+/**
+ * Creates the draw interaction.
+ * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined}
+ *     style The sketchStyle used for the drawing interaction.
+ * @param {ol.source.Vector} source Vector source.
+ * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
+ * @protected
+ */
+ngeo.interaction.Measure.prototype.createDrawInteraction = goog.abstractMethod;
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.Measure.prototype.setMap = function(map) {
+  goog.base(this, 'setMap', map);
+
+  this.vectorLayer_.setMap(map);
+
+  var prevMap = this.drawInteraction_.getMap();
+  if (prevMap !== null) {
+    prevMap.removeInteraction(this.drawInteraction_);
+  }
+
+  if (map !== null) {
+    map.addInteraction(this.drawInteraction_);
+  }
+};
+
+
+/**
+ * Handle draw interaction `drawstart` event.
+ * @param {ol.interaction.DrawEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
+  this.sketchFeature = evt.feature;
+  this.vectorLayer_.getSource().clear(true);
+  this.createMeasureTooltip_();
+
+  var geometry = this.sketchFeature.getGeometry();
+
+  goog.asserts.assert(geometry !== undefined);
+  this.changeEventKey_ = ol.events.listen(geometry,
+      ol.events.EventType.CHANGE,
+      function() {
+        this.handleMeasure(function(measure, coord) {
+          if (coord !== null) {
+            this.measureTooltipElement_.innerHTML = measure;
+            this.measureTooltipOverlay_.setPosition(coord);
+          }
+        }.bind(this));
+      }, this);
+};
+
+
+/**
+ * Handle draw interaction `drawend` event.
+ * @param {ol.interaction.DrawEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Measure.prototype.onDrawEnd_ = function(evt) {
+  goog.dom.classlist.add(this.measureTooltipElement_, 'tooltip-static');
+  this.measureTooltipOverlay_.setOffset([0, -7]);
+  this.dispatchEvent(new ngeo.MeasureEvent(ngeo.MeasureEventType.MEASUREEND,
+      this.sketchFeature));
+  this.sketchFeature = null;
+  if (this.changeEventKey_ !== null) {
+    ol.events.unlistenByKey(this.changeEventKey_);
+  }
+};
+
+
+/**
+ * Creates a new help tooltip
+ * @private
+ */
+ngeo.interaction.Measure.prototype.createHelpTooltip_ = function() {
+  this.removeHelpTooltip_();
+  if (this.displayHelpTooltip_) {
+    this.helpTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
+    goog.dom.classlist.add(this.helpTooltipElement_, 'tooltip');
+    this.helpTooltipOverlay_ = new ol.Overlay({
+      element: this.helpTooltipElement_,
+      offset: [15, 0],
+      positioning: 'center-left'
+    });
+    this.getMap().addOverlay(this.helpTooltipOverlay_);
+  }
+};
+
+
+/**
+ * Destroy the help tooltip
+ * @private
+ */
+ngeo.interaction.Measure.prototype.removeHelpTooltip_ = function() {
+  if (this.displayHelpTooltip_) {
+    this.getMap().removeOverlay(this.helpTooltipOverlay_);
+    if (this.helpTooltipElement_ !== null) {
+      this.helpTooltipElement_.parentNode.removeChild(this.helpTooltipElement_);
+    }
+    this.helpTooltipElement_ = null;
+    this.helpTooltipOverlay_ = null;
+  }
+};
+
+
+/**
+ * Creates a new measure tooltip
+ * @private
+ */
+ngeo.interaction.Measure.prototype.createMeasureTooltip_ = function() {
+  this.removeMeasureTooltip_();
+  this.measureTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
+  goog.dom.classlist.addAll(this.measureTooltipElement_,
+      ['tooltip', 'tooltip-measure']);
+  this.measureTooltipOverlay_ = new ol.Overlay({
+    element: this.measureTooltipElement_,
+    offset: [0, -15],
+    positioning: 'bottom-center',
+    stopEvent: false
+  });
+  this.getMap().addOverlay(this.measureTooltipOverlay_);
+};
+
+
+/**
+ * Destroy the help tooltip
+ * @private
+ */
+ngeo.interaction.Measure.prototype.removeMeasureTooltip_ = function() {
+  if (this.measureTooltipElement_ !== null) {
+    this.measureTooltipElement_.parentNode.removeChild(
+        this.measureTooltipElement_);
+    this.measureTooltipElement_ = null;
+    this.measureTooltipOverlay_ = null;
+  }
+};
+
+
+/**
+ * @private
+ */
+ngeo.interaction.Measure.prototype.updateState_ = function() {
+  var active = this.getActive();
+  this.shouldHandleDrawInteractionActiveChange_ = false;
+  this.drawInteraction_.setActive(active);
+  this.shouldHandleDrawInteractionActiveChange_ = true;
+  if (!this.getMap()) {
+    return;
+  }
+  if (active) {
+    if (!this.measureTooltipOverlay_) {
+      this.createMeasureTooltip_();
+      this.createHelpTooltip_();
+    }
+  } else {
+    this.vectorLayer_.getSource().clear(true);
+    this.getMap().removeOverlay(this.measureTooltipOverlay_);
+    this.removeMeasureTooltip_();
+    this.removeHelpTooltip_();
+  }
+};
+
+
+/**
+ * Function implemented in inherited classes to compute measurement, determine
+ * where to place the tooltip and determine which help message to display.
+ * @param {function(string, ?ol.Coordinate)} callback The function
+ *     to be called.
+ * @protected
+ */
+ngeo.interaction.Measure.prototype.handleMeasure = goog.abstractMethod;
+
+
+/**
+ * Get a reference to the tooltip element.
+ * @return {Element} Tooltip Element.
+ * @export
+ */
+ngeo.interaction.Measure.prototype.getTooltipElement = function() {
+  return this.measureTooltipElement_;
+};
+
+
+/**
+ * Called when the draw interaction `active` property changes. If the
+ * change is due to something else than this measure interactino, then
+ * update follow the its active state accordingly.
+ *
+ * @private
+ */
+ngeo.interaction.Measure.prototype.handleDrawInteractionActiveChange_ =
+    function() {
+      if (this.shouldHandleDrawInteractionActiveChange_) {
+        this.setActive(this.drawInteraction_.getActive());
+      }
+    };
+
+goog.provide('ngeo.FeatureHelper')
+
+goog.require('ngeo');
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.style.Circle');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Stroke');
+goog.require('ol.style.Style');
+goog.require('ol.style.Text');
+
+
+/**
+ * Provides methods for features, such as:
+ *  - style setting / getting
+ *  - measurement
+ *
+ * @constructor
+ * @param {angular.$injector} $injector Main injector.
+ * @ngdoc service
+ * @ngname ngeoFeatureHelper
+ * @ngInject
+ */
+ngeo.FeatureHelper = function($injector) {
+
+  /**
+   * @type {?number}
+   * @private
+   */
+  this.decimals = null;
+
+  if ($injector.has('ngeoMeasureDecimals')) {
+    this.decimals_ = $injector.get('ngeoMeasureDecimals');
+  }
+
+  /**
+   * @type {ol.proj.Projection}
+   * @private
+   */
+  this.projection_;
+
+};
+
+
+/**
+ * @param {ol.proj.Projection} projection Projection.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.setProjection = function(projection) {
+  this.projection_ = projection;
+};
+
+
+// === STYLE METHODS ===
+
+
+/**
+ * Set the style of a feature using its inner properties and depending on
+ * its geometry type.
+ * @param {ol.Feature} feature Feature.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.setStyle = function(feature) {
+  var style = this.getStyle(feature);
+  feature.setStyle(style);
+};
+
+
+/**
+ * Create and return a style object from a given feature using its inner
+ * properties and depending on its geometry type.
+ * @param {ol.Feature} feature Feature.
+ * @return {ol.style.Style} The style object.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getStyle = function(feature) {
+  var type = this.getType(feature);
+  var style;
+
+  switch (type) {
+    case ngeo.GeometryType.LINE_STRING:
+      style = this.getLineStringStyle_(feature);
+      break;
+    case ngeo.GeometryType.POINT:
+      style = this.getPointStyle_(feature);
+      break;
+    case ngeo.GeometryType.CIRCLE:
+    case ngeo.GeometryType.POLYGON:
+    case ngeo.GeometryType.RECTANGLE:
+      style = this.getPolygonStyle_(feature);
+      break;
+    case ngeo.GeometryType.TEXT:
+      style = this.getTextStyle_(feature);
+      break;
+    default:
+      break;
+  }
+
+  goog.asserts.assert(style, 'Style should be thruthy');
+
+  return style;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature with linestring geometry.
+ * @return {ol.style.Style} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.getLineStringStyle_ = function(feature) {
+
+  var strokeWidth = this.getStrokeProperty(feature);
+  var showMeasure = this.getShowMeasureProperty(feature);
+  var color = this.getColorProperty(feature);
+
+  var options = {
+    stroke: new ol.style.Stroke({
+      color: color,
+      width: strokeWidth
+    })
+  };
+
+  if (showMeasure) {
+    var measure = this.getMeasure(feature);
+    options.text = this.createTextStyle_(measure, 10);
+  }
+
+  return new ol.style.Style(options);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature with point geometry.
+ * @return {ol.style.Style} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.getPointStyle_ = function(feature) {
+
+  var size = this.getSizeProperty(feature);
+  var color = this.getColorProperty(feature);
+
+  var options = {
+    image: new ol.style.Circle({
+      radius: size,
+      fill: new ol.style.Fill({
+        color: color
+      })
+    })
+  };
+
+  var showMeasure = this.getShowMeasureProperty(feature);
+
+  if (showMeasure) {
+    var measure = this.getMeasure(feature);
+    options.text = this.createTextStyle_(measure, 10);
+  }
+
+  return new ol.style.Style(options);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature with polygon geometry.
+ * @return {ol.style.Style} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.getPolygonStyle_ = function(feature) {
+
+  var strokeWidth = this.getStrokeProperty(feature);
+  var opacity = this.getOpacityProperty(feature);
+  var color = this.getColorProperty(feature);
+
+  // fill color with opacity
+  var rgbColor = ol.color.fromString(color);
+  var rgbaColor = rgbColor.slice();
+  rgbaColor[3] = opacity;
+  var fillColor = ol.color.toString(rgbaColor);
+
+  var options = {
+    fill: new ol.style.Fill({
+      color: fillColor
+    }),
+    stroke: new ol.style.Stroke({
+      color: color,
+      width: strokeWidth
+    })
+  };
+
+  var showMeasure = this.getShowMeasureProperty(feature);
+
+  if (showMeasure) {
+    var measure = this.getMeasure(feature);
+    options.text = this.createTextStyle_(measure, 10);
+  }
+
+  return new ol.style.Style(options);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature with point geometry, rendered as text.
+ * @return {ol.style.Style} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.getTextStyle_ = function(feature) {
+
+  var label = this.getNameProperty(feature);
+  var size = this.getSizeProperty(feature);
+  var angle = this.getAngleProperty(feature);
+  var color = this.getColorProperty(feature);
+
+  return new ol.style.Style({
+    text: this.createTextStyle_(label, size, angle, color)
+  });
+};
+
+
+// === PROPERTY GETTERS ===
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {number} Angle.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getAngleProperty = function(feature) {
+  var angle = +(/** @type {string} */ (
+    feature.get(ngeo.FeatureProperties.ANGLE)));
+  goog.asserts.assertNumber(angle);
+  return angle;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {string} Color.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getColorProperty = function(feature) {
+
+  var color = /** @type {string} */ (feature.get(ngeo.FeatureProperties.COLOR));
+
+  goog.asserts.assertString(color);
+
+  return color;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {string} Name.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getNameProperty = function(feature) {
+  var name = /** @type {string} */ (feature.get(ngeo.FeatureProperties.NAME));
+  goog.asserts.assertString(name);
+  return name;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {number} Opacity.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getOpacityProperty = function(feature) {
+  var opacity = +(/** @type {string} */ (
+      feature.get(ngeo.FeatureProperties.OPACITY)));
+  goog.asserts.assertNumber(opacity);
+  return opacity;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {boolean} Show measure.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getShowMeasureProperty = function(feature) {
+  var showMeasure = (/** @type {boolean} */ (
+        feature.get(ngeo.FeatureProperties.SHOW_MEASURE)));
+  if (showMeasure === undefined) {
+    showMeasure = false;
+  }
+  goog.asserts.assertBoolean(showMeasure);
+  return showMeasure;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {number} Size.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getSizeProperty = function(feature) {
+  var size = +(/** @type {string} */ (feature.get(ngeo.FeatureProperties.SIZE)));
+  goog.asserts.assertNumber(size);
+  return size;
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {number} Stroke.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getStrokeProperty = function(feature) {
+  var stroke = +(/** @type {string} */ (
+      feature.get(ngeo.FeatureProperties.STROKE)));
+  goog.asserts.assertNumber(stroke);
+  return stroke;
+};
+
+
+// === OTHER UTILITY METHODS ===
+
+
+/**
+ * @param {string} text The text to display.
+ * @param {number} size The size in `pt` of the text font.
+ * @param {number=} opt_angle The angle in degrees of the text.
+ * @param {string=} opt_color The color of the text
+ * @return {ol.style.Text} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.createTextStyle_ = function(text, size,
+                                                        opt_angle, opt_color) {
+
+  var angle = opt_angle !== undefined ? opt_angle : 0;
+  var rotation = angle * Math.PI / 180;
+  var font = ['normal', size + 'pt', 'Arial'].join(' ');
+  var color = opt_color !== undefined ? opt_color : '#000000';
+
+  return new ol.style.Text({
+    font: font,
+    text: text,
+    fill: new ol.style.Fill({color: color}),
+    stroke: new ol.style.Stroke({color: '#ffffff', width: 3}),
+    rotation: rotation
+  });
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {string} Measure.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getMeasure = function(feature) {
+
+  var geometry = feature.getGeometry();
+  goog.asserts.assert(geometry, 'Geometry should be truthy');
+
+  var measure = '';
+
+  if (geometry instanceof ol.geom.Polygon) {
+    measure = ngeo.interaction.Measure.getFormattedArea(
+      geometry, this.projection_, this.decimals_);
+  } else if (geometry instanceof ol.geom.LineString) {
+    measure = ngeo.interaction.Measure.getFormattedLength(
+      geometry, this.projection_, this.decimals_);
+  } else if (geometry instanceof ol.geom.Point) {
+    measure = ngeo.interaction.Measure.getFormattedPoint(
+      geometry, this.projection_, this.decimals_);
+  }
+
+  return measure;
+};
+
+
+/**
+ * Return the type of geometry of a feature using its geometry property and
+ * some inner properties.
+ * @param {ol.Feature} feature Feature.
+ * @return {string} The type of geometry.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getType = function(feature) {
+  var geometry = feature.getGeometry();
+  goog.asserts.assert(geometry, 'Geometry should be thruthy');
+
+  var type;
+
+  if (geometry instanceof ol.geom.Point) {
+    if (feature.get(ngeo.FeatureProperties.IS_TEXT)) {
+      type = ngeo.GeometryType.TEXT;
+    } else {
+      type = ngeo.GeometryType.POINT;
+    }
+  } else if (geometry instanceof ol.geom.Polygon) {
+    if (feature.get(ngeo.FeatureProperties.IS_CIRCLE)) {
+      type = ngeo.GeometryType.CIRCLE;
+    } else if (feature.get(ngeo.FeatureProperties.IS_RECTANGLE)) {
+      type = ngeo.GeometryType.RECTANGLE;
+    } else {
+      type = ngeo.GeometryType.POLYGON;
+    }
+  } else if (geometry instanceof ol.geom.LineString) {
+    type = ngeo.GeometryType.LINE_STRING;
+  }
+
+  goog.asserts.assert(type, 'Type should be thruthy');
+
+  return type;
+};
+
+
+ngeo.module.service('ngeoFeatureHelper', ngeo.FeatureHelper);
+
+goog.provide('ngeo.drawpointDirective');
+
+goog.require('ngeo');
+goog.require('ol.geom.GeometryType');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawpoint
+ */
+ngeo.drawpointDirective = function() {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var drawPoint = new ol.interaction.Draw({
+        type: ol.geom.GeometryType.POINT
+      });
+
+      drawFeatureCtrl.registerInteraction(drawPoint);
+      drawFeatureCtrl.drawPoint = drawPoint;
+
+      ol.events.listen(
+          drawPoint,
+          ol.interaction.DrawEventType.DRAWEND,
+          drawFeatureCtrl.handleDrawEnd.bind(
+              drawFeatureCtrl, ngeo.GeometryType.POINT),
+          drawFeatureCtrl
+      );
+      ol.events.listen(
+          drawPoint,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoDrawpoint', ngeo.drawpointDirective);
+
+goog.provide('ngeo.drawrectangleDirective');
+
+goog.require('ngeo');
+goog.require('ol.geom.GeometryType');
+goog.require('ol.interaction.Draw');
+goog.require('ol.geom.Polygon');
+
+
+/**
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawrectangle
+ */
+ngeo.drawrectangleDirective = function() {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var drawRectangle = new ol.interaction.Draw({
+        type: ol.geom.GeometryType.LINE_STRING,
+        geometryFunction: function(coordinates, geometry) {
+          if (!geometry) {
+            geometry = new ol.geom.Polygon(null);
+          }
+          var start = coordinates[0];
+          var end = coordinates[1];
+          geometry.setCoordinates([
+            [start, [start[0], end[1]], end, [end[0], start[1]], start]
+          ]);
+          return geometry;
+        },
+        maxPoints: 2
+      });
+
+      drawFeatureCtrl.registerInteraction(drawRectangle);
+      drawFeatureCtrl.drawRectangle = drawRectangle;
+
+      ol.events.listen(
+          drawRectangle,
+          ol.interaction.DrawEventType.DRAWEND,
+          drawFeatureCtrl.handleDrawEnd.bind(
+              drawFeatureCtrl, ngeo.GeometryType.RECTANGLE),
+          drawFeatureCtrl
+      );
+      ol.events.listen(
+          drawRectangle,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoDrawrectangle', ngeo.drawrectangleDirective);
+
+goog.provide('ngeo.drawtextDirective');
+
+goog.require('ngeo');
+goog.require('ol.geom.GeometryType');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawtext
+ */
+ngeo.drawtextDirective = function() {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var drawText = new ol.interaction.Draw({
+        type: ol.geom.GeometryType.POINT
+      });
+
+      drawFeatureCtrl.registerInteraction(drawText);
+      drawFeatureCtrl.drawText = drawText;
+
+      ol.events.listen(
+          drawText,
+          ol.interaction.DrawEventType.DRAWEND,
+          drawFeatureCtrl.handleDrawEnd.bind(
+              drawFeatureCtrl, ngeo.GeometryType.TEXT),
+          drawFeatureCtrl
+      );
+      ol.events.listen(
+          drawText,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoDrawtext', ngeo.drawtextDirective);
+
+goog.provide('ngeo.interaction.MeasureArea');
+
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.geom.Polygon');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length.
+ *
+ * See our live example: {@link ../examples/measure.html}
+ *
+ * @constructor
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureArea = function(opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, options);
+
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {Element}
+   */
+  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {},
+          'Click to continue drawing the polygon.',
+          goog.dom.createDom(goog.dom.TagName.BR),
+          'Double-click or click starting point to finish.');
+
+};
+goog.inherits(ngeo.interaction.MeasureArea, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureArea.prototype.createDrawInteraction = function(style,
+    source) {
+
+  return new ol.interaction.Draw(
+      /** @type {olx.interaction.DrawOptions} */ ({
+        type: 'Polygon',
+        source: source,
+        style: style
+      }));
+
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureArea.prototype.handleMeasure = function(callback) {
+  var geom = /** @type {ol.geom.Polygon} */
+      (this.sketchFeature.getGeometry());
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj, dec);
+  var verticesCount = geom.getCoordinates()[0].length;
+  var coord = null;
+  if (verticesCount > 2) {
+    coord = geom.getInteriorPoint().getCoordinates();
+  }
+  callback(output, coord);
+};
+
+goog.provide('ngeo.measureareaDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.interaction.MeasureArea');
+goog.require('ol.style.Style');
+
+
+/**
+ * @param {angular.$compile} $compile Angular compile service.
+ * @param {gettext} gettext Gettext service.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawpoint
+ */
+ngeo.measureareaDirective = function($compile, gettext) {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var helpMsg = gettext('Click to start drawing area');
+      var contMsg = gettext('Click to continue drawing<br/>' +
+          'Double-click or click last starting point to finish');
+
+      var measureArea = new ngeo.interaction.MeasureArea({
+        style: new ol.style.Style(),
+        startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
+        continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
+      });
+
+      drawFeatureCtrl.registerInteraction(measureArea);
+      drawFeatureCtrl.measureArea = measureArea;
+
+      ol.events.listen(
+          measureArea,
+          ngeo.MeasureEventType.MEASUREEND,
+          drawFeatureCtrl.handleDrawEnd.bind(
+              drawFeatureCtrl, ngeo.GeometryType.POLYGON),
+          drawFeatureCtrl
+      );
+      ol.events.listen(
+          measureArea,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoMeasurearea', ngeo.measureareaDirective);
+
+goog.provide('ngeo.interaction.DrawAzimut');
+goog.provide('ngeo.interaction.MeasureAzimut');
+
+goog.require('goog.asserts');
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.Feature');
+goog.require('ol.MapBrowserEvent');
+goog.require('ol.MapBrowserEvent.EventType');
+goog.require('ol.events');
+goog.require('ol.geom.Circle');
+goog.require('ol.geom.GeometryCollection');
+goog.require('ol.geom.LineString');
+goog.require('ol.geom.Point');
+goog.require('ol.interaction.Draw');
+goog.require('ol.interaction.DrawEvent');
+goog.require('ol.interaction.InteractionProperty');
+goog.require('ol.interaction.Pointer');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length.
+ *
+ * See our live example: {@link ../examples/measure.html}
+ *
+ * @constructor
+ * @fires ol.interaction.DrawEvent
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureAzimut = function(opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, options);
+
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {Element}
+   */
+  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {}, 'Click to finish.');
+
+};
+goog.inherits(ngeo.interaction.MeasureAzimut, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureAzimut.prototype.createDrawInteraction = function(style,
+    source) {
+
+  return new ngeo.interaction.DrawAzimut({
+    source: source,
+    style: style
+  });
+
+
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureAzimut.prototype.handleMeasure = function(callback) {
+  var geom = /** @type {ol.geom.GeometryCollection} */
+      (this.sketchFeature.getGeometry());
+  var line = /** @type {ol.geom.LineString} */ (geom.getGeometries()[0]);
+  var output = this.formatMeasure_(line);
+  callback(output, line.getLastCoordinate());
+};
+
+
+/**
+ * Format measure output.
+ * @param {ol.geom.LineString} line LineString.
+ * @return {string} Formated measure.
+ * @private
+ */
+ngeo.interaction.MeasureAzimut.prototype.formatMeasure_ = function(line) {
+  var coords = line.getCoordinates();
+  var dx = coords[1][0] - coords[0][0];
+  var dy = coords[1][1] - coords[0][1];
+  var rad = Math.acos(dy / Math.sqrt(dx * dx + dy * dy));
+  var factor = dx > 0 ? 1 : -1;
+  var azimut = Math.round(factor * rad * 180 / Math.PI) % 360;
+  var output = azimut + '°';
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  output += '<br/>' + ngeo.interaction.Measure.getFormattedLength(
+      line, proj, dec);
+  return output;
+};
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure azimut.
+ *
+ * @constructor
+ * @extends {ol.interaction.Pointer}
+ * @param {olx.interaction.PointerOptions} options Options.
+ * @export
+ */
+ngeo.interaction.DrawAzimut = function(options) {
+
+  goog.base(this, {
+    handleDownEvent: ngeo.interaction.DrawAzimut.handleDownEvent_,
+    handleEvent: ngeo.interaction.DrawAzimut.handleEvent_,
+    handleUpEvent: ngeo.interaction.DrawAzimut.handleUpEvent_
+  });
+
+  /**
+   * @type {ol.Pixel}
+   * @private
+   */
+  this.downPx_ = null;
+
+  /**
+   * Target source for drawn features.
+   * @type {ol.source.Vector}
+   * @private
+   */
+  this.source_ = options.source !== undefined ? options.source : null;
+
+  /**
+   * Tglls whether the drawing has started or not.
+   * @type {boolean}
+   * @private
+   */
+  this.started_ = false;
+
+  /**
+   * Sketch feature.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.sketchFeature_ = null;
+
+  /**
+   * Sketch point.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.sketchPoint_ = null;
+
+
+  /**
+   * Squared tolerance for handling up events.  If the squared distance
+   * between a down and up event is greater than this tolerance, up events
+   * will not be handled.
+   * @type {number}
+   * @private
+   */
+  this.squaredClickTolerance_ = 4;
+
+
+  /**
+   * Vector layer where our sketch features are drawn.
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.sketchLayer_ = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      useSpatialIndex: false,
+      wrapX: false
+    }),
+    style: options.style !== undefined ?
+        options.style : ol.interaction.Draw.getDefaultStyleFunction()
+  });
+
+
+  ol.events.listen(this,
+      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
+      this.updateState_, this);
+};
+goog.inherits(ngeo.interaction.DrawAzimut, ol.interaction.Pointer);
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} event Event.
+ * @return {boolean} Start drag sequence?
+ * @this {ngeo.interaction.DrawAzimut}
+ * @private
+ */
+ngeo.interaction.DrawAzimut.handleDownEvent_ = function(event) {
+  this.downPx_ = event.pixel;
+  return true;
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} event Event.
+ * @return {boolean} Stop drag sequence?
+ * @this {ngeo.interaction.DrawAzimut}
+ * @private
+ */
+ngeo.interaction.DrawAzimut.handleUpEvent_ = function(event) {
+  var downPx = this.downPx_;
+  var clickPx = event.pixel;
+  var dx = downPx[0] - clickPx[0];
+  var dy = downPx[1] - clickPx[1];
+  var squaredDistance = dx * dx + dy * dy;
+  var pass = true;
+  if (squaredDistance <= this.squaredClickTolerance_) {
+    this.handlePointerMove_(event);
+    if (!this.started_) {
+      this.startDrawing_(event);
+    } else {
+      this.finishDrawing_();
+    }
+    pass = false;
+  }
+  return pass;
+};
+
+
+/**
+ * @param {ol.MapBrowserEvent} mapBrowserEvent Map browser event.
+ * @return {boolean} `false` to stop event propagation.
+ * @this {ngeo.interaction.DrawAzimut}
+ * @private
+ */
+ngeo.interaction.DrawAzimut.handleEvent_ = function(mapBrowserEvent) {
+  var pass = true;
+  if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.POINTERMOVE) {
+    pass = this.handlePointerMove_(mapBrowserEvent);
+  } else if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.DBLCLICK) {
+    pass = false;
+  }
+  return ol.interaction.Pointer.handleEvent.call(this, mapBrowserEvent) && pass;
+};
+
+
+/**
+ * Handle move events.
+ * @param {ol.MapBrowserEvent} event A move event.
+ * @return {boolean} Pass the event to other interactions.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.handlePointerMove_ = function(event) {
+  if (this.started_) {
+    this.modifyDrawing_(event);
+  } else {
+    this.createOrUpdateSketchPoint_(event);
+  }
+  return true;
+};
+
+
+/**
+ * @param {ol.MapBrowserEvent} event Event.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.createOrUpdateSketchPoint_ = function(event) {
+  var coordinates = event.coordinate.slice();
+  if (this.sketchPoint_ === null) {
+    this.sketchPoint_ = new ol.Feature(new ol.geom.Point(coordinates));
+    this.updateSketchFeatures_();
+  } else {
+    var sketchPointGeom = this.sketchPoint_.getGeometry();
+    goog.asserts.assertInstanceof(sketchPointGeom, ol.geom.Point);
+    sketchPointGeom.setCoordinates(coordinates);
+  }
+};
+
+
+/**
+ * Redraw the skecth features.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.updateSketchFeatures_ = function() {
+  var sketchFeatures = [];
+  if (this.sketchFeature_ !== null) {
+    sketchFeatures.push(this.sketchFeature_);
+  }
+  if (this.sketchPoint_ !== null) {
+    sketchFeatures.push(this.sketchPoint_);
+  }
+  var source = this.sketchLayer_.getSource();
+  source.clear(true);
+  source.addFeatures(sketchFeatures);
+};
+
+
+/**
+ * Start the drawing.
+ * @param {ol.MapBrowserEvent} event Event.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.startDrawing_ = function(event) {
+  var start = event.coordinate;
+  this.started_ = true;
+  var line = new ol.geom.LineString([start.slice(), start.slice()]);
+  var circle = new ol.geom.Circle(start, 0);
+  var geometry = new ol.geom.GeometryCollection([line, circle]);
+  goog.asserts.assert(geometry !== undefined);
+  this.sketchFeature_ = new ol.Feature();
+  this.sketchFeature_.setGeometry(geometry);
+  this.updateSketchFeatures_();
+  this.dispatchEvent(new ol.interaction.DrawEvent(
+      ol.interaction.DrawEventType.DRAWSTART, this.sketchFeature_));
+};
+
+
+/**
+ * Modify the drawing.
+ * @param {ol.MapBrowserEvent} event Event.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.modifyDrawing_ = function(event) {
+  var coordinate = event.coordinate;
+  var geometry = /** @type {ol.geom.GeometryCollection} */
+      (this.sketchFeature_.getGeometry());
+  var geometries = geometry.getGeometriesArray();
+  var line = geometries[0];
+  var coordinates, last;
+  goog.asserts.assertInstanceof(line, ol.geom.LineString);
+  coordinates = line.getCoordinates();
+  var sketchPointGeom = this.sketchPoint_.getGeometry();
+  goog.asserts.assertInstanceof(sketchPointGeom, ol.geom.Point);
+  sketchPointGeom.setCoordinates(coordinate);
+  last = coordinates[coordinates.length - 1];
+  last[0] = coordinate[0];
+  last[1] = coordinate[1];
+  goog.asserts.assertInstanceof(line, ol.geom.LineString);
+  line.setCoordinates(coordinates);
+  var circle = /** @type {ol.geom.Circle} */ (geometries[1]);
+  circle.setRadius(line.getLength());
+  this.updateSketchFeatures_();
+};
+
+
+/**
+ * Stop drawing without adding the sketch feature to the target layer.
+ * @return {ol.Feature} The sketch feature (or null if none).
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.abortDrawing_ = function() {
+  this.started_ = false;
+  var sketchFeature = this.sketchFeature_;
+  if (sketchFeature !== null) {
+    this.sketchFeature_ = null;
+    this.sketchPoint_ = null;
+    this.sketchLayer_.getSource().clear(true);
+  }
+  return sketchFeature;
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.DrawAzimut.prototype.shouldStopEvent = goog.functions.FALSE;
+
+
+/**
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.updateState_ = function() {
+  var map = this.getMap();
+  var active = this.getActive();
+  if (map === null || !active) {
+    this.abortDrawing_();
+  }
+  this.sketchLayer_.setMap(active ? map : null);
+};
+
+
+/**
+ * Stop drawing and add the sketch feature to the target layer.
+ * @private
+ */
+ngeo.interaction.DrawAzimut.prototype.finishDrawing_ = function() {
+  var sketchFeature = this.abortDrawing_();
+  goog.asserts.assert(sketchFeature !== null);
+
+  if (this.source_ !== null) {
+    this.source_.addFeature(sketchFeature);
+  }
+  this.dispatchEvent(new ol.interaction.DrawEvent(
+      ol.interaction.DrawEventType.DRAWEND, sketchFeature));
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.DrawAzimut.prototype.setMap = function(map) {
+  goog.base(this, 'setMap', map);
+  this.updateState_();
+};
+
+goog.provide('ngeo.measureazimutDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.interaction.MeasureAzimut');
+goog.require('ol.Feature');
+goog.require('ol.geom.Polygon');
+goog.require('ol.style.Style');
+
+
+/**
+ * @param {angular.$compile} $compile Angular compile service.
+ * @param {gettext} gettext Gettext service.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawpoint
+ */
+ngeo.measureazimutDirective = function($compile, gettext) {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var helpMsg = gettext('Click to start drawing azimut');
+      var contMsg = gettext('Click to finish');
+
+      var measureAzimut = new ngeo.interaction.MeasureAzimut({
+        style: new ol.style.Style(),
+        startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
+        continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
+      });
+
+      drawFeatureCtrl.registerInteraction(measureAzimut);
+      drawFeatureCtrl.measureAzimut = measureAzimut;
+
+      ol.events.listen(
+          measureAzimut,
+          ngeo.MeasureEventType.MEASUREEND,
+          /**
+           * @param {ngeo.MeasureEvent} event Event.
+           */
+          function(event) {
+            // In the case of azimut measure interaction, the feature's
+            // geometry is actually a collection (line + circle)
+            // For our purpose here, we only need the circle, which gets
+            // transformed into a polygon with 64 sides.
+            var geometry = /** @type {ol.geom.GeometryCollection} */
+                (event.feature.getGeometry());
+            var circle = /** @type {ol.geom.Circle} */ (
+                geometry.getGeometries()[1]);
+            var polygon = ol.geom.Polygon.fromCircle(circle, 64);
+            event.feature = new ol.Feature(polygon);
+            drawFeatureCtrl.handleDrawEnd(ngeo.GeometryType.CIRCLE, event);
+          },
+          drawFeatureCtrl
+      );
+
+      ol.events.listen(
+          measureAzimut,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoMeasureazimut', ngeo.measureazimutDirective);
+
+goog.provide('ngeo.interaction.MeasureLength');
+
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.geom.LineString');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length.
+ *
+ * See our live example: {@link ../examples/measure.html}
+ *
+ * @constructor
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureLength = function(opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, options);
+
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {Element}
+   */
+  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {},
+          'Click to continue drawing the line.',
+          goog.dom.createDom(goog.dom.TagName.BR),
+          'Double-click or click last point to finish.');
+
+};
+goog.inherits(ngeo.interaction.MeasureLength, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureLength.prototype.createDrawInteraction = function(style,
+    source) {
+
+  return new ol.interaction.Draw(
+      /** @type {olx.interaction.DrawOptions} */ ({
+        type: 'LineString',
+        source: source,
+        style: style
+      }));
+
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureLength.prototype.handleMeasure = function(callback) {
+  var geom = /** @type {ol.geom.LineString} */
+      (this.sketchFeature.getGeometry());
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj, dec);
+  var coord = geom.getLastCoordinate();
+  callback(output, coord);
+};
+
+goog.provide('ngeo.measurelengthDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.interaction.MeasureLength');
+goog.require('ol.style.Style');
+
+
+/**
+ * @param {angular.$compile} $compile Angular compile service.
+ * @param {gettext} gettext Gettext service.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawpoint
+ */
+ngeo.measurelengthDirective = function($compile, gettext) {
+  return {
+    restrict: 'A',
+    require: '^^ngeoDrawfeature',
+    /**
+     * @param {!angular.Scope} $scope Scope.
+     * @param {angular.JQLite} element Element.
+     * @param {angular.Attributes} attrs Attributes.
+     * @param {ngeo.DrawfeatureController} drawFeatureCtrl Controller.
+     */
+    link: function($scope, element, attrs, drawFeatureCtrl) {
+
+      var helpMsg = gettext('Click to start drawing length');
+      var contMsg = gettext('Click to continue drawing<br/>' +
+                            'Double-click or click last point to finish');
+
+      var measureLength = new ngeo.interaction.MeasureLength({
+        style: new ol.style.Style(),
+        startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
+        continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
+      });
+
+      drawFeatureCtrl.registerInteraction(measureLength);
+      drawFeatureCtrl.measureLength = measureLength
+
+      ol.events.listen(
+          measureLength,
+          ngeo.MeasureEventType.MEASUREEND,
+          drawFeatureCtrl.handleDrawEnd.bind(
+              drawFeatureCtrl, ngeo.GeometryType.LINE_STRING),
+          drawFeatureCtrl
+      );
+      ol.events.listen(
+          measureLength,
+          ol.Object.getChangeEventType(
+              ol.interaction.InteractionProperty.ACTIVE),
+          drawFeatureCtrl.handleActiveChange,
+          drawFeatureCtrl
+      );
+    }
+  };
+};
+
+
+ngeo.module.directive('ngeoMeasurelength', ngeo.measurelengthDirective);
+
+goog.provide('ngeo.DrawfeatureController');
+goog.provide('ngeo.drawfeatureDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.DecorateInteraction');
+goog.require('ngeo.FeatureHelper');
+/** @suppress {extraRequire} */
+goog.require('ngeo.btngroupDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.drawpointDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.drawrectangleDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.drawtextDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.measureareaDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.measureazimutDirective');
+/** @suppress {extraRequire} */
+goog.require('ngeo.measurelengthDirective');
+goog.require('ol.Feature');
+
+/**
+ * Directive used to draw vector features on a map.
+ * Example:
+ *
+ *     <ngeo-drawfeature
+ *         ngeo-btn-group
+ *         class="btn-group"
+ *         ngeo-drawfeature-active="ctrl.drawActive"
+ *         ngeo-drawfeature-map="::ctrl.map">
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-drawpoint
+ *         class="btn btn-default ngeo-drawfeature-point"
+ *         ng-class="{active: dfCtrl.drawPoint.active}"
+ *         ng-model="dfCtrl.drawPoint.active"></a>
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-measurelength
+ *         class="btn btn-default ngeo-drawfeature-linestring"
+ *         ng-class="{active: dfCtrl.measureLength.active}"
+ *         ng-model="dfCtrl.measureLength.active"></a>
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-measurearea
+ *         class="btn btn-default ngeo-drawfeature-polygon"
+ *         ng-class="{active: dfCtrl.measureArea.active}"
+ *         ng-model="dfCtrl.measureArea.active"></a>
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-measureazimut
+ *         class="btn btn-default ngeo-drawfeature-circle"
+ *         ng-class="{active: dfCtrl.measureAzimut.active}"
+ *         ng-model="dfCtrl.measureAzimut.active"></a>
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-drawrectangle
+ *         class="btn btn-default ngeo-drawfeature-rectangle"
+ *         ng-class="{active: dfCtrl.drawRectangle.active}"
+ *         ng-model="dfCtrl.drawRectangle.active"></a>
+ *       <a
+ *         href
+ *         translate
+ *         ngeo-btn
+ *         ngeo-drawtext
+ *         class="btn btn-default ngeo-drawfeature-text"
+ *         ng-class="{active: dfCtrl.drawText.active}"
+ *         ng-model="dfCtrl.drawText.active"></a>
+ *     </ngeo-drawfeature>
+ *
+ * @htmlAttribute {boolean} ngeo-drawfeature-active Whether the directive is
+ *     active or not.
+ * @htmlAttribute {ol.Map} ngeo-drawfeature-map The map.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDrawfeature
+ */
+ngeo.drawfeatureDirective = function() {
+  return {
+    controller: 'ngeoDrawfeatureController',
+    scope: true,
+    bindToController: {
+      'active': '=ngeoDrawfeatureActive',
+      'map': '=ngeoDrawfeatureMap'
+    },
+    controllerAs: 'dfCtrl'
+  };
+};
+
+ngeo.module.directive('ngeoDrawfeature', ngeo.drawfeatureDirective);
+
+
+/**
+ * @param {!angular.Scope} $scope Scope.
+ * @param {angular.$compile} $compile Angular compile service.
+ * @param {angular.$sce} $sce Angular sce service.
+ * @param {gettext} gettext Gettext service.
+ * @param {angularGettext.Catalog} gettextCatalog Gettext service.
+ * @param {ngeo.DecorateInteraction} ngeoDecorateInteraction Decorate
+ *     interaction service.
+ * @param {ngeo.FeatureHelper} ngeoFeatureHelper Ngeo feature helper service.
+ * @param {ol.Collection.<ol.Feature>} ngeoFeatures Collection of features.
+ * @constructor
+ * @ngInject
+ * @ngdoc controller
+ * @ngname ngeoDrawfeatureController
+ */
+ngeo.DrawfeatureController = function($scope, $compile, $sce, gettext,
+    gettextCatalog, ngeoDecorateInteraction, ngeoFeatureHelper, ngeoFeatures) {
+
+  /**
+   * @type {ol.Map}
+   * @export
+   */
+  this.map;
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.active;
+
+  if (this.active === undefined) {
+    this.active = false;
+  }
+
+  /**
+   * @type {angularGettext.Catalog}
+   * @private
+   */
+  this.gettextCatalog_ = gettextCatalog;
+
+  /**
+   * @type {ngeo.DecorateInteraction}
+   * @private
+   */
+  this.ngeoDecorateInteraction_ = ngeoDecorateInteraction;
+
+  /**
+   * @type {ngeo.FeatureHelper}
+   * @private
+   */
+  this.featureHelper_ = ngeoFeatureHelper;
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = ngeoFeatures;
+
+  /**
+   * @type {Array.<ol.interaction.Interaction>}
+   * @private
+   */
+  this.interactions_ = [];
+
+  /**
+   * @type {ol.interaction.Draw}
+   * @export
+   */
+  this.drawPoint;
+
+  /**
+   * @type {ngeo.interaction.MeasureLength}
+   * @export
+   */
+  this.measureLength;
+
+  /**
+   * @type {ngeo.interaction.MeasureArea}
+   * @export
+   */
+  this.measureArea;
+
+  /**
+   * @type {ngeo.interaction.MeasureAzimut}
+   * @export
+   */
+  this.measureAzimut;
+
+  /**
+   * @type {ol.interaction.Draw}
+   * @export
+   */
+  this.drawRectangle;
+
+  /**
+   * @type {ol.interaction.Draw}
+   * @export
+   */
+  this.drawText;
+
+
+  // Watch the "active" property, and disable the draw interactions
+  // when "active" gets set to false.
+  $scope.$watch(
+    function() {
+      return this.active;
+    }.bind(this),
+    function(newVal) {
+      if (newVal === false) {
+        this.interactions_.forEach(function(interaction) {
+          interaction.setActive(false);
+        }, this);
+      }
+    }.bind(this)
+  );
+
+};
+
+
+/**
+ * Register a draw|measure interaction by setting it inactive, decorating it
+ * and adding it to the map
+ * @param {ol.interaction.Interaction} interaction Interaction to register.
+ * @export
+ */
+ngeo.DrawfeatureController.prototype.registerInteraction = function(
+    interaction) {
+  this.interactions_.push(interaction);
+  interaction.setActive(false);
+  this.ngeoDecorateInteraction_(interaction);
+  this.map.addInteraction(interaction);
+};
+
+
+/**
+ * Called when any of the draw or measure interaction active property changes.
+ * Set the active property of this directive accordingly, i.e. if at least
+ * one of the draw or measure is active then the active property is set to true.
+ * @param {ol.ObjectEvent} event Event.
+ * @export
+ */
+ngeo.DrawfeatureController.prototype.handleActiveChange = function(event) {
+  this.active = this.interactions_.some(function(interaction) {
+    return interaction.getActive();
+  }, this);
+};
+
+
+/**
+ * Called when a feature is finished being drawn. Set the default properties
+ * for its style, then set its style and add it to the features collection.
+ * @param {string} type Type of geometry being drawn.
+ * @param {ol.interaction.DrawEvent|ngeo.MeasureEvent} event Event.
+ * @export
+ */
+ngeo.DrawfeatureController.prototype.handleDrawEnd = function(type, event) {
+  var feature = new ol.Feature(event.feature.getGeometry());
+
+  var prop = ngeo.FeatureProperties;
+
+  switch (type) {
+    case ngeo.GeometryType.CIRCLE:
+      feature.set(prop.IS_CIRCLE, true);
+      break;
+    case ngeo.GeometryType.TEXT:
+      feature.set(prop.IS_TEXT, true);
+      break;
+    case ngeo.GeometryType.RECTANGLE:
+      feature.set(prop.IS_RECTANGLE, true);
+      break;
+    default:
+      break;
+  }
+
+  /**
+   * @type {string}
+   */
+  var name = this.gettextCatalog_.getString(type);
+  feature.set(prop.NAME, name + ' ' + (this.features_.getLength() + 1));
+
+  feature.set(prop.ANGLE, 0);
+  feature.set(prop.COLOR, '#ed1c24');
+  feature.set(prop.OPACITY, 0.2);
+  feature.set(prop.SHOW_MEASURE, false);
+  feature.set(prop.SIZE, 10);
+  feature.set(prop.STROKE, 1);
+
+  // set style
+  this.featureHelper_.setStyle(feature);
+
+  // push in collection
+  this.features_.push(feature);
+};
+
+ngeo.module.controller('ngeoDrawfeatureController', ngeo.DrawfeatureController);
 
 goog.provide('ngeo.filereaderDirective');
 
@@ -110875,283 +113393,6 @@ ngeo.searchDirective.adaptListeners_ = function(object) {
 
 ngeo.module.directive('ngeoSearch', ngeo.searchDirective);
 
-// Copyright 2012 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Utilities for detecting, adding and removing classes.  Prefer
- * this over goog.dom.classes for new code since it attempts to use classList
- * (DOMTokenList: http://dom.spec.whatwg.org/#domtokenlist) which is faster
- * and requires less code.
- *
- * Note: these utilities are meant to operate on HTMLElements
- * and may have unexpected behavior on elements with differing interfaces
- * (such as SVGElements).
- */
-
-
-goog.provide('goog.dom.classlist');
-
-goog.require('goog.array');
-
-
-/**
- * Override this define at build-time if you know your target supports it.
- * @define {boolean} Whether to use the classList property (DOMTokenList).
- */
-goog.define('goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST', false);
-
-
-/**
- * Gets an array-like object of class names on an element.
- * @param {Element} element DOM node to get the classes of.
- * @return {!IArrayLike<?>} Class names on {@code element}.
- */
-goog.dom.classlist.get = function(element) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    return element.classList;
-  }
-
-  var className = element.className;
-  // Some types of elements don't have a className in IE (e.g. iframes).
-  // Furthermore, in Firefox, className is not a string when the element is
-  // an SVG element.
-  return goog.isString(className) && className.match(/\S+/g) || [];
-};
-
-
-/**
- * Sets the entire class name of an element.
- * @param {Element} element DOM node to set class of.
- * @param {string} className Class name(s) to apply to element.
- */
-goog.dom.classlist.set = function(element, className) {
-  element.className = className;
-};
-
-
-/**
- * Returns true if an element has a class.  This method may throw a DOM
- * exception for an invalid or empty class name if DOMTokenList is used.
- * @param {Element} element DOM node to test.
- * @param {string} className Class name to test for.
- * @return {boolean} Whether element has the class.
- */
-goog.dom.classlist.contains = function(element, className) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    return element.classList.contains(className);
-  }
-  return goog.array.contains(goog.dom.classlist.get(element), className);
-};
-
-
-/**
- * Adds a class to an element.  Does not add multiples of class names.  This
- * method may throw a DOM exception for an invalid or empty class name if
- * DOMTokenList is used.
- * @param {Element} element DOM node to add class to.
- * @param {string} className Class name to add.
- */
-goog.dom.classlist.add = function(element, className) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    element.classList.add(className);
-    return;
-  }
-
-  if (!goog.dom.classlist.contains(element, className)) {
-    // Ensure we add a space if this is not the first class name added.
-    element.className +=
-        element.className.length > 0 ? (' ' + className) : className;
-  }
-};
-
-
-/**
- * Convenience method to add a number of class names at once.
- * @param {Element} element The element to which to add classes.
- * @param {IArrayLike<string>} classesToAdd An array-like object
- * containing a collection of class names to add to the element.
- * This method may throw a DOM exception if classesToAdd contains invalid
- * or empty class names.
- */
-goog.dom.classlist.addAll = function(element, classesToAdd) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    goog.array.forEach(classesToAdd, function(className) {
-      goog.dom.classlist.add(element, className);
-    });
-    return;
-  }
-
-  var classMap = {};
-
-  // Get all current class names into a map.
-  goog.array.forEach(goog.dom.classlist.get(element), function(className) {
-    classMap[className] = true;
-  });
-
-  // Add new class names to the map.
-  goog.array.forEach(
-      classesToAdd, function(className) { classMap[className] = true; });
-
-  // Flatten the keys of the map into the className.
-  element.className = '';
-  for (var className in classMap) {
-    element.className +=
-        element.className.length > 0 ? (' ' + className) : className;
-  }
-};
-
-
-/**
- * Removes a class from an element.  This method may throw a DOM exception
- * for an invalid or empty class name if DOMTokenList is used.
- * @param {Element} element DOM node to remove class from.
- * @param {string} className Class name to remove.
- */
-goog.dom.classlist.remove = function(element, className) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    element.classList.remove(className);
-    return;
-  }
-
-  if (goog.dom.classlist.contains(element, className)) {
-    // Filter out the class name.
-    element.className = goog.array
-                            .filter(
-                                goog.dom.classlist.get(element),
-                                function(c) { return c != className; })
-                            .join(' ');
-  }
-};
-
-
-/**
- * Removes a set of classes from an element.  Prefer this call to
- * repeatedly calling {@code goog.dom.classlist.remove} if you want to remove
- * a large set of class names at once.
- * @param {Element} element The element from which to remove classes.
- * @param {IArrayLike<string>} classesToRemove An array-like object
- * containing a collection of class names to remove from the element.
- * This method may throw a DOM exception if classesToRemove contains invalid
- * or empty class names.
- */
-goog.dom.classlist.removeAll = function(element, classesToRemove) {
-  if (goog.dom.classlist.ALWAYS_USE_DOM_TOKEN_LIST || element.classList) {
-    goog.array.forEach(classesToRemove, function(className) {
-      goog.dom.classlist.remove(element, className);
-    });
-    return;
-  }
-  // Filter out those classes in classesToRemove.
-  element.className =
-      goog.array
-          .filter(
-              goog.dom.classlist.get(element),
-              function(className) {
-                // If this class is not one we are trying to remove,
-                // add it to the array of new class names.
-                return !goog.array.contains(classesToRemove, className);
-              })
-          .join(' ');
-};
-
-
-/**
- * Adds or removes a class depending on the enabled argument.  This method
- * may throw a DOM exception for an invalid or empty class name if DOMTokenList
- * is used.
- * @param {Element} element DOM node to add or remove the class on.
- * @param {string} className Class name to add or remove.
- * @param {boolean} enabled Whether to add or remove the class (true adds,
- *     false removes).
- */
-goog.dom.classlist.enable = function(element, className, enabled) {
-  if (enabled) {
-    goog.dom.classlist.add(element, className);
-  } else {
-    goog.dom.classlist.remove(element, className);
-  }
-};
-
-
-/**
- * Adds or removes a set of classes depending on the enabled argument.  This
- * method may throw a DOM exception for an invalid or empty class name if
- * DOMTokenList is used.
- * @param {!Element} element DOM node to add or remove the class on.
- * @param {?IArrayLike<string>} classesToEnable An array-like object
- *     containing a collection of class names to add or remove from the element.
- * @param {boolean} enabled Whether to add or remove the classes (true adds,
- *     false removes).
- */
-goog.dom.classlist.enableAll = function(element, classesToEnable, enabled) {
-  var f = enabled ? goog.dom.classlist.addAll : goog.dom.classlist.removeAll;
-  f(element, classesToEnable);
-};
-
-
-/**
- * Switches a class on an element from one to another without disturbing other
- * classes. If the fromClass isn't removed, the toClass won't be added.  This
- * method may throw a DOM exception if the class names are empty or invalid.
- * @param {Element} element DOM node to swap classes on.
- * @param {string} fromClass Class to remove.
- * @param {string} toClass Class to add.
- * @return {boolean} Whether classes were switched.
- */
-goog.dom.classlist.swap = function(element, fromClass, toClass) {
-  if (goog.dom.classlist.contains(element, fromClass)) {
-    goog.dom.classlist.remove(element, fromClass);
-    goog.dom.classlist.add(element, toClass);
-    return true;
-  }
-  return false;
-};
-
-
-/**
- * Removes a class if an element has it, and adds it the element doesn't have
- * it.  Won't affect other classes on the node.  This method may throw a DOM
- * exception if the class name is empty or invalid.
- * @param {Element} element DOM node to toggle class on.
- * @param {string} className Class to toggle.
- * @return {boolean} True if class was added, false if it was removed
- *     (in other words, whether element has the class after this function has
- *     been called).
- */
-goog.dom.classlist.toggle = function(element, className) {
-  var add = !goog.dom.classlist.contains(element, className);
-  goog.dom.classlist.enable(element, className, add);
-  return add;
-};
-
-
-/**
- * Adds and removes a class of an element.  Unlike
- * {@link goog.dom.classlist.swap}, this method adds the classToAdd regardless
- * of whether the classToRemove was present and had been removed.  This method
- * may throw a DOM exception if the class names are empty or invalid.
- *
- * @param {Element} element DOM node to swap classes on.
- * @param {string} classToRemove Class to remove.
- * @param {string} classToAdd Class to add.
- */
-goog.dom.classlist.addRemove = function(element, classToRemove, classToAdd) {
-  goog.dom.classlist.remove(element, classToRemove);
-  goog.dom.classlist.add(element, classToAdd);
-};
-
 // Copyright 2005 The Closure Library Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -115564,1125 +117805,6 @@ ngeo.format.FeatureHash.prototype.writeGeometryText = function(geometry, opt_opt
   return geometryWriter.call(this, transformedGeometry);
 };
 
-goog.provide('ngeo.MeasureEvent');
-goog.provide('ngeo.MeasureEventType');
-goog.provide('ngeo.interaction.Measure');
-
-goog.require('goog.asserts');
-goog.require('goog.dom');
-goog.require('goog.dom.classlist');
-goog.require('ol.Feature');
-goog.require('ol.MapBrowserEvent');
-goog.require('ol.Overlay');
-goog.require('ol.events');
-goog.require('ol.interaction.DrawEvent');
-goog.require('ol.interaction.DrawEventType');
-goog.require('ol.interaction.Interaction');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-goog.require('ol.sphere.WGS84');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
-
-
-/**
- * Interactions for measure tools base class.
- * @typedef {{
- *    decimals: (number|undefined),
- *    displayHelpTooltip: (boolean|undefined),
- *    startMsg: (Element|undefined),
- *    style: (ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined),
- *    sketchStyle: (ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined)
- * }}
- */
-ngeo.interaction.MeasureBaseOptions;
-
-
-/**
- * @enum {string}
- */
-ngeo.MeasureEventType = {
-  /**
-   * Triggered upon feature draw end
-   * @event ngeo.MeasureEvent#measureend
-   */
-  MEASUREEND: 'measureend'
-};
-
-
-/**
- * @classdesc
- * Events emitted by {@link ngeo.interaction.Interaction} instances are
- * instances of this type.
- *
- * @constructor
- * @extends {ol.events.Event}
- * @implements {ngeox.MeasureEvent}
- * @param {ngeo.MeasureEventType} type Type.
- * @param {ol.Feature} feature The feature drawn.
- */
-ngeo.MeasureEvent = function(type, feature) {
-
-  goog.base(this, type);
-
-  /**
-   * The feature being drawn.
-   * @type {ol.Feature}
-   * @api stable
-   */
-  this.feature = feature;
-
-};
-goog.inherits(ngeo.MeasureEvent, ol.events.Event);
-
-
-/**
- * Interaction that allows measuring (length, area, ...).
- *
- * @constructor
- * @extends {ol.interaction.Interaction}
- * @param {ngeo.interaction.MeasureBaseOptions=} opt_options Options
- */
-ngeo.interaction.Measure = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, {
-    handleEvent: ngeo.interaction.Measure.handleEvent_
-  });
-
-  /**
-   * The help tooltip element.
-   * @type {Element}
-   * @private
-   */
-  this.helpTooltipElement_ = null;
-
-
-  /**
-   * Overlay to show the help messages.
-   * @type {ol.Overlay}
-   * @private
-   */
-  this.helpTooltipOverlay_ = null;
-
-
-  /**
-   * The measure tooltip element.
-   * @type {Element}
-   * @private
-   */
-  this.measureTooltipElement_ = null;
-
-
-  /**
-   * Overlay to show the measurement.
-   * @type {ol.Overlay}
-   * @private
-   */
-  this.measureTooltipOverlay_ = null;
-
-
-  /**
-   * The sketch feature.
-   * @type {ol.Feature}
-   * @protected
-   */
-  this.sketchFeature = null;
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {?Element}
-   */
-  this.continueMsg = null;
-
-  /**
-   * Defines the number of decimals to keep in the measurement. If not defined,
-   * then the default behaviour occurs depending on the measure type.
-   * @type {?number}
-   * @protected
-   */
-  this.decimals = options.decimals !== undefined ? options.decimals : null;
-
-  /**
-   * Whether or not to display any tooltip
-   * @type {boolean}
-   * @private
-   */
-  this.displayHelpTooltip_ = options.displayHelpTooltip !== undefined ?
-      options.displayHelpTooltip : true;
-
-  /**
-   * The message to show when user is about to start drawing.
-   * @type {Element}
-   */
-  this.startMsg = options.startMsg !== undefined ? options.startMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {}, 'Click to start drawing.');
-
-  /**
-   * The key for geometry change event.
-   * @type {?ol.events.Key}
-   * @private
-   */
-  this.changeEventKey_ = null;
-
-  var style = options.style !== undefined ? options.style : [
-    new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: 'rgba(255, 255, 255, 0.2)'
-      })
-    }),
-    new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: 'white',
-        width: 5
-      })
-    }),
-    new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: '#ffcc33',
-        width: 3
-      })
-    })
-  ];
-
-  /**
-   * The vector layer used to show final measure features.
-   * @type {ol.layer.Vector}
-   * @private
-   */
-  this.vectorLayer_ = new ol.layer.Vector({
-    source: new ol.source.Vector(),
-    style: style
-  });
-
-  /**
-   * The draw interaction to be used.
-   * @type {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
-   * @private
-   */
-  this.drawInteraction_ = this.createDrawInteraction(options.sketchStyle,
-      this.vectorLayer_.getSource());
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.shouldHandleDrawInteractionActiveChange_ = true;
-
-  ol.events.listen(this.drawInteraction_,
-      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
-      this.handleDrawInteractionActiveChange_, this);
-  ol.events.listen(this.drawInteraction_,
-      ol.interaction.DrawEventType.DRAWSTART, this.onDrawStart_, this);
-  ol.events.listen(this.drawInteraction_,
-      ol.interaction.DrawEventType.DRAWEND, this.onDrawEnd_, this);
-
-  ol.events.listen(this,
-      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
-      this.updateState_, this);
-};
-goog.inherits(ngeo.interaction.Measure, ol.interaction.Interaction);
-
-
-/**
- * Calculate the area of the passed polygon and return a formatted string
- * of the area.
- * @param {ol.geom.Polygon} polygon Polygon.
- * @param {ol.proj.Projection} projection Projection of the polygon coords.
- * @param {?number} decimals Decimals.
- * @return {string} Formatted string of the area.
- * @export
- */
-ngeo.interaction.Measure.getFormattedArea = function(
-    polygon, projection, decimals) {
-  var geom = /** @type {ol.geom.Polygon} */ (
-      polygon.clone().transform(projection, 'EPSG:4326'));
-  var coordinates = geom.getLinearRing(0).getCoordinates();
-  var area = Math.abs(ol.sphere.WGS84.geodesicArea(coordinates));
-  var output;
-  if (area > 1000000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area / 1000000, 0, decimals);
-    } else {
-      output = parseFloat((area / 1000000).toPrecision(3));
-    }
-    output += ' ' + 'km²';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area, 0, decimals);
-    } else {
-      output = parseFloat(area.toPrecision(3));
-    }
-    output += ' ' + 'm²';
-  }
-  return output;
-};
-
-
-/**
- * Calculate the area of the passed circle and return a formatted string
- * of the area.
- * @param {ol.geom.Circle} circle Circle
- * @param {?number} decimals Decimals.
- * @return {string} Formatted string of the area.
- * @export
- */
-ngeo.interaction.Measure.getFormattedCircleArea = function(
-    circle, decimals) {
-  var area = Math.PI * Math.pow(circle.getRadius(), 2);
-  var output;
-  if (area > 1000000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area / 1000000, 0, decimals);
-    } else {
-      output = parseFloat((area / 1000000).toPrecision(3));
-    }
-    output += ' ' + 'km²';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area, 0, decimals);
-    } else {
-      output = parseFloat(area.toPrecision(3));
-    }
-    output += ' ' + 'm²';
-  }
-  return output;
-};
-
-
-/**
- * Calculate the length of the passed line string and return a formatted
- * string of the length.
- * @param {ol.geom.LineString} lineString Line string.
- * @param {ol.proj.Projection} projection Projection of the line string coords.
- * @param {?number} decimals Decimals.
- * @return {string} Formatted string of length.
- * @export
- */
-ngeo.interaction.Measure.getFormattedLength = function(lineString, projection,
-    decimals) {
-  var length = 0;
-  var coordinates = lineString.getCoordinates();
-  for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-    var c1 = ol.proj.transform(coordinates[i], projection, 'EPSG:4326');
-    var c2 = ol.proj.transform(coordinates[i + 1], projection, 'EPSG:4326');
-    length += ol.sphere.WGS84.haversineDistance(c1, c2);
-  }
-  var output;
-  if (length > 1000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(length / 1000, 0, decimals);
-    } else {
-      output = parseFloat((length / 1000).toPrecision(3));
-    }
-    output += ' ' + 'km';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(length, 0, decimals);
-    } else {
-      output = parseFloat(length.toPrecision(3));
-    }
-    output += ' ' + 'm';
-  }
-  return output;
-};
-
-
-/**
- * Return a formatted string of the point.
- * @param {ol.geom.Point} point Point.
- * @param {ol.proj.Projection} projection Projection of the line string coords.
- * @param {?number} decimals Decimals.
- * @return {string} Formatted string of coordinate.
- */
-ngeo.interaction.Measure.getFormattedPoint = function(
-    point, projection, decimals) {
-  var coordinates = point.getCoordinates();
-  var x = coordinates[0];
-  var y = coordinates[1];
-  decimals = decimals !== null ? decimals : 0;
-  x = goog.string.padNumber(x, 0, decimals);
-  y = goog.string.padNumber(y, 0, decimals);
-  return ['X: ', x, ', Y: ', y].join('');
-};
-
-
-/**
- * Handle map browser event.
- * @param {ol.MapBrowserEvent} evt Map browser event.
- * @return {boolean} `false` if event propagation should be stopped.
- * @this {ngeo.interaction.Measure}
- * @private
- */
-ngeo.interaction.Measure.handleEvent_ = function(evt) {
-  if (evt.type != ol.MapBrowserEvent.EventType.POINTERMOVE || evt.dragging) {
-    return true;
-  }
-
-  var helpMsg = this.startMsg;
-  if (this.sketchFeature !== null) {
-    helpMsg = this.continueMsg;
-  }
-
-  if (this.displayHelpTooltip_) {
-    goog.dom.removeChildren(this.helpTooltipElement_);
-    goog.dom.appendChild(this.helpTooltipElement_, helpMsg);
-    this.helpTooltipOverlay_.setPosition(evt.coordinate);
-  }
-
-  return true;
-};
-
-
-/**
- * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw} The draw interaction.
- * @export
- */
-ngeo.interaction.Measure.prototype.getDrawInteraction = function() {
-  return this.drawInteraction_;
-};
-
-
-/**
- * Creates the draw interaction.
- * @param {ol.style.Style|Array.<ol.style.Style>|ol.style.StyleFunction|undefined}
- *     style The sketchStyle used for the drawing interaction.
- * @param {ol.source.Vector} source Vector source.
- * @return {ol.interaction.Draw|ngeo.interaction.DrawAzimut|ngeo.interaction.MobileDraw}
- * @protected
- */
-ngeo.interaction.Measure.prototype.createDrawInteraction = goog.abstractMethod;
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.Measure.prototype.setMap = function(map) {
-  goog.base(this, 'setMap', map);
-
-  this.vectorLayer_.setMap(map);
-
-  var prevMap = this.drawInteraction_.getMap();
-  if (prevMap !== null) {
-    prevMap.removeInteraction(this.drawInteraction_);
-  }
-
-  if (map !== null) {
-    map.addInteraction(this.drawInteraction_);
-  }
-};
-
-
-/**
- * Handle draw interaction `drawstart` event.
- * @param {ol.interaction.DrawEvent} evt Event.
- * @private
- */
-ngeo.interaction.Measure.prototype.onDrawStart_ = function(evt) {
-  this.sketchFeature = evt.feature;
-  this.vectorLayer_.getSource().clear(true);
-  this.createMeasureTooltip_();
-
-  var geometry = this.sketchFeature.getGeometry();
-
-  goog.asserts.assert(geometry !== undefined);
-  this.changeEventKey_ = ol.events.listen(geometry,
-      ol.events.EventType.CHANGE,
-      function() {
-        this.handleMeasure(function(measure, coord) {
-          if (coord !== null) {
-            this.measureTooltipElement_.innerHTML = measure;
-            this.measureTooltipOverlay_.setPosition(coord);
-          }
-        }.bind(this));
-      }, this);
-};
-
-
-/**
- * Handle draw interaction `drawend` event.
- * @param {ol.interaction.DrawEvent} evt Event.
- * @private
- */
-ngeo.interaction.Measure.prototype.onDrawEnd_ = function(evt) {
-  goog.dom.classlist.add(this.measureTooltipElement_, 'tooltip-static');
-  this.measureTooltipOverlay_.setOffset([0, -7]);
-  this.dispatchEvent(new ngeo.MeasureEvent(ngeo.MeasureEventType.MEASUREEND,
-      this.sketchFeature));
-  this.sketchFeature = null;
-  if (this.changeEventKey_ !== null) {
-    ol.events.unlistenByKey(this.changeEventKey_);
-  }
-};
-
-
-/**
- * Creates a new help tooltip
- * @private
- */
-ngeo.interaction.Measure.prototype.createHelpTooltip_ = function() {
-  this.removeHelpTooltip_();
-  if (this.displayHelpTooltip_) {
-    this.helpTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
-    goog.dom.classlist.add(this.helpTooltipElement_, 'tooltip');
-    this.helpTooltipOverlay_ = new ol.Overlay({
-      element: this.helpTooltipElement_,
-      offset: [15, 0],
-      positioning: 'center-left'
-    });
-    this.getMap().addOverlay(this.helpTooltipOverlay_);
-  }
-};
-
-
-/**
- * Destroy the help tooltip
- * @private
- */
-ngeo.interaction.Measure.prototype.removeHelpTooltip_ = function() {
-  if (this.displayHelpTooltip_) {
-    this.getMap().removeOverlay(this.helpTooltipOverlay_);
-    if (this.helpTooltipElement_ !== null) {
-      this.helpTooltipElement_.parentNode.removeChild(this.helpTooltipElement_);
-    }
-    this.helpTooltipElement_ = null;
-    this.helpTooltipOverlay_ = null;
-  }
-};
-
-
-/**
- * Creates a new measure tooltip
- * @private
- */
-ngeo.interaction.Measure.prototype.createMeasureTooltip_ = function() {
-  this.removeMeasureTooltip_();
-  this.measureTooltipElement_ = goog.dom.createDom(goog.dom.TagName.DIV);
-  goog.dom.classlist.addAll(this.measureTooltipElement_,
-      ['tooltip', 'tooltip-measure']);
-  this.measureTooltipOverlay_ = new ol.Overlay({
-    element: this.measureTooltipElement_,
-    offset: [0, -15],
-    positioning: 'bottom-center',
-    stopEvent: false
-  });
-  this.getMap().addOverlay(this.measureTooltipOverlay_);
-};
-
-
-/**
- * Destroy the help tooltip
- * @private
- */
-ngeo.interaction.Measure.prototype.removeMeasureTooltip_ = function() {
-  if (this.measureTooltipElement_ !== null) {
-    this.measureTooltipElement_.parentNode.removeChild(
-        this.measureTooltipElement_);
-    this.measureTooltipElement_ = null;
-    this.measureTooltipOverlay_ = null;
-  }
-};
-
-
-/**
- * @private
- */
-ngeo.interaction.Measure.prototype.updateState_ = function() {
-  var active = this.getActive();
-  this.shouldHandleDrawInteractionActiveChange_ = false;
-  this.drawInteraction_.setActive(active);
-  this.shouldHandleDrawInteractionActiveChange_ = true;
-  if (!this.getMap()) {
-    return;
-  }
-  if (active) {
-    if (!this.measureTooltipOverlay_) {
-      this.createMeasureTooltip_();
-      this.createHelpTooltip_();
-    }
-  } else {
-    this.vectorLayer_.getSource().clear(true);
-    this.getMap().removeOverlay(this.measureTooltipOverlay_);
-    this.removeMeasureTooltip_();
-    this.removeHelpTooltip_();
-  }
-};
-
-
-/**
- * Function implemented in inherited classes to compute measurement, determine
- * where to place the tooltip and determine which help message to display.
- * @param {function(string, ?ol.Coordinate)} callback The function
- *     to be called.
- * @protected
- */
-ngeo.interaction.Measure.prototype.handleMeasure = goog.abstractMethod;
-
-
-/**
- * Get a reference to the tooltip element.
- * @return {Element} Tooltip Element.
- * @export
- */
-ngeo.interaction.Measure.prototype.getTooltipElement = function() {
-  return this.measureTooltipElement_;
-};
-
-
-/**
- * Called when the draw interaction `active` property changes. If the
- * change is due to something else than this measure interactino, then
- * update follow the its active state accordingly.
- *
- * @private
- */
-ngeo.interaction.Measure.prototype.handleDrawInteractionActiveChange_ =
-    function() {
-      if (this.shouldHandleDrawInteractionActiveChange_) {
-        this.setActive(this.drawInteraction_.getActive());
-      }
-    };
-
-goog.provide('ngeo.interaction.MeasureArea');
-
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.geom.Polygon');
-goog.require('ol.interaction.Draw');
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure length.
- *
- * See our live example: {@link ../examples/measure.html}
- *
- * @constructor
- * @extends {ngeo.interaction.Measure}
- * @param {ngeox.interaction.MeasureOptions=} opt_options Options
- * @export
- */
-ngeo.interaction.MeasureArea = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, options);
-
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {Element}
-   */
-  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {},
-          'Click to continue drawing the polygon.',
-          goog.dom.createDom(goog.dom.TagName.BR),
-          'Double-click or click starting point to finish.');
-
-};
-goog.inherits(ngeo.interaction.MeasureArea, ngeo.interaction.Measure);
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureArea.prototype.createDrawInteraction = function(style,
-    source) {
-
-  return new ol.interaction.Draw(
-      /** @type {olx.interaction.DrawOptions} */ ({
-        type: 'Polygon',
-        source: source,
-        style: style
-      }));
-
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureArea.prototype.handleMeasure = function(callback) {
-  var geom = /** @type {ol.geom.Polygon} */
-      (this.sketchFeature.getGeometry());
-  var proj = this.getMap().getView().getProjection();
-  var dec = this.decimals;
-  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj, dec);
-  var verticesCount = geom.getCoordinates()[0].length;
-  var coord = null;
-  if (verticesCount > 2) {
-    coord = geom.getInteriorPoint().getCoordinates();
-  }
-  callback(output, coord);
-};
-
-goog.provide('ngeo.interaction.DrawAzimut');
-goog.provide('ngeo.interaction.MeasureAzimut');
-
-goog.require('goog.asserts');
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.Feature');
-goog.require('ol.MapBrowserEvent');
-goog.require('ol.MapBrowserEvent.EventType');
-goog.require('ol.events');
-goog.require('ol.geom.Circle');
-goog.require('ol.geom.GeometryCollection');
-goog.require('ol.geom.LineString');
-goog.require('ol.geom.Point');
-goog.require('ol.interaction.Draw');
-goog.require('ol.interaction.DrawEvent');
-goog.require('ol.interaction.InteractionProperty');
-goog.require('ol.interaction.Pointer');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure length.
- *
- * See our live example: {@link ../examples/measure.html}
- *
- * @constructor
- * @fires ol.interaction.DrawEvent
- * @extends {ngeo.interaction.Measure}
- * @param {ngeox.interaction.MeasureOptions=} opt_options Options
- * @export
- */
-ngeo.interaction.MeasureAzimut = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, options);
-
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {Element}
-   */
-  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {}, 'Click to finish.');
-
-};
-goog.inherits(ngeo.interaction.MeasureAzimut, ngeo.interaction.Measure);
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureAzimut.prototype.createDrawInteraction = function(style,
-    source) {
-
-  return new ngeo.interaction.DrawAzimut({
-    source: source,
-    style: style
-  });
-
-
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureAzimut.prototype.handleMeasure = function(callback) {
-  var geom = /** @type {ol.geom.GeometryCollection} */
-      (this.sketchFeature.getGeometry());
-  var line = /** @type {ol.geom.LineString} */ (geom.getGeometries()[0]);
-  var output = this.formatMeasure_(line);
-  callback(output, line.getLastCoordinate());
-};
-
-
-/**
- * Format measure output.
- * @param {ol.geom.LineString} line LineString.
- * @return {string} Formated measure.
- * @private
- */
-ngeo.interaction.MeasureAzimut.prototype.formatMeasure_ = function(line) {
-  var coords = line.getCoordinates();
-  var dx = coords[1][0] - coords[0][0];
-  var dy = coords[1][1] - coords[0][1];
-  var rad = Math.acos(dy / Math.sqrt(dx * dx + dy * dy));
-  var factor = dx > 0 ? 1 : -1;
-  var azimut = Math.round(factor * rad * 180 / Math.PI) % 360;
-  var output = azimut + '°';
-  var proj = this.getMap().getView().getProjection();
-  var dec = this.decimals;
-  output += '<br/>' + ngeo.interaction.Measure.getFormattedLength(
-      line, proj, dec);
-  return output;
-};
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure azimut.
- *
- * @constructor
- * @extends {ol.interaction.Pointer}
- * @param {olx.interaction.PointerOptions} options Options.
- * @export
- */
-ngeo.interaction.DrawAzimut = function(options) {
-
-  goog.base(this, {
-    handleDownEvent: ngeo.interaction.DrawAzimut.handleDownEvent_,
-    handleEvent: ngeo.interaction.DrawAzimut.handleEvent_,
-    handleUpEvent: ngeo.interaction.DrawAzimut.handleUpEvent_
-  });
-
-  /**
-   * @type {ol.Pixel}
-   * @private
-   */
-  this.downPx_ = null;
-
-  /**
-   * Target source for drawn features.
-   * @type {ol.source.Vector}
-   * @private
-   */
-  this.source_ = options.source !== undefined ? options.source : null;
-
-  /**
-   * Tglls whether the drawing has started or not.
-   * @type {boolean}
-   * @private
-   */
-  this.started_ = false;
-
-  /**
-   * Sketch feature.
-   * @type {ol.Feature}
-   * @private
-   */
-  this.sketchFeature_ = null;
-
-  /**
-   * Sketch point.
-   * @type {ol.Feature}
-   * @private
-   */
-  this.sketchPoint_ = null;
-
-
-  /**
-   * Squared tolerance for handling up events.  If the squared distance
-   * between a down and up event is greater than this tolerance, up events
-   * will not be handled.
-   * @type {number}
-   * @private
-   */
-  this.squaredClickTolerance_ = 4;
-
-
-  /**
-   * Vector layer where our sketch features are drawn.
-   * @type {ol.layer.Vector}
-   * @private
-   */
-  this.sketchLayer_ = new ol.layer.Vector({
-    source: new ol.source.Vector({
-      useSpatialIndex: false,
-      wrapX: false
-    }),
-    style: options.style !== undefined ?
-        options.style : ol.interaction.Draw.getDefaultStyleFunction()
-  });
-
-
-  ol.events.listen(this,
-      ol.Object.getChangeEventType(ol.interaction.InteractionProperty.ACTIVE),
-      this.updateState_, this);
-};
-goog.inherits(ngeo.interaction.DrawAzimut, ol.interaction.Pointer);
-
-
-/**
- * @param {ol.MapBrowserPointerEvent} event Event.
- * @return {boolean} Start drag sequence?
- * @this {ngeo.interaction.DrawAzimut}
- * @private
- */
-ngeo.interaction.DrawAzimut.handleDownEvent_ = function(event) {
-  this.downPx_ = event.pixel;
-  return true;
-};
-
-
-/**
- * @param {ol.MapBrowserPointerEvent} event Event.
- * @return {boolean} Stop drag sequence?
- * @this {ngeo.interaction.DrawAzimut}
- * @private
- */
-ngeo.interaction.DrawAzimut.handleUpEvent_ = function(event) {
-  var downPx = this.downPx_;
-  var clickPx = event.pixel;
-  var dx = downPx[0] - clickPx[0];
-  var dy = downPx[1] - clickPx[1];
-  var squaredDistance = dx * dx + dy * dy;
-  var pass = true;
-  if (squaredDistance <= this.squaredClickTolerance_) {
-    this.handlePointerMove_(event);
-    if (!this.started_) {
-      this.startDrawing_(event);
-    } else {
-      this.finishDrawing_();
-    }
-    pass = false;
-  }
-  return pass;
-};
-
-
-/**
- * @param {ol.MapBrowserEvent} mapBrowserEvent Map browser event.
- * @return {boolean} `false` to stop event propagation.
- * @this {ngeo.interaction.DrawAzimut}
- * @private
- */
-ngeo.interaction.DrawAzimut.handleEvent_ = function(mapBrowserEvent) {
-  var pass = true;
-  if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.POINTERMOVE) {
-    pass = this.handlePointerMove_(mapBrowserEvent);
-  } else if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.DBLCLICK) {
-    pass = false;
-  }
-  return ol.interaction.Pointer.handleEvent.call(this, mapBrowserEvent) && pass;
-};
-
-
-/**
- * Handle move events.
- * @param {ol.MapBrowserEvent} event A move event.
- * @return {boolean} Pass the event to other interactions.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.handlePointerMove_ = function(event) {
-  if (this.started_) {
-    this.modifyDrawing_(event);
-  } else {
-    this.createOrUpdateSketchPoint_(event);
-  }
-  return true;
-};
-
-
-/**
- * @param {ol.MapBrowserEvent} event Event.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.createOrUpdateSketchPoint_ = function(event) {
-  var coordinates = event.coordinate.slice();
-  if (this.sketchPoint_ === null) {
-    this.sketchPoint_ = new ol.Feature(new ol.geom.Point(coordinates));
-    this.updateSketchFeatures_();
-  } else {
-    var sketchPointGeom = this.sketchPoint_.getGeometry();
-    goog.asserts.assertInstanceof(sketchPointGeom, ol.geom.Point);
-    sketchPointGeom.setCoordinates(coordinates);
-  }
-};
-
-
-/**
- * Redraw the skecth features.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.updateSketchFeatures_ = function() {
-  var sketchFeatures = [];
-  if (this.sketchFeature_ !== null) {
-    sketchFeatures.push(this.sketchFeature_);
-  }
-  if (this.sketchPoint_ !== null) {
-    sketchFeatures.push(this.sketchPoint_);
-  }
-  var source = this.sketchLayer_.getSource();
-  source.clear(true);
-  source.addFeatures(sketchFeatures);
-};
-
-
-/**
- * Start the drawing.
- * @param {ol.MapBrowserEvent} event Event.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.startDrawing_ = function(event) {
-  var start = event.coordinate;
-  this.started_ = true;
-  var line = new ol.geom.LineString([start.slice(), start.slice()]);
-  var circle = new ol.geom.Circle(start, 0);
-  var geometry = new ol.geom.GeometryCollection([line, circle]);
-  goog.asserts.assert(geometry !== undefined);
-  this.sketchFeature_ = new ol.Feature();
-  this.sketchFeature_.setGeometry(geometry);
-  this.updateSketchFeatures_();
-  this.dispatchEvent(new ol.interaction.DrawEvent(
-      ol.interaction.DrawEventType.DRAWSTART, this.sketchFeature_));
-};
-
-
-/**
- * Modify the drawing.
- * @param {ol.MapBrowserEvent} event Event.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.modifyDrawing_ = function(event) {
-  var coordinate = event.coordinate;
-  var geometry = /** @type {ol.geom.GeometryCollection} */
-      (this.sketchFeature_.getGeometry());
-  var geometries = geometry.getGeometriesArray();
-  var line = geometries[0];
-  var coordinates, last;
-  goog.asserts.assertInstanceof(line, ol.geom.LineString);
-  coordinates = line.getCoordinates();
-  var sketchPointGeom = this.sketchPoint_.getGeometry();
-  goog.asserts.assertInstanceof(sketchPointGeom, ol.geom.Point);
-  sketchPointGeom.setCoordinates(coordinate);
-  last = coordinates[coordinates.length - 1];
-  last[0] = coordinate[0];
-  last[1] = coordinate[1];
-  goog.asserts.assertInstanceof(line, ol.geom.LineString);
-  line.setCoordinates(coordinates);
-  var circle = /** @type {ol.geom.Circle} */ (geometries[1]);
-  circle.setRadius(line.getLength());
-  this.updateSketchFeatures_();
-};
-
-
-/**
- * Stop drawing without adding the sketch feature to the target layer.
- * @return {ol.Feature} The sketch feature (or null if none).
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.abortDrawing_ = function() {
-  this.started_ = false;
-  var sketchFeature = this.sketchFeature_;
-  if (sketchFeature !== null) {
-    this.sketchFeature_ = null;
-    this.sketchPoint_ = null;
-    this.sketchLayer_.getSource().clear(true);
-  }
-  return sketchFeature;
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.DrawAzimut.prototype.shouldStopEvent = goog.functions.FALSE;
-
-
-/**
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.updateState_ = function() {
-  var map = this.getMap();
-  var active = this.getActive();
-  if (map === null || !active) {
-    this.abortDrawing_();
-  }
-  this.sketchLayer_.setMap(active ? map : null);
-};
-
-
-/**
- * Stop drawing and add the sketch feature to the target layer.
- * @private
- */
-ngeo.interaction.DrawAzimut.prototype.finishDrawing_ = function() {
-  var sketchFeature = this.abortDrawing_();
-  goog.asserts.assert(sketchFeature !== null);
-
-  if (this.source_ !== null) {
-    this.source_.addFeature(sketchFeature);
-  }
-  this.dispatchEvent(new ol.interaction.DrawEvent(
-      ol.interaction.DrawEventType.DRAWEND, sketchFeature));
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.DrawAzimut.prototype.setMap = function(map) {
-  goog.base(this, 'setMap', map);
-  this.updateState_();
-};
-
-goog.provide('ngeo.interaction.MeasureLength');
-
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.geom.LineString');
-goog.require('ol.interaction.Draw');
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure length.
- *
- * See our live example: {@link ../examples/measure.html}
- *
- * @constructor
- * @extends {ngeo.interaction.Measure}
- * @param {ngeox.interaction.MeasureOptions=} opt_options Options
- * @export
- */
-ngeo.interaction.MeasureLength = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, options);
-
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {Element}
-   */
-  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {},
-          'Click to continue drawing the line.',
-          goog.dom.createDom(goog.dom.TagName.BR),
-          'Double-click or click last point to finish.');
-
-};
-goog.inherits(ngeo.interaction.MeasureLength, ngeo.interaction.Measure);
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureLength.prototype.createDrawInteraction = function(style,
-    source) {
-
-  return new ol.interaction.Draw(
-      /** @type {olx.interaction.DrawOptions} */ ({
-        type: 'LineString',
-        source: source,
-        style: style
-      }));
-
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureLength.prototype.handleMeasure = function(callback) {
-  var geom = /** @type {ol.geom.LineString} */
-      (this.sketchFeature.getGeometry());
-  var proj = this.getMap().getView().getProjection();
-  var dec = this.decimals;
-  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj, dec);
-  var coord = geom.getLastCoordinate();
-  callback(output, coord);
-};
-
 goog.provide('ngeo.interaction.MobileDraw');
 
 goog.require('ol.Feature');
@@ -117841,49 +118963,6 @@ ngeo.debounceServiceFactory = function($timeout) {
 
 ngeo.module.factory('ngeoDebounce', ngeo.debounceServiceFactory);
 
-goog.provide('ngeo.DecorateInteraction');
-
-goog.require('goog.asserts');
-goog.require('ngeo');
-
-
-/**
- * Provides a function that adds an "active" property (using
- * `Object.defineProperty`) to an interaction, making it possible to use ngModel
- * to activate/deactivate interactions.
- *
- * Example:
- *
- *      <input type="checkbox" ngModel="interaction.active" />
- *
- * See our live example: {@link ../examples/interactiontoggle.html}
- *
- * @typedef {function(ol.interaction.Interaction)}
- * @ngdoc service
- * @ngname ngeoDecorateInteraction
- */
-ngeo.DecorateInteraction;
-
-
-/**
- * @param {ol.interaction.Interaction} interaction Interaction to decorate.
- */
-ngeo.decorateInteraction = function(interaction) {
-  goog.asserts.assertInstanceof(interaction, ol.interaction.Interaction);
-
-  Object.defineProperty(interaction, 'active', {
-    get: function() {
-      return interaction.getActive();
-    },
-    set: function(val) {
-      interaction.setActive(val);
-    }
-  });
-};
-
-
-ngeo.module.value('ngeoDecorateInteraction', ngeo.decorateInteraction);
-
 goog.provide('ngeo.DecorateLayer');
 
 goog.require('goog.asserts');
@@ -117956,413 +119035,13 @@ ngeo.decorateLayer = function(layer) {
 
 ngeo.module.value('ngeoDecorateLayer', ngeo.decorateLayer);
 
-goog.provide('ngeo.FeatureHelper')
-
+goog.provide('ngeo.Features')
 goog.require('ngeo');
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
-goog.require('ol.style.Text');
 
+goog.require('ol.Collection');
 
-/**
- * Provides methods for features, such as:
- *  - style setting / getting
- *  - measurement
- *
- * @constructor
- * @param {angular.$injector} $injector Main injector.
- * @ngdoc service
- * @ngname ngeoFeatureHelper
- * @ngInject
- */
-ngeo.FeatureHelper = function($injector) {
 
-  /**
-   * @type {?number}
-   * @private
-   */
-  this.decimals = null;
-
-  if ($injector.has('ngeoMeasureDecimals')) {
-    this.decimals_ = $injector.get('ngeoMeasureDecimals');
-  }
-
-  /**
-   * @type {ol.proj.Projection}
-   * @private
-   */
-  this.projection_;
-
-};
-
-
-/**
- * @param {ol.proj.Projection} projection Projection.
- * @export
- */
-ngeo.FeatureHelper.prototype.setProjection = function(projection) {
-  this.projection_ = projection;
-};
-
-
-// === STYLE METHODS ===
-
-
-/**
- * Set the style of a feature using its inner properties and depending on
- * its geometry type.
- * @param {ol.Feature} feature Feature.
- * @export
- */
-ngeo.FeatureHelper.prototype.setStyle = function(feature) {
-  var style = this.getStyle(feature);
-  feature.setStyle(style);
-};
-
-
-/**
- * Create and return a style object from a given feature using its inner
- * properties and depending on its geometry type.
- * @param {ol.Feature} feature Feature.
- * @return {ol.style.Style} The style object.
- * @export
- */
-ngeo.FeatureHelper.prototype.getStyle = function(feature) {
-  var type = this.getType(feature);
-  var style;
-
-  switch (type) {
-    case ngeo.GeometryType.LINESTRING:
-      style = this.getLineStringStyle_(feature);
-      break;
-    case ngeo.GeometryType.POINT:
-      style = this.getPointStyle_(feature);
-      break;
-    case ngeo.GeometryType.CIRCLE:
-    case ngeo.GeometryType.POLYGON:
-    case ngeo.GeometryType.RECTANGLE:
-      style = this.getPolygonStyle_(feature);
-      break;
-    case ngeo.GeometryType.TEXT:
-      style = this.getTextStyle_(feature);
-      break;
-    default:
-      break;
-  }
-
-  goog.asserts.assert(style, 'Style should be thruthy');
-
-  return style;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature with linestring geometry.
- * @return {ol.style.Style} Style.
- * @private
- */
-ngeo.FeatureHelper.prototype.getLineStringStyle_ = function(feature) {
-
-  var strokeWidth = this.getStrokeProperty(feature);
-  var showMeasure = this.getShowMeasureProperty(feature);
-  var color = this.getColorProperty(feature);
-
-  var options = {
-    stroke: new ol.style.Stroke({
-      color: color,
-      width: strokeWidth
-    })
-  };
-
-  if (showMeasure) {
-    var measure = this.getMeasure(feature);
-    options.text = this.createTextStyle_(measure, 10);
-  }
-
-  return new ol.style.Style(options);
-};
-
-
-/**
- * @param {ol.Feature} feature Feature with point geometry.
- * @return {ol.style.Style} Style.
- * @private
- */
-ngeo.FeatureHelper.prototype.getPointStyle_ = function(feature) {
-
-  var size = this.getSizeProperty(feature);
-  var color = this.getColorProperty(feature);
-
-  var options = {
-    image: new ol.style.Circle({
-      radius: size,
-      fill: new ol.style.Fill({
-        color: color
-      })
-    })
-  };
-
-  var showMeasure = this.getShowMeasureProperty(feature);
-
-  if (showMeasure) {
-    var measure = this.getMeasure(feature);
-    options.text = this.createTextStyle_(measure, 10);
-  }
-
-  return new ol.style.Style(options);
-};
-
-
-/**
- * @param {ol.Feature} feature Feature with polygon geometry.
- * @return {ol.style.Style} Style.
- * @private
- */
-ngeo.FeatureHelper.prototype.getPolygonStyle_ = function(feature) {
-
-  var strokeWidth = this.getStrokeProperty(feature);
-  var opacity = this.getOpacityProperty(feature);
-  var color = this.getColorProperty(feature);
-
-  // fill color with opacity
-  var rgbColor = ol.color.fromString(color);
-  var rgbaColor = rgbColor.slice();
-  rgbaColor[3] = opacity;
-  var fillColor = ol.color.toString(rgbaColor);
-
-  var options = {
-    fill: new ol.style.Fill({
-      color: fillColor
-    }),
-    stroke: new ol.style.Stroke({
-      color: color,
-      width: strokeWidth
-    })
-  };
-
-  var showMeasure = this.getShowMeasureProperty(feature);
-
-  if (showMeasure) {
-    var measure = this.getMeasure(feature);
-    options.text = this.createTextStyle_(measure, 10);
-  }
-
-  return new ol.style.Style(options);
-};
-
-
-/**
- * @param {ol.Feature} feature Feature with point geometry, rendered as text.
- * @return {ol.style.Style} Style.
- * @private
- */
-ngeo.FeatureHelper.prototype.getTextStyle_ = function(feature) {
-
-  var label = this.getNameProperty(feature);
-  var size = this.getSizeProperty(feature);
-  var angle = this.getAngleProperty(feature);
-  var color = this.getColorProperty(feature);
-
-  return new ol.style.Style({
-    text: this.createTextStyle_(label, size, angle, color)
-  });
-};
-
-
-// === PROPERTY GETTERS ===
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {number} Angle.
- * @export
- */
-ngeo.FeatureHelper.prototype.getAngleProperty = function(feature) {
-  var angle = +(/** @type {string} */ (
-    feature.get(ngeo.FeatureProperties.ANGLE)));
-  goog.asserts.assertNumber(angle);
-  return angle;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {string} Color.
- * @export
- */
-ngeo.FeatureHelper.prototype.getColorProperty = function(feature) {
-
-  var color = /** @type {string} */ (feature.get(ngeo.FeatureProperties.COLOR));
-
-  goog.asserts.assertString(color);
-
-  return color;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {string} Name.
- * @export
- */
-ngeo.FeatureHelper.prototype.getNameProperty = function(feature) {
-  var name = /** @type {string} */ (feature.get(ngeo.FeatureProperties.NAME));
-  goog.asserts.assertString(name);
-  return name;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {number} Opacity.
- * @export
- */
-ngeo.FeatureHelper.prototype.getOpacityProperty = function(feature) {
-  var opacity = +(/** @type {string} */ (
-      feature.get(ngeo.FeatureProperties.OPACITY)));
-  goog.asserts.assertNumber(opacity);
-  return opacity;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {boolean} Show measure.
- * @export
- */
-ngeo.FeatureHelper.prototype.getShowMeasureProperty = function(feature) {
-  var showMeasure = (/** @type {boolean} */ (
-        feature.get(ngeo.FeatureProperties.SHOW_MEASURE)));
-  if (showMeasure === undefined) {
-    showMeasure = false;
-  }
-  goog.asserts.assertBoolean(showMeasure);
-  return showMeasure;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {number} Size.
- * @export
- */
-ngeo.FeatureHelper.prototype.getSizeProperty = function(feature) {
-  var size = +(/** @type {string} */ (feature.get(ngeo.FeatureProperties.SIZE)));
-  goog.asserts.assertNumber(size);
-  return size;
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {number} Stroke.
- * @export
- */
-ngeo.FeatureHelper.prototype.getStrokeProperty = function(feature) {
-  var stroke = +(/** @type {string} */ (
-      feature.get(ngeo.FeatureProperties.STROKE)));
-  goog.asserts.assertNumber(stroke);
-  return stroke;
-};
-
-
-// === OTHER UTILITY METHODS ===
-
-
-/**
- * @param {string} text The text to display.
- * @param {number} size The size in `pt` of the text font.
- * @param {number=} opt_angle The angle in degrees of the text.
- * @param {string=} opt_color The color of the text
- * @return {ol.style.Text} Style.
- * @private
- */
-ngeo.FeatureHelper.prototype.createTextStyle_ = function(text, size,
-                                                        opt_angle, opt_color) {
-
-  var angle = opt_angle !== undefined ? opt_angle : 0;
-  var rotation = angle * Math.PI / 180;
-  var font = ['normal', size + 'pt', 'Arial'].join(' ');
-  var color = opt_color !== undefined ? opt_color : '#000000';
-
-  return new ol.style.Text({
-    font: font,
-    text: text,
-    fill: new ol.style.Fill({color: color}),
-    stroke: new ol.style.Stroke({color: '#ffffff', width: 3}),
-    rotation: rotation
-  });
-};
-
-
-/**
- * @param {ol.Feature} feature Feature.
- * @return {string} Measure.
- * @export
- */
-ngeo.FeatureHelper.prototype.getMeasure = function(feature) {
-
-  var geometry = feature.getGeometry();
-  goog.asserts.assert(geometry, 'Geometry should be truthy');
-
-  var measure = '';
-
-  if (geometry instanceof ol.geom.Polygon) {
-    measure = ngeo.interaction.Measure.getFormattedArea(
-      geometry, this.projection_, this.decimals_);
-  } else if (geometry instanceof ol.geom.LineString) {
-    measure = ngeo.interaction.Measure.getFormattedLength(
-      geometry, this.projection_, this.decimals_);
-  } else if (geometry instanceof ol.geom.Point) {
-    measure = ngeo.interaction.Measure.getFormattedPoint(
-      geometry, this.projection_, this.decimals_);
-  }
-
-  return measure;
-};
-
-
-/**
- * Return the type of geometry of a feature using its geometry property and
- * some inner properties.
- * @param {ol.Feature} feature Feature.
- * @return {string} The type of geometry.
- * @export
- */
-ngeo.FeatureHelper.prototype.getType = function(feature) {
-  var geometry = feature.getGeometry();
-  goog.asserts.assert(geometry, 'Geometry should be thruthy');
-
-  var type;
-
-  if (geometry instanceof ol.geom.Point) {
-    if (feature.get(ngeo.FeatureProperties.IS_TEXT)) {
-      type = ngeo.GeometryType.TEXT;
-    } else {
-      type = ngeo.GeometryType.POINT;
-    }
-  } else if (geometry instanceof ol.geom.Polygon) {
-    if (feature.get(ngeo.FeatureProperties.IS_CIRCLE)) {
-      type = ngeo.GeometryType.CIRCLE;
-    } else if (feature.get(ngeo.FeatureProperties.IS_RECTANGLE)) {
-      type = ngeo.GeometryType.RECTANGLE;
-    } else {
-      type = ngeo.GeometryType.POLYGON;
-    }
-  } else if (geometry instanceof ol.geom.LineString) {
-    type = ngeo.GeometryType.LINESTRING;
-  }
-
-  goog.asserts.assert(type, 'Type should be thruthy');
-
-  return type;
-};
-
-
-ngeo.module.service('ngeoFeatureHelper', ngeo.FeatureHelper);
+ngeo.module.value('ngeoFeatures', new ol.Collection());
 
 goog.provide('ngeo.GetBrowserLanguage');
 
@@ -119651,7 +120330,8 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
  *     var scale = 5000;
  *     var dpi = 72;
  *     var layout = 'A4 portrait';
- *     var reportSpec = print.createSpec(map, scale, dpi, layout, {
+ *     var format = 'pdf';
+ *     var reportSpec = print.createSpec(map, scale, dpi, layout, format {
  *       'title': 'A title for my report',
  *       'rotation': 45 // degree
  *     });
@@ -119723,12 +120403,13 @@ ngeo.Print.prototype.cancel = function(ref, opt_httpConfig) {
  * @param {number} scale Scale.
  * @param {number} dpi DPI.
  * @param {string} layout Layout.
+ * @param {string} format Formats.
  * @param {Object.<string, *>} customAttributes Custom attributes.
  * @return {MapFishPrintSpec} The print spec.
  * @export
  */
 ngeo.Print.prototype.createSpec = function(
-    map, scale, dpi, layout, customAttributes) {
+    map, scale, dpi, layout, format, customAttributes) {
 
   var specMap = /** @type {MapFishPrintMap} */ ({
     dpi: dpi,
@@ -119744,6 +120425,7 @@ ngeo.Print.prototype.createSpec = function(
 
   var spec = /** @type {MapFishPrintSpec} */ ({
     attributes: attributes,
+    format: format,
     layout: layout
   });
 
@@ -120383,7 +121065,8 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
  * @export
  */
 ngeo.Print.prototype.createReport = function(printSpec, opt_httpConfig) {
-  var url = this.url_ + '/report.pdf';
+  var format = printSpec.format || 'pdf';
+  var url = this.url_ + '/report.' + format;
   var httpConfig = /** @type {angular.$http.Config} */ ({
     headers: {
       'Content-Type': 'application/json; charset=UTF-8'
@@ -120448,7 +121131,7 @@ ngeo.createPrintServiceFactory = function($http, ngeoLayerHelper) {
        * @param {string} url URL to MapFish print service.
        */
       function(url) {
-        return new ngeo.Print(url, $http, ngeoLayerHelper)
+        return new ngeo.Print(url, $http, ngeoLayerHelper);
       });
 };
 
@@ -120540,7 +121223,7 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize,
         context.lineTo(viewportWidth, 0);
         context.lineTo(viewportWidth, viewportHeight);
         context.lineTo(0, viewportHeight);
-        context.lineTo(0, 100);
+        context.lineTo(0, 0);
         context.closePath();
 
         var rotation = (opt_rotation ? opt_rotation() * Math.PI / 180 : 0);
