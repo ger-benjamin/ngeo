@@ -109342,15 +109342,21 @@ ngeo.LayerHelper.GROUP_KEY = 'groupName';
  * separated layers names (see {@link ol.source.ImageWMS}).
  * @param {string} sourceURL The source URL.
  * @param {string} sourceLayersName A dot separated names string.
+ * @param {string=} opt_serverType Type of the server ("mapserver",
+ *     "geoserver", qgisserver, …).
  * @return {ol.layer.Image} WMS Layer.
  * @export
  */
 ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
-    sourceLayersName) {
+    sourceLayersName, opt_serverType) {
+  var params = {'LAYERS': sourceLayersName};
+  if (opt_serverType) {
+    params['SERVERTYPE'] = opt_serverType;
+  }
   var layer = new ol.layer.Image({
     source: new ol.source.ImageWMS({
       url: sourceURL,
-      params: {'LAYERS': sourceLayersName}
+      params: params
     })
   });
   return layer;
@@ -123412,6 +123418,7 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
 
   delete customParams['LAYERS'];
   delete customParams['FORMAT'];
+  delete customParams['SERVERTYPE'];
   delete customParams['VERSION'];
 
   var object = /** @type {MapFishPrintWmsLayer} */ ({
@@ -123419,6 +123426,7 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
     imageFormat: 'FORMAT' in params ? params['FORMAT'] : 'image/png',
     layers: params['LAYERS'].split(','),
     customParams: customParams,
+    serverType: params['SERVERTYPE'],
     type: 'wms',
     opacity: opacity,
     version: params['VERSION']
