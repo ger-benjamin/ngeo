@@ -2832,6 +2832,9 @@ ol.inherits =
  */
 ol.nullFunction = function() {};
 
+
+ol.global = Function('return this')();
+
 // FIXME factor out common code between usedTiles and wantedTiles
 
 goog.provide('ol.PostRenderFunction');
@@ -5400,7 +5403,7 @@ ol.array.flatten = function(arr) {
 
 
 /**
- * @param {Array.<VALUE>} arr  The array to modify.
+ * @param {Array.<VALUE>} arr The array to modify.
  * @param {Array.<VALUE>|VALUE} data The elements or arrays of elements
  *     to add to arr.
  * @template VALUE
@@ -5416,7 +5419,7 @@ ol.array.extend = function(arr, data) {
 
 
 /**
- * @param {Array.<VALUE>} arr  The array to modify.
+ * @param {Array.<VALUE>} arr The array to modify.
  * @param {VALUE} obj The element to remove.
  * @template VALUE
  * @return {boolean} If the element was removed.
@@ -5432,7 +5435,7 @@ ol.array.remove = function(arr, obj) {
 
 
 /**
- * @param {Array.<VALUE>} arr  The array to search in.
+ * @param {Array.<VALUE>} arr The array to search in.
  * @param {function(VALUE, number, ?) : boolean} func The function to compare.
  * @template VALUE
  * @return {VALUE} The element found.
@@ -5452,9 +5455,9 @@ ol.array.find = function(arr, func) {
 
 
 /**
-* @param {Array|Uint8ClampedArray} arr1 The first array to compare.
-* @param {Array|Uint8ClampedArray} arr2 The second array to compare.
-* @return {boolean} Whether the two arrays are equal.
+ * @param {Array|Uint8ClampedArray} arr1 The first array to compare.
+ * @param {Array|Uint8ClampedArray} arr2 The second array to compare.
+ * @return {boolean} Whether the two arrays are equal.
  */
 ol.array.equals = function(arr1, arr2) {
   var len1 = arr1.length;
@@ -5471,8 +5474,8 @@ ol.array.equals = function(arr1, arr2) {
 
 
 /**
-* @param {Array.<*>} arr The array to sort (modifies original).
-* @param {Function} compareFnc Comparison function.
+ * @param {Array.<*>} arr The array to sort (modifies original).
+ * @param {Function} compareFnc Comparison function.
  */
 ol.array.stableSort = function(arr, compareFnc) {
   var length = arr.length;
@@ -5491,9 +5494,9 @@ ol.array.stableSort = function(arr, compareFnc) {
 
 
 /**
-* @param {Array.<*>} arr The array to search in.
-* @param {Function} func Comparison function.
-* @return {number} Return index.
+ * @param {Array.<*>} arr The array to search in.
+ * @param {Function} func Comparison function.
+ * @return {number} Return index.
  */
 ol.array.findIndex = function(arr, func) {
   var index;
@@ -5506,10 +5509,10 @@ ol.array.findIndex = function(arr, func) {
 
 
 /**
-* @param {Array.<*>} arr The array to test.
-* @param {Function=} opt_func Comparison function.
-* @param {boolean=} opt_strict Strictly sorted (default false).
-* @return {boolean} Return index.
+ * @param {Array.<*>} arr The array to test.
+ * @param {Function=} opt_func Comparison function.
+ * @param {boolean=} opt_strict Strictly sorted (default false).
+ * @return {boolean} Return index.
  */
 ol.array.isSorted = function(arr, opt_func, opt_strict) {
   var compare = opt_func || ol.array.numberSafeCompareFunction;
@@ -6886,12 +6889,48 @@ ol.size.toSize = function(size, opt_size) {
   }
 };
 
+goog.provide('ol.string');
+
+/**
+ * @param {number} number Number to be formatted
+ * @param {number} width The desired width
+ * @param {number=} opt_precision Precision of the output string (i.e. number of decimal places)
+ * @returns {string} Formatted string
+*/
+ol.string.padNumber = function(number, width, opt_precision) {
+  var numberString = opt_precision !== undefined ? number.toFixed(opt_precision) : '' + number;
+  var decimal = numberString.indexOf('.');
+  decimal = decimal === -1 ? numberString.length : decimal;
+  return decimal > width ? numberString : new Array(1 + width - decimal).join('0') + numberString;
+};
+
+/**
+ * Adapted from https://github.com/omichelsen/compare-versions/blob/master/index.js
+ * @param {string|number} v1 First version
+ * @param {string|number} v2 Second version
+ * @returns {number} Value
+ */
+ol.string.compareVersions = function(v1, v2) {
+  var s1 = ('' + v1).split('.');
+  var s2 = ('' + v2).split('.');
+
+  for (var i = 0; i < Math.max(s1.length, s2.length); i++) {
+    var n1 = parseInt(s1[i] || '0', 10);
+    var n2 = parseInt(s2[i] || '0', 10);
+
+    if (n1 > n2) return 1;
+    if (n2 > n1) return -1;
+  }
+
+  return 0;
+};
+
 goog.provide('ol.Coordinate');
 goog.provide('ol.CoordinateFormatType');
 goog.provide('ol.coordinate');
 
-goog.require('goog.string');
 goog.require('ol.math');
+goog.require('ol.string');
 
 
 /**
@@ -7021,8 +7060,8 @@ ol.coordinate.degreesToStringHDMS_ = function(degrees, hemispheres, opt_fraction
   var x = Math.abs(3600 * normalizedDegrees);
   var dflPrecision = opt_fractionDigits || 0;
   return Math.floor(x / 3600) + '\u00b0 ' +
-      goog.string.padNumber(Math.floor((x / 60) % 60), 2) + '\u2032 ' +
-      goog.string.padNumber((x % 60), 2, dflPrecision) + '\u2033 ' +
+      ol.string.padNumber(Math.floor((x / 60) % 60), 2) + '\u2032 ' +
+      ol.string.padNumber((x % 60), 2, dflPrecision) + '\u2033 ' +
       hemispheres.charAt(normalizedDegrees < 0 ? 1 : 0);
 };
 
@@ -11579,7 +11618,7 @@ ol.proj.Projection = function(options) {
   goog.asserts.assert(code !== undefined,
       'Option "code" is required for constructing instance');
   if (ol.ENABLE_PROJ4JS) {
-    var proj4js = ol.proj.proj4_ || goog.global['proj4'];
+    var proj4js = ol.proj.proj4_ || ol.global['proj4'];
     if (typeof proj4js == 'function' && projections[code] === undefined) {
       var def = proj4js.defs(code);
       if (def !== undefined) {
@@ -12110,7 +12149,7 @@ ol.proj.get = function(projectionLike) {
     var code = projectionLike;
     projection = ol.proj.projections_[code];
     if (ol.ENABLE_PROJ4JS) {
-      var proj4js = ol.proj.proj4_ || goog.global['proj4'];
+      var proj4js = ol.proj.proj4_ || ol.global['proj4'];
       if (projection === undefined && typeof proj4js == 'function' &&
           proj4js.defs(code) !== undefined) {
         projection = new ol.proj.Projection({code: code});
@@ -16485,6 +16524,13 @@ goog.provide('ol.Attribution');
 
 goog.require('ol.TileRange');
 goog.require('ol.math');
+
+
+/**
+ * @typedef {string|Array.<string>|ol.Attribution|Array.<ol.Attribution>}
+ * @api
+ */
+ol.AttributionLike;
 
 
 /**
@@ -34019,7 +34065,7 @@ ol.source.State = {
 
 
 /**
- * @typedef {{attributions: (olx.source.AttributionOption|undefined),
+ * @typedef {{attributions: (ol.AttributionLike|undefined),
  *            logo: (string|olx.LogoOptions|undefined),
  *            projection: ol.proj.ProjectionLike,
  *            state: (ol.source.State|undefined),
@@ -34082,7 +34128,7 @@ goog.inherits(ol.source.Source, ol.Object);
 /**
  * Turns various ways of defining an attribution to an array of `ol.Attributions`.
  *
- * @param {olx.source.AttributionOption|undefined}
+ * @param {ol.AttributionLike|undefined}
  *     attributionLike The attributions as string, array of strings,
  *     `ol.Attribution`, array of `ol.Attribution` or undefined.
  * @return {Array.<ol.Attribution>} The array of `ol.Attribution` or null if
@@ -34189,7 +34235,7 @@ ol.source.Source.prototype.refresh = function() {
 
 /**
  * Set the attributions of the source.
- * @param {olx.source.AttributionOption|undefined} attributions Attributions.
+ * @param {ol.AttributionLike|undefined} attributions Attributions.
  *     Can be passed as `string`, `Array<string>`, `{@link ol.Attribution}`,
  *     `Array<{@link ol.Attribution}>` or `undefined`.
  * @api
@@ -34867,7 +34913,7 @@ goog.require('ol.tilegrid.TileGrid');
 
 
 /**
- * @typedef {{attributions: (olx.source.AttributionOption|undefined),
+ * @typedef {{attributions: (ol.AttributionLike|undefined),
  *            cacheSize: (number|undefined),
  *            extent: (ol.Extent|undefined),
  *            logo: (string|olx.LogoOptions|undefined),
@@ -35657,7 +35703,7 @@ ol.control.Rotate = function(opt_options) {
         'ol-compass', label);
   } else {
     this.label_ = label;
-    this.label_.classList.add(this.label_, 'ol-compass');
+    this.label_.classList.add('ol-compass');
   }
 
   var tipLabel = options.tipLabel ? options.tipLabel : 'Reset rotation';
@@ -36271,7 +36317,7 @@ ol.control.FullScreen.prototype.setMap = function(map) {
   goog.base(this, 'setMap', map);
   if (map) {
     this.listenerKeys.push(
-        ol.events.listen(goog.global.document, goog.dom.fullscreen.EventType.CHANGE,
+        ol.events.listen(ol.global.document, goog.dom.fullscreen.EventType.CHANGE,
           this.handleFullScreenChange_, this)
     );
   }
@@ -37733,7 +37779,7 @@ ol.dom.canUseCssTransform = (function() {
     if (canUseCssTransform === undefined) {
       goog.asserts.assert(document.body,
           'document.body should not be null');
-      goog.asserts.assert(goog.global.getComputedStyle,
+      goog.asserts.assert(ol.global.getComputedStyle,
           'getComputedStyle is required (unsupported browser?)');
 
       var el = document.createElement('P'),
@@ -37749,7 +37795,7 @@ ol.dom.canUseCssTransform = (function() {
       for (var t in transforms) {
         if (t in el.style) {
           el.style[t] = 'translate(1px,1px)';
-          has2d = goog.global.getComputedStyle(el).getPropertyValue(
+          has2d = ol.global.getComputedStyle(el).getPropertyValue(
               transforms[t]);
         }
       }
@@ -37774,7 +37820,7 @@ ol.dom.canUseCssTransform3D = (function() {
     if (canUseCssTransform3D === undefined) {
       goog.asserts.assert(document.body,
           'document.body should not be null');
-      goog.asserts.assert(goog.global.getComputedStyle,
+      goog.asserts.assert(ol.global.getComputedStyle,
           'getComputedStyle is required (unsupported browser?)');
 
       var el = document.createElement('P'),
@@ -37790,7 +37836,7 @@ ol.dom.canUseCssTransform3D = (function() {
       for (var t in transforms) {
         if (t in el.style) {
           el.style[t] = 'translate3d(1px,1px,1px)';
-          has3d = goog.global.getComputedStyle(el).getPropertyValue(
+          has3d = ol.global.getComputedStyle(el).getPropertyValue(
               transforms[t]);
         }
       }
@@ -37889,7 +37935,7 @@ ol.dom.transformElement2D = function(element, transform, opt_precision) {
  */
 ol.dom.outerWidth = function(element) {
   var width = element.offsetWidth;
-  var style = element.currentStyle || goog.global.getComputedStyle(element);
+  var style = element.currentStyle || ol.global.getComputedStyle(element);
   width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
 
   return width;
@@ -37905,7 +37951,7 @@ ol.dom.outerWidth = function(element) {
  */
 ol.dom.outerHeight = function(element) {
   var height = element.offsetHeight;
-  var style = element.currentStyle || goog.global.getComputedStyle(element);
+  var style = element.currentStyle || ol.global.getComputedStyle(element);
   height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
 
   return height;
@@ -37993,7 +38039,7 @@ ol.has.MAC = ua.indexOf('macintosh') !== -1;
  * @type {number}
  * @api stable
  */
-ol.has.DEVICE_PIXEL_RATIO = goog.global.devicePixelRatio || 1;
+ol.has.DEVICE_PIXEL_RATIO = ol.global.devicePixelRatio || 1;
 
 
 /**
@@ -38015,7 +38061,7 @@ ol.has.CANVAS = ol.ENABLE_CANVAS && (
      * @return {boolean} Canvas supported.
      */
     function() {
-      if (!('HTMLCanvasElement' in goog.global)) {
+      if (!('HTMLCanvasElement' in ol.global)) {
         return false;
       }
       try {
@@ -38040,7 +38086,7 @@ ol.has.CANVAS = ol.ENABLE_CANVAS && (
  * @type {boolean}
  * @api stable
  */
-ol.has.DEVICE_ORIENTATION = 'DeviceOrientationEvent' in goog.global;
+ol.has.DEVICE_ORIENTATION = 'DeviceOrientationEvent' in ol.global;
 
 
 /**
@@ -38057,7 +38103,7 @@ ol.has.DOM = ol.ENABLE_DOM;
  * @type {boolean}
  * @api stable
  */
-ol.has.GEOLOCATION = 'geolocation' in goog.global.navigator;
+ol.has.GEOLOCATION = 'geolocation' in ol.global.navigator;
 
 
 /**
@@ -38066,7 +38112,7 @@ ol.has.GEOLOCATION = 'geolocation' in goog.global.navigator;
  * @type {boolean}
  * @api stable
  */
-ol.has.TOUCH = ol.ASSUME_TOUCH || 'ontouchstart' in goog.global;
+ol.has.TOUCH = ol.ASSUME_TOUCH || 'ontouchstart' in ol.global;
 
 
 /**
@@ -38074,7 +38120,7 @@ ol.has.TOUCH = ol.ASSUME_TOUCH || 'ontouchstart' in goog.global;
  * @const
  * @type {boolean}
  */
-ol.has.POINTER = 'PointerEvent' in goog.global;
+ol.has.POINTER = 'PointerEvent' in ol.global;
 
 
 /**
@@ -38082,7 +38128,7 @@ ol.has.POINTER = 'PointerEvent' in goog.global;
  * @const
  * @type {boolean}
  */
-ol.has.MSPOINTER = !!(goog.global.navigator.msPointerEnabled);
+ol.has.MSPOINTER = !!(ol.global.navigator.msPointerEnabled);
 
 
 /**
@@ -38101,7 +38147,7 @@ ol.has.WEBGL;
     var textureSize;
     var /** @type {Array.<string>} */ extensions = [];
 
-    if ('WebGLRenderingContext' in goog.global) {
+    if ('WebGLRenderingContext' in ol.global) {
       try {
         var canvas = /** @type {HTMLCanvasElement} */
             (document.createElement('CANVAS'));
@@ -38904,7 +38950,7 @@ ol.pointer.TouchSource.prototype.removePrimaryPointer_ = function(inPointer) {
  * @private
  */
 ol.pointer.TouchSource.prototype.resetClickCount_ = function() {
-  this.resetId_ = goog.global.setTimeout(
+  this.resetId_ = ol.global.setTimeout(
       this.resetClickCountHandler_.bind(this),
       ol.pointer.TouchSource.CLICK_COUNT_TIMEOUT);
 };
@@ -38924,7 +38970,7 @@ ol.pointer.TouchSource.prototype.resetClickCountHandler_ = function() {
  */
 ol.pointer.TouchSource.prototype.cancelResetClickCount_ = function() {
   if (this.resetId_ !== undefined) {
-    goog.global.clearTimeout(this.resetId_);
+    ol.global.clearTimeout(this.resetId_);
   }
 };
 
@@ -39196,7 +39242,7 @@ ol.pointer.TouchSource.prototype.dedupSynthMouse_ = function(inEvent) {
     var lt = [t.clientX, t.clientY];
     lts.push(lt);
 
-    goog.global.setTimeout(function() {
+    ol.global.setTimeout(function() {
       // remove touch after timeout
       ol.array.remove(lts, lt);
     }, ol.pointer.TouchSource.DEDUP_TIMEOUT);
@@ -39887,14 +39933,14 @@ ol.MapBrowserEventHandler.prototype.emulateClick_ = function(pointerEvent) {
   this.dispatchEvent(newEvent);
   if (this.clickTimeoutId_ !== 0) {
     // double-click
-    goog.global.clearTimeout(this.clickTimeoutId_);
+    ol.global.clearTimeout(this.clickTimeoutId_);
     this.clickTimeoutId_ = 0;
     newEvent = new ol.MapBrowserPointerEvent(
         ol.MapBrowserEvent.EventType.DBLCLICK, this.map_, pointerEvent);
     this.dispatchEvent(newEvent);
   } else {
     // click
-    this.clickTimeoutId_ = goog.global.setTimeout(function() {
+    this.clickTimeoutId_ = ol.global.setTimeout(function() {
       this.clickTimeoutId_ = 0;
       var newEvent = new ol.MapBrowserPointerEvent(
           ol.MapBrowserEvent.EventType.SINGLECLICK, this.map_, pointerEvent);
@@ -44919,8 +44965,8 @@ ol.interaction.KeyboardPan = function(opt_options) {
    * @return {boolean} Combined condition result.
    */
   this.defaultCondition_ = function(mapBrowserEvent) {
-    return ol.events.condition.noModifierKeys.call(this, mapBrowserEvent) &&
-      ol.events.condition.targetNotEditable.call(this, mapBrowserEvent)
+    return ol.events.condition.noModifierKeys(mapBrowserEvent) &&
+      ol.events.condition.targetNotEditable(mapBrowserEvent);
   }
 
   /**
@@ -45170,10 +45216,10 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
     if (mapBrowserEvent.type == ol.events.EventType.WHEEL) {
       delta = wheelEvent.deltaY;
       if (ol.has.FIREFOX &&
-          wheelEvent.deltaMode === goog.global.WheelEvent.DOM_DELTA_PIXEL) {
+          wheelEvent.deltaMode === ol.global.WheelEvent.DOM_DELTA_PIXEL) {
         delta /= ol.has.DEVICE_PIXEL_RATIO;
       }
-      if (wheelEvent.deltaMode === goog.global.WheelEvent.DOM_DELTA_LINE) {
+      if (wheelEvent.deltaMode === ol.global.WheelEvent.DOM_DELTA_LINE) {
         delta *= 40;
       }
     } else if (mapBrowserEvent.type == ol.events.EventType.MOUSEWHEEL) {
@@ -45192,8 +45238,8 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
     var duration = ol.MOUSEWHEELZOOM_TIMEOUT_DURATION;
     var timeLeft = Math.max(duration - (Date.now() - this.startTime_), 0);
 
-    goog.global.clearTimeout(this.timeoutId_);
-    this.timeoutId_ = goog.global.setTimeout(
+    ol.global.clearTimeout(this.timeoutId_);
+    this.timeoutId_ = ol.global.setTimeout(
         this.doZoom_.bind(this, map), timeLeft);
 
     mapBrowserEvent.preventDefault();
@@ -47447,6 +47493,7 @@ goog.require('goog.asserts');
 goog.require('ol');
 goog.require('ol.color');
 goog.require('ol.colorlike');
+goog.require('ol.dom');
 goog.require('ol.has');
 goog.require('ol.render.canvas');
 goog.require('ol.style.Fill');
@@ -47711,18 +47758,14 @@ ol.style.Circle.prototype.render_ = function(atlasManager) {
 
   if (atlasManager === undefined) {
     // no atlas manager is used, create a new canvas
-    this.canvas_ = /** @type {HTMLCanvasElement} */
-        (document.createElement('CANVAS'));
-    this.canvas_.height = size;
-    this.canvas_.width = size;
+    var context = ol.dom.createCanvasContext2D(size, size);
+    this.canvas_ = context.canvas;
 
     // canvas.width and height are rounded to the closest integer
     size = this.canvas_.width;
     imageSize = size;
 
     // draw the circle on the canvas
-    var context = /** @type {CanvasRenderingContext2D} */
-        (this.canvas_.getContext('2d'));
     this.draw_(renderOptions, context, 0, 0);
 
     this.createHitDetectionCanvas_(renderOptions);
@@ -47812,15 +47855,9 @@ ol.style.Circle.prototype.createHitDetectionCanvas_ = function(renderOptions) {
 
   // if no fill style is set, create an extra hit-detection image with a
   // default fill style
-  this.hitDetectionCanvas_ = /** @type {HTMLCanvasElement} */
-      (document.createElement('CANVAS'));
-  var canvas = this.hitDetectionCanvas_;
+  var context = ol.dom.createCanvasContext2D(renderOptions.size, renderOptions.size);
+  this.hitDetectionCanvas_ = context.canvas;
 
-  canvas.height = renderOptions.size;
-  canvas.width = renderOptions.size;
-
-  var context = /** @type {CanvasRenderingContext2D} */
-      (canvas.getContext('2d'));
   this.drawHitDetectionCanvas_(renderOptions, context, 0, 0);
 };
 
@@ -48078,8 +48115,8 @@ ol.style.Style.prototype.setZIndex = function(zIndex) {
 
 /**
  * A function that takes an {@link ol.Feature} and a `{number}` representing
- * the view's resolution. The function should return an array of
- * {@link ol.style.Style}. This way e.g. a vector layer can be styled.
+ * the view's resolution. The function should return a {@link ol.style.Style}
+ * or an array of them. This way e.g. a vector layer can be styled.
  *
  * @typedef {function((ol.Feature|ol.render.Feature), number):
  *     (ol.style.Style|Array.<ol.style.Style>)}
@@ -49920,10 +49957,11 @@ goog.inherits(ol.render.canvas.Replay, ol.render.VectorContext);
  * @param {number} offset Offset.
  * @param {number} end End.
  * @param {number} stride Stride.
+ * @param {boolean} close Close.
  * @protected
  * @return {number} My end.
  */
-ol.render.canvas.Replay.prototype.appendFlatCoordinates = function(flatCoordinates, offset, end, stride) {
+ol.render.canvas.Replay.prototype.appendFlatCoordinates = function(flatCoordinates, offset, end, stride, close) {
 
   var myEnd = this.coordinates.length;
   var extent = this.getBufferedMaxExtent();
@@ -49962,6 +50000,10 @@ ol.render.canvas.Replay.prototype.appendFlatCoordinates = function(flatCoordinat
     this.coordinates[myEnd++] = lastCoord[1];
   }
 
+  if (close) {
+    this.coordinates[myEnd++] = flatCoordinates[offset];
+    this.coordinates[myEnd++] = flatCoordinates[offset + 1];
+  }
   return myEnd;
 };
 
@@ -50533,7 +50575,8 @@ goog.inherits(ol.render.canvas.ImageReplay, ol.render.canvas.Replay);
  * @return {number} My end.
  */
 ol.render.canvas.ImageReplay.prototype.drawCoordinates_ = function(flatCoordinates, offset, end, stride) {
-  return this.appendFlatCoordinates(flatCoordinates, offset, end, stride);
+  return this.appendFlatCoordinates(
+      flatCoordinates, offset, end, stride, false);
 };
 
 
@@ -50754,7 +50797,8 @@ goog.inherits(ol.render.canvas.LineStringReplay, ol.render.canvas.Replay);
  */
 ol.render.canvas.LineStringReplay.prototype.drawFlatCoordinates_ = function(flatCoordinates, offset, end, stride) {
   var myBegin = this.coordinates.length;
-  var myEnd = this.appendFlatCoordinates(flatCoordinates, offset, end, stride);
+  var myEnd = this.appendFlatCoordinates(
+      flatCoordinates, offset, end, stride, false);
   var moveToLineToInstruction =
       [ol.render.canvas.Instruction.MOVE_TO_LINE_TO, myBegin, myEnd];
   this.instructions.push(moveToLineToInstruction);
@@ -50956,9 +51000,7 @@ ol.render.canvas.PolygonReplay = function(tolerance, maxExtent, resolution) {
    *         lineDash: Array.<number>,
    *         lineJoin: (string|undefined),
    *         lineWidth: (number|undefined),
-   *         miterLimit: (number|undefined),
-   *         pendingFill: number,
-   *         pendingStroke: number}|null}
+   *         miterLimit: (number|undefined)}|null}
    */
   this.state_ = {
     currentFillStyle: undefined,
@@ -50974,9 +51016,7 @@ ol.render.canvas.PolygonReplay = function(tolerance, maxExtent, resolution) {
     lineDash: null,
     lineJoin: undefined,
     lineWidth: undefined,
-    miterLimit: undefined,
-    pendingFill: 0,
-    pendingStroke: 0
+    miterLimit: undefined
   };
 
 };
@@ -50993,19 +51033,15 @@ goog.inherits(ol.render.canvas.PolygonReplay, ol.render.canvas.Replay);
  */
 ol.render.canvas.PolygonReplay.prototype.drawFlatCoordinatess_ = function(flatCoordinates, offset, ends, stride) {
   var state = this.state_;
-  if (state.pendingFill > 200 || state.pendingStroke > 200) {
-    this.fillStroke_();
-  }
   var beginPathInstruction = [ol.render.canvas.Instruction.BEGIN_PATH];
-  if (!state.pendingFill && !state.pendingStroke) {
-    this.instructions.push(beginPathInstruction);
-  }
+  this.instructions.push(beginPathInstruction);
   this.hitDetectionInstructions.push(beginPathInstruction);
   var i, ii;
   for (i = 0, ii = ends.length; i < ii; ++i) {
     var end = ends[i];
     var myBegin = this.coordinates.length;
-    var myEnd = this.appendFlatCoordinates(flatCoordinates, offset, end, stride);
+    var myEnd = this.appendFlatCoordinates(
+        flatCoordinates, offset, end, stride, true);
     var moveToLineToInstruction =
         [ol.render.canvas.Instruction.MOVE_TO_LINE_TO, myBegin, myEnd];
     var closePathInstruction = [ol.render.canvas.Instruction.CLOSE_PATH];
@@ -51014,15 +51050,19 @@ ol.render.canvas.PolygonReplay.prototype.drawFlatCoordinatess_ = function(flatCo
         closePathInstruction);
     offset = end;
   }
-  this.hitDetectionInstructions.push([ol.render.canvas.Instruction.FILL]);
+  // FIXME is it quicker to fill and stroke each polygon individually,
+  // FIXME or all polygons together?
+  var fillInstruction = [ol.render.canvas.Instruction.FILL];
+  this.hitDetectionInstructions.push(fillInstruction);
   if (state.fillStyle !== undefined) {
-    state.pendingFill++;
+    this.instructions.push(fillInstruction);
   }
   if (state.strokeStyle !== undefined) {
     goog.asserts.assert(state.lineWidth !== undefined,
         'state.lineWidth should be defined');
-    state.pendingStroke++;
-    this.hitDetectionInstructions.push([ol.render.canvas.Instruction.STROKE]);
+    var strokeInstruction = [ol.render.canvas.Instruction.STROKE];
+    this.instructions.push(strokeInstruction);
+    this.hitDetectionInstructions.push(strokeInstruction);
   }
   return offset;
 };
@@ -51059,23 +51099,22 @@ ol.render.canvas.PolygonReplay.prototype.drawCircle = function(circleGeometry, f
   var stride = circleGeometry.getStride();
   var myBegin = this.coordinates.length;
   this.appendFlatCoordinates(
-      flatCoordinates, 0, flatCoordinates.length, stride);
+      flatCoordinates, 0, flatCoordinates.length, stride, false);
   var beginPathInstruction = [ol.render.canvas.Instruction.BEGIN_PATH];
   var circleInstruction = [ol.render.canvas.Instruction.CIRCLE, myBegin];
-  if (!state.pendingFill && !state.pendingStroke) {
-    this.instructions.push(beginPathInstruction);
-  }
-  this.instructions.push(circleInstruction);
-  this.hitDetectionInstructions.push(circleInstruction, beginPathInstruction);
-  this.hitDetectionInstructions.push([ol.render.canvas.Instruction.FILL]);
+  this.instructions.push(beginPathInstruction, circleInstruction);
+  this.hitDetectionInstructions.push(beginPathInstruction, circleInstruction);
+  var fillInstruction = [ol.render.canvas.Instruction.FILL];
+  this.hitDetectionInstructions.push(fillInstruction);
   if (state.fillStyle !== undefined) {
-    state.pendingFill++;
+    this.instructions.push(fillInstruction);
   }
   if (state.strokeStyle !== undefined) {
     goog.asserts.assert(state.lineWidth !== undefined,
         'state.lineWidth should be defined');
-    state.pendingStroke++;
-    this.hitDetectionInstructions.push([ol.render.canvas.Instruction.STROKE]);
+    var strokeInstruction = [ol.render.canvas.Instruction.STROKE];
+    this.instructions.push(strokeInstruction);
+    this.hitDetectionInstructions.push(strokeInstruction);
   }
   this.endGeometry(circleGeometry, feature);
 };
@@ -51157,27 +51196,12 @@ ol.render.canvas.PolygonReplay.prototype.drawMultiPolygon = function(multiPolygo
 
 
 /**
- * @private
- */
-ol.render.canvas.PolygonReplay.prototype.fillStroke_ = function() {
-  var state = this.state_;
-  if (state.pendingFill) {
-    this.instructions.push([ol.render.canvas.Instruction.FILL]);
-    state.pendingFill = 0;
-  }
-  if (state.pendingStroke) {
-    this.instructions.push([ol.render.canvas.Instruction.STROKE]);
-    state.pendingStroke = 0;
-  }
-};
-
-
-/**
  * @inheritDoc
  */
 ol.render.canvas.PolygonReplay.prototype.finish = function() {
   goog.asserts.assert(this.state_, 'this.state_ should not be null');
   this.reverseHitDetectionInstructions_();
+  this.state_ = null;
   // We want to preserve topology when drawing polygons.  Polygons are
   // simplified using quantization and point elimination. However, we might
   // have received a mix of quantized and non-quantized geometries, so ensure
@@ -51190,8 +51214,6 @@ ol.render.canvas.PolygonReplay.prototype.finish = function() {
       coordinates[i] = ol.geom.flat.simplify.snap(coordinates[i], tolerance);
     }
   }
-  this.fillStroke_();
-  this.state_ = null;
 };
 
 
@@ -51274,7 +51296,6 @@ ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyles_ = function() {
   var lineWidth = state.lineWidth;
   var miterLimit = state.miterLimit;
   if (fillStyle !== undefined && state.currentFillStyle != fillStyle) {
-    this.fillStroke_();
     this.instructions.push(
         [ol.render.canvas.Instruction.SET_FILL_STYLE, fillStyle]);
     state.currentFillStyle = state.fillStyle;
@@ -51292,7 +51313,6 @@ ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyles_ = function() {
         state.currentLineJoin != lineJoin ||
         state.currentLineWidth != lineWidth ||
         state.currentMiterLimit != miterLimit) {
-      this.fillStroke_();
       this.instructions.push(
           [ol.render.canvas.Instruction.SET_STROKE_STYLE,
            strokeStyle, lineWidth, lineCap, lineJoin, miterLimit, lineDash]);
@@ -51407,7 +51427,8 @@ ol.render.canvas.TextReplay.prototype.drawText = function(flatCoordinates, offse
   this.setReplayTextState_(this.textState_);
   this.beginGeometry(geometry, feature);
   var myBegin = this.coordinates.length;
-  var myEnd = this.appendFlatCoordinates(flatCoordinates, offset, end, stride);
+  var myEnd =
+      this.appendFlatCoordinates(flatCoordinates, offset, end, stride, false);
   var fill = !!this.textFillState_;
   var stroke = !!this.textStrokeState_;
   var drawTextInstruction = [
@@ -52479,8 +52500,6 @@ ol.ImageCanvasLoader;
 
 goog.provide('ol.reproj');
 
-goog.require('goog.labs.userAgent.browser');
-goog.require('goog.labs.userAgent.platform');
 goog.require('ol.dom');
 goog.require('ol.extent');
 goog.require('ol.math');
@@ -52497,8 +52516,18 @@ goog.require('ol.proj');
  * @type {boolean}
  * @private
  */
-ol.reproj.browserAntialiasesClip_ = !goog.labs.userAgent.browser.isChrome() ||
-                                    goog.labs.userAgent.platform.isIos();
+ol.reproj.browserAntialiasesClip_ = (function(winNav, winChrome) {
+  // Adapted from http://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome
+  var isOpera = winNav.userAgent.indexOf('OPR') > -1;
+  var isIEedge = winNav.userAgent.indexOf('Edge') > -1;
+  return !(
+    !winNav.userAgent.match('CriOS') &&  // Not Chrome on iOS
+    winChrome !== null && winChrome !== undefined && // Has chrome in window
+    winNav.vendor === 'Google Inc.' && // Vendor is Google.
+    isOpera == false && // Not Opera
+    isIEedge == false // Not Edge
+  );
+})(goog.global.navigator, goog.global.chrome)
 
 
 /**
@@ -53304,7 +53333,7 @@ goog.require('ol.source.Source');
 
 
 /**
- * @typedef {{attributions: (olx.source.AttributionOption|undefined),
+ * @typedef {{attributions: (ol.AttributionLike|undefined),
  *            extent: (null|ol.Extent|undefined),
  *            logo: (string|olx.LogoOptions|undefined),
  *            projection: ol.proj.ProjectionLike,
@@ -56471,10 +56500,13 @@ ol.source.Vector.prototype.getFeaturesInExtent = function(extent) {
  * This method is not available when the source is configured with
  * `useSpatialIndex` set to `false`.
  * @param {ol.Coordinate} coordinate Coordinate.
+ * @param {function(ol.Feature):boolean=} opt_filter Feature filter function.
+ *     The filter function will receive one argument, the {@link ol.Feature feature}
+ *     and it should return a boolean value. By default, no filtering is made.
  * @return {ol.Feature} Closest feature.
  * @api stable
  */
-ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate) {
+ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate, opt_filter) {
   // Find the closest feature using branch and bound.  We start searching an
   // infinite extent, and find the distance from the first feature found.  This
   // becomes the closest feature.  We then compute a smaller extent which any
@@ -56491,28 +56523,31 @@ ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate) 
   goog.asserts.assert(this.featuresRtree_,
       'getClosestFeatureToCoordinate does not work with useSpatialIndex set ' +
       'to false');
+  var filter = opt_filter ? opt_filter : ol.functions.TRUE;
   this.featuresRtree_.forEachInExtent(extent,
       /**
        * @param {ol.Feature} feature Feature.
        */
       function(feature) {
-        var geometry = feature.getGeometry();
-        goog.asserts.assert(geometry,
-            'feature geometry is defined and not null');
-        var previousMinSquaredDistance = minSquaredDistance;
-        minSquaredDistance = geometry.closestPointXY(
-            x, y, closestPoint, minSquaredDistance);
-        if (minSquaredDistance < previousMinSquaredDistance) {
-          closestFeature = feature;
-          // This is sneaky.  Reduce the extent that it is currently being
-          // searched while the R-Tree traversal using this same extent object
-          // is still in progress.  This is safe because the new extent is
-          // strictly contained by the old extent.
-          var minDistance = Math.sqrt(minSquaredDistance);
-          extent[0] = x - minDistance;
-          extent[1] = y - minDistance;
-          extent[2] = x + minDistance;
-          extent[3] = y + minDistance;
+        if (filter(feature)) {
+          var geometry = feature.getGeometry();
+          goog.asserts.assert(geometry,
+              'feature geometry is defined and not null');
+          var previousMinSquaredDistance = minSquaredDistance;
+          minSquaredDistance = geometry.closestPointXY(
+              x, y, closestPoint, minSquaredDistance);
+          if (minSquaredDistance < previousMinSquaredDistance) {
+            closestFeature = feature;
+            // This is sneaky.  Reduce the extent that it is currently being
+            // searched while the R-Tree traversal using this same extent object
+            // is still in progress.  This is safe because the new extent is
+            // strictly contained by the old extent.
+            var minDistance = Math.sqrt(minSquaredDistance);
+            extent[0] = x - minDistance;
+            extent[1] = y - minDistance;
+            extent[2] = x + minDistance;
+            extent[3] = y + minDistance;
+          }
         }
       });
   return closestFeature;
@@ -57307,6 +57342,12 @@ ol.renderer.canvas.TileLayer = function(tileLayer) {
 
   /**
    * @private
+   * @type {ol.TileCoord}
+   */
+  this.tmpTileCoord_ = [0, 0, 0];
+
+  /**
+   * @private
    * @type {!goog.vec.Mat4.Number}
    */
   this.imageTransform_ = goog.vec.Mat4.createNumber();
@@ -57387,7 +57428,7 @@ ol.renderer.canvas.TileLayer.prototype.composeFrame = function(
     // Calculate all insert points by tile widths from a common origin to avoid
     // gaps caused by rounding
     var origin = ol.extent.getBottomLeft(tileGrid.getTileCoordExtent(
-        tileGrid.getTileCoordForCoordAndZ(center, currentZ)));
+        tileGrid.getTileCoordForCoordAndZ(center, currentZ, this.tmpTileCoord_)));
     var w = Math.round(ol.extent.getWidth(tileExtent) * pixelScale);
     var h = Math.round(ol.extent.getHeight(tileExtent) * pixelScale);
     var left = Math.round((tileExtent[0] - origin[0]) * pixelScale / w) * w +
@@ -58088,7 +58129,7 @@ goog.require('ol.source.TileEvent');
 
 
 /**
- * @typedef {{attributions: (olx.source.AttributionOption|undefined),
+ * @typedef {{attributions: (ol.AttributionLike|undefined),
  *            cacheSize: (number|undefined),
  *            extent: (ol.Extent|undefined),
  *            logo: (string|olx.LogoOptions|undefined),
@@ -58912,7 +58953,6 @@ goog.require('ol.RendererType');
 goog.require('ol.array');
 goog.require('ol.css');
 goog.require('ol.dom');
-goog.require('ol.extent');
 goog.require('ol.layer.Image');
 goog.require('ol.layer.Layer');
 goog.require('ol.layer.Tile');
@@ -58950,12 +58990,6 @@ ol.renderer.canvas.Map = function(container, map) {
 
   /**
    * @private
-   * @type {CanvasRenderingContext2D}
-   */
-  this.renderContext_ = ol.dom.createCanvasContext2D();
-
-  /**
-   * @private
    * @type {HTMLCanvasElement}
    */
   this.canvas_ = this.context_.canvas;
@@ -58964,24 +58998,6 @@ ol.renderer.canvas.Map = function(container, map) {
   this.canvas_.style.height = '100%';
   this.canvas_.className = ol.css.CLASS_UNSELECTABLE;
   goog.dom.insertChildAt(container, this.canvas_, 0);
-
-  /**
-   * @private
-   * @type {HTMLCanvasElement}
-   */
-  this.renderCanvas_ = this.renderContext_.canvas;
-
-  /**
-   * @private
-   * @type {ol.Coordinate}
-   */
-  this.pixelCenter_ = [0, 0];
-
-  /**
-   * @private
-   * @type {ol.Extent}
-   */
-  this.pixelExtent_ = ol.extent.createEmpty();
 
   /**
    * @private
@@ -67360,12 +67376,12 @@ ol.Map.prototype.disposeInternal = function() {
   ol.events.unlisten(this.viewport_, ol.events.EventType.MOUSEWHEEL,
       this.handleBrowserEvent, this);
   if (this.handleResize_ !== undefined) {
-    goog.global.removeEventListener(ol.events.EventType.RESIZE,
+    ol.global.removeEventListener(ol.events.EventType.RESIZE,
         this.handleResize_, false);
     this.handleResize_ = undefined;
   }
   if (this.animationDelayKey_) {
-    goog.global.cancelAnimationFrame(this.animationDelayKey_);
+    ol.global.cancelAnimationFrame(this.animationDelayKey_);
     this.animationDelayKey_ = undefined;
   }
   this.setTarget(null);
@@ -67859,7 +67875,7 @@ ol.Map.prototype.handleTargetChanged_ = function() {
   if (!targetElement) {
     goog.dom.removeNode(this.viewport_);
     if (this.handleResize_ !== undefined) {
-      goog.global.removeEventListener(ol.events.EventType.RESIZE,
+      ol.global.removeEventListener(ol.events.EventType.RESIZE,
           this.handleResize_, false);
       this.handleResize_ = undefined;
     }
@@ -67877,7 +67893,7 @@ ol.Map.prototype.handleTargetChanged_ = function() {
 
     if (!this.handleResize_) {
       this.handleResize_ = this.updateSize.bind(this);
-      goog.global.addEventListener(ol.events.EventType.RESIZE,
+      ol.global.addEventListener(ol.events.EventType.RESIZE,
           this.handleResize_, false);
     }
   }
@@ -67981,7 +67997,7 @@ ol.Map.prototype.isRendered = function() {
  */
 ol.Map.prototype.renderSync = function() {
   if (this.animationDelayKey_) {
-    goog.global.cancelAnimationFrame(this.animationDelayKey_);
+    ol.global.cancelAnimationFrame(this.animationDelayKey_);
   }
   this.animationDelay_();
 };
@@ -67993,7 +68009,7 @@ ol.Map.prototype.renderSync = function() {
  */
 ol.Map.prototype.render = function() {
   if (this.animationDelayKey_ === undefined) {
-    this.animationDelayKey_ = goog.global.requestAnimationFrame(
+    this.animationDelayKey_ = ol.global.requestAnimationFrame(
         this.animationDelay_);
   }
 };
@@ -70455,7 +70471,7 @@ ol.DeviceOrientation.prototype.handleTrackingChanged_ = function() {
   if (ol.has.DEVICE_ORIENTATION) {
     var tracking = this.getTracking();
     if (tracking && !this.listenerKey_) {
-      this.listenerKey_ = ol.events.listen(goog.global, 'deviceorientation',
+      this.listenerKey_ = ol.events.listen(ol.global, 'deviceorientation',
           this.orientationChange_, this);
     } else if (!tracking && this.listenerKey_ !== null) {
       ol.events.unlistenByKey(this.listenerKey_);
@@ -74874,9 +74890,9 @@ ol.format.GMLBase.prototype.readProjectionFromNode = function(node) {
 goog.provide('ol.format.XSD');
 
 goog.require('goog.asserts');
-goog.require('goog.string');
 goog.require('ol');
 goog.require('ol.xml');
+goog.require('ol.string');
 
 
 /**
@@ -75015,11 +75031,11 @@ ol.format.XSD.writeBooleanTextNode = function(node, bool) {
 ol.format.XSD.writeDateTimeTextNode = function(node, dateTime) {
   var date = new Date(dateTime * 1000);
   var string = date.getUTCFullYear() + '-' +
-      goog.string.padNumber(date.getUTCMonth() + 1, 2) + '-' +
-      goog.string.padNumber(date.getUTCDate(), 2) + 'T' +
-      goog.string.padNumber(date.getUTCHours(), 2) + ':' +
-      goog.string.padNumber(date.getUTCMinutes(), 2) + ':' +
-      goog.string.padNumber(date.getUTCSeconds(), 2) + 'Z';
+      ol.string.padNumber(date.getUTCMonth() + 1, 2) + '-' +
+      ol.string.padNumber(date.getUTCDate(), 2) + 'T' +
+      ol.string.padNumber(date.getUTCHours(), 2) + ':' +
+      ol.string.padNumber(date.getUTCMinutes(), 2) + ':' +
+      ol.string.padNumber(date.getUTCSeconds(), 2) + 'Z';
   node.appendChild(ol.xml.DOCUMENT.createTextNode(string));
 };
 
@@ -91610,10 +91626,7 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures;
  * @inheritDoc
  */
 ol.format.WMSGetFeatureInfo.prototype.readFeaturesFromNode = function(node, opt_options) {
-  var options = {
-    'featureType': this.featureType,
-    'featureNS': this.featureNS
-  };
+  var options = {};
   if (opt_options) {
     ol.object.assign(options, this.getReadOptions(node, opt_options));
   }
@@ -92192,12 +92205,12 @@ ol.Geolocation.prototype.handleTrackingChanged_ = function() {
   if (ol.has.GEOLOCATION) {
     var tracking = this.getTracking();
     if (tracking && this.watchId_ === undefined) {
-      this.watchId_ = goog.global.navigator.geolocation.watchPosition(
+      this.watchId_ = ol.global.navigator.geolocation.watchPosition(
           this.positionChange_.bind(this),
           this.positionError_.bind(this),
           this.getTrackingOptions());
     } else if (!tracking && this.watchId_ !== undefined) {
-      goog.global.navigator.geolocation.clearWatch(this.watchId_);
+      ol.global.navigator.geolocation.clearWatch(this.watchId_);
       this.watchId_ = undefined;
     }
   }
@@ -95007,7 +95020,6 @@ goog.require('goog.asserts');
 goog.require('ol.events');
 goog.require('ol.events.Event');
 goog.require('ol.events.EventType');
-goog.require('goog.functions');
 goog.require('ol');
 goog.require('ol.Collection');
 goog.require('ol.CollectionEventType');
@@ -95115,14 +95127,21 @@ ol.interaction.Modify = function(options) {
   });
 
   /**
+   * @private
+   * @param {ol.MapBrowserEvent} mapBrowserEvent Browser event.
+   * @return {boolean} Combined condition result.
+   */
+  this.defaultDeleteCondition_ = function(mapBrowserEvent) {
+    return ol.events.condition.noModifierKeys(mapBrowserEvent) &&
+      ol.events.condition.singleClick(mapBrowserEvent);
+  }
+
+  /**
    * @type {ol.events.ConditionType}
    * @private
    */
   this.deleteCondition_ = options.deleteCondition ?
-      options.deleteCondition :
-      /** @type {ol.events.ConditionType} */ (goog.functions.and(
-          ol.events.condition.noModifierKeys,
-          ol.events.condition.singleClick));
+      options.deleteCondition : this.defaultDeleteCondition_;
 
   /**
    * Editing vertex.
@@ -95885,93 +95904,111 @@ ol.interaction.Modify.prototype.removeVertex_ = function() {
   var dragSegments = this.dragSegments_;
   var segmentsByFeature = {};
   var component, coordinates, dragSegment, geometry, i, index, left;
-  var newIndex, newSegment, right, segmentData, uid, deleted;
+  var newIndex, right, segmentData, uid, deleted;
   for (i = dragSegments.length - 1; i >= 0; --i) {
     dragSegment = dragSegments[i];
     segmentData = dragSegment[0];
-    geometry = segmentData.geometry;
-    coordinates = geometry.getCoordinates();
     uid = goog.getUid(segmentData.feature);
     if (segmentData.depth) {
       // separate feature components
       uid += '-' + segmentData.depth.join('-');
     }
-    left = right = index = undefined;
-    if (dragSegment[1] === 0) {
-      right = segmentData;
-      index = segmentData.index;
-    } else if (dragSegment[1] == 1) {
-      left = segmentData;
-      index = segmentData.index + 1;
-    }
     if (!(uid in segmentsByFeature)) {
-      segmentsByFeature[uid] = [left, right, index];
+      segmentsByFeature[uid] = {};
     }
-    newSegment = segmentsByFeature[uid];
+    if (dragSegment[1] === 0) {
+      segmentsByFeature[uid].right = segmentData;
+      segmentsByFeature[uid].index = segmentData.index;
+    } else if (dragSegment[1] == 1) {
+      segmentsByFeature[uid].left = segmentData;
+      segmentsByFeature[uid].index = segmentData.index + 1;
+    }
+
+  }
+  for (uid in segmentsByFeature) {
+    right = segmentsByFeature[uid].right;
+    left = segmentsByFeature[uid].left;
+    index = segmentsByFeature[uid].index;
+    newIndex = index - 1;
     if (left !== undefined) {
-      newSegment[0] = left;
+      segmentData = left;
+    } else {
+      segmentData = right;
     }
-    if (right !== undefined) {
-      newSegment[1] = right;
+    if (newIndex < 0) {
+      newIndex = 0;
     }
-    if (newSegment[0] !== undefined && newSegment[1] !== undefined) {
-      component = coordinates;
-      deleted = false;
-      newIndex = index - 1;
-      switch (geometry.getType()) {
-        case ol.geom.GeometryType.MULTI_LINE_STRING:
+    geometry = segmentData.geometry;
+    coordinates = geometry.getCoordinates();
+    component = coordinates;
+    deleted = false;
+    switch (geometry.getType()) {
+      case ol.geom.GeometryType.MULTI_LINE_STRING:
+        if (coordinates[segmentData.depth[0]].length > 2) {
           coordinates[segmentData.depth[0]].splice(index, 1);
           deleted = true;
-          break;
-        case ol.geom.GeometryType.LINE_STRING:
+        }
+        break;
+      case ol.geom.GeometryType.LINE_STRING:
+        if (coordinates.length > 2) {
           coordinates.splice(index, 1);
           deleted = true;
-          break;
-        case ol.geom.GeometryType.MULTI_POLYGON:
-          component = component[segmentData.depth[1]];
-          /* falls through */
-        case ol.geom.GeometryType.POLYGON:
-          component = component[segmentData.depth[0]];
-          if (component.length > 4) {
-            if (index == component.length - 1) {
-              index = 0;
-            }
-            component.splice(index, 1);
-            deleted = true;
-            if (index === 0) {
-              // close the ring again
-              component.pop();
-              component.push(component[0]);
-              newIndex = component.length - 1;
-            }
+        }
+        break;
+      case ol.geom.GeometryType.MULTI_POLYGON:
+        component = component[segmentData.depth[1]];
+        /* falls through */
+      case ol.geom.GeometryType.POLYGON:
+        component = component[segmentData.depth[0]];
+        if (component.length > 4) {
+          if (index == component.length - 1) {
+            index = 0;
           }
-          break;
-        default:
-          // pass
-      }
+          component.splice(index, 1);
+          deleted = true;
+          if (index === 0) {
+            // close the ring again
+            component.pop();
+            component.push(component[0]);
+            newIndex = component.length - 1;
+          }
+        }
+        break;
+      default:
+        // pass
+    }
 
-      if (deleted) {
-        this.rBush_.remove(newSegment[0]);
-        this.rBush_.remove(newSegment[1]);
-        this.setGeometryCoordinates_(geometry, coordinates);
+    if (deleted) {
+      this.setGeometryCoordinates_(geometry, coordinates);
+      var segments = [];
+      if (left !== undefined) {
+        this.rBush_.remove(left);
+        segments.push(left.segment[0]);
+      }
+      if (right !== undefined) {
+        this.rBush_.remove(right);
+        segments.push(right.segment[1]);
+      }
+      if (left !== undefined && right !== undefined) {
         goog.asserts.assert(newIndex >= 0, 'newIndex should be larger than 0');
+
         var newSegmentData = /** @type {ol.interaction.SegmentDataType} */ ({
           depth: segmentData.depth,
           feature: segmentData.feature,
           geometry: segmentData.geometry,
           index: newIndex,
-          segment: [newSegment[0].segment[0], newSegment[1].segment[1]]
+          segment: segments
         });
         this.rBush_.insert(ol.extent.boundingExtent(newSegmentData.segment),
             newSegmentData);
-        this.updateSegmentIndices_(geometry, index, segmentData.depth, -1);
-
-        if (this.vertexFeature_) {
-          this.overlay_.getSource().removeFeature(this.vertexFeature_);
-          this.vertexFeature_ = null;
-        }
+      }
+      this.updateSegmentIndices_(geometry, index, segmentData.depth, -1);
+      if (this.vertexFeature_) {
+        this.overlay_.getSource().removeFeature(this.vertexFeature_);
+        this.vertexFeature_ = null;
       }
     }
+
   }
   return true;
 };
@@ -97107,6 +97144,7 @@ ol.interaction.Snap.sortByDistance = function(a, b) {
 goog.provide('ol.interaction.Translate');
 goog.provide('ol.interaction.TranslateEvent');
 
+goog.require('goog.asserts');
 goog.require('ol.events');
 goog.require('ol.events.Event');
 goog.require('ol.array');
@@ -97211,6 +97249,37 @@ ol.interaction.Translate = function(options) {
    * @private
    */
   this.features_ = options.features !== undefined ? options.features : null;
+
+  var layerFilter;
+  if (options.layers) {
+    if (goog.isFunction(options.layers)) {
+      /**
+       * @param {ol.layer.Layer} layer Layer.
+       * @return {boolean} Include.
+       */
+      layerFilter = function(layer) {
+        goog.asserts.assertFunction(options.layers);
+        return options.layers(layer);
+      };
+    } else {
+      var layers = options.layers;
+      /**
+       * @param {ol.layer.Layer} layer Layer.
+       * @return {boolean} Include.
+       */
+      layerFilter = function(layer) {
+        return ol.array.includes(layers, layer);
+      };
+    }
+  } else {
+    layerFilter = ol.functions.TRUE;
+  }
+
+  /**
+   * @private
+   * @type {function(ol.layer.Layer): boolean}
+   */
+  this.layerFilter_ = layerFilter;
 
   /**
    * @type {ol.Feature}
@@ -97348,7 +97417,7 @@ ol.interaction.Translate.prototype.featuresAtPixel_ = function(pixel, map) {
   var intersectingFeature = map.forEachFeatureAtPixel(pixel,
       function(feature) {
         return feature;
-      });
+      }, this, this.layerFilter_);
 
   if (this.features_ &&
       ol.array.includes(this.features_.getArray(), intersectingFeature)) {
@@ -97674,27 +97743,27 @@ goog.provide('ol.net');
  *     callback. Default is 'callback'.
  */
 ol.net.jsonp = function(url, callback, opt_errback, opt_callbackParam) {
-  var script = goog.global.document.createElement('script');
+  var script = ol.global.document.createElement('script');
   var key = 'olc_' + goog.getUid(callback);
   function cleanup() {
-    delete goog.global[key];
+    delete ol.global[key];
     script.parentNode.removeChild(script);
   }
   script.async = true;
   script.src = url + (url.indexOf('?') == -1 ? '?' : '&') +
       (opt_callbackParam || 'callback') + '=' + key;
-  var timer = goog.global.setTimeout(function() {
+  var timer = ol.global.setTimeout(function() {
     cleanup();
     if (opt_errback) {
       opt_errback();
     }
   }, 10000);
-  goog.global[key] = function(data) {
-    goog.global.clearTimeout(timer);
+  ol.global[key] = function(data) {
+    ol.global.clearTimeout(timer);
     cleanup();
     callback(data);
   };
-  goog.global.document.getElementsByTagName('head')[0].appendChild(script);
+  ol.global.document.getElementsByTagName('head')[0].appendChild(script);
 };
 
 goog.provide('ol.raster.Operation');
@@ -98118,7 +98187,7 @@ ol.reproj.Tile.prototype.load = function() {
     });
 
     if (leftToLoad === 0) {
-      goog.global.setTimeout(this.reproject_.bind(this), 0);
+      ol.global.setTimeout(this.reproject_.bind(this), 0);
     }
   }
 };
@@ -98742,6 +98811,7 @@ goog.inherits(ol.source.XYZ, ol.source.TileImage);
 
 goog.provide('ol.source.CartoDB');
 
+goog.require('ol.object');
 goog.require('ol.source.State');
 goog.require('ol.source.XYZ');
 
@@ -98770,7 +98840,7 @@ ol.source.CartoDB = function(options) {
   this.mapId_ = options.map || '';
 
   /**
-   * @type {Object}
+   * @type {!Object}
    * @private
    */
   this.config_ = options.config || {};
@@ -98789,6 +98859,7 @@ ol.source.CartoDB = function(options) {
     maxZoom: options.maxZoom !== undefined ? options.maxZoom : 18,
     minZoom: options.minZoom,
     projection: options.projection,
+    state: ol.source.State.LOADING,
     wrapX: options.wrapX
   });
   this.initializeMap_();
@@ -98798,7 +98869,7 @@ goog.inherits(ol.source.CartoDB, ol.source.XYZ);
 
 /**
  * Returns the current config.
- * @return {Object} The current configuration.
+ * @return {!Object} The current configuration.
  * @api
  */
 ol.source.CartoDB.prototype.getConfig = function() {
@@ -98813,9 +98884,7 @@ ol.source.CartoDB.prototype.getConfig = function() {
  * @api
  */
 ol.source.CartoDB.prototype.updateConfig = function(config) {
-  for (var key in config) {
-    this.config_[key] = config[key];
-  }
+  ol.object.assign(this.config_, config);
   this.initializeMap_();
 };
 
@@ -98825,6 +98894,7 @@ ol.source.CartoDB.prototype.updateConfig = function(config) {
  * @param {Object} config In the case of anonymous maps, a CartoDB configuration
  *     object.
  * If using named maps, a key-value lookup with the template parameters.
+ * @api
  */
 ol.source.CartoDB.prototype.setConfig = function(config) {
   this.config_ = config || {};
@@ -98842,8 +98912,7 @@ ol.source.CartoDB.prototype.initializeMap_ = function() {
     this.applyTemplate_(this.templateCache_[paramHash]);
     return;
   }
-  var mapUrl = 'https://' + this.account_ +
-      '.cartodb.com/api/v1/map';
+  var mapUrl = 'https://' + this.account_ + '.cartodb.com/api/v1/map';
 
   if (this.mapId_) {
     mapUrl += '/named/' + this.mapId_;
@@ -98877,6 +98946,7 @@ ol.source.CartoDB.prototype.handleInitResponse_ = function(paramHash, event) {
     }
     this.applyTemplate_(response);
     this.templateCache_[paramHash] = response;
+    this.setState(ol.source.State.READY);
   } else {
     this.setState(ol.source.State.ERROR);
   }
@@ -99332,6 +99402,7 @@ goog.require('ol.events.EventType');
 goog.require('ol.Image');
 goog.require('ol.ImageLoadFunctionType');
 goog.require('ol.ImageState');
+goog.require('ol.dom');
 goog.require('ol.extent');
 goog.require('ol.proj');
 goog.require('ol.source.Image');
@@ -99405,17 +99476,16 @@ ol.source.ImageStatic.prototype.handleImageChange = function(evt) {
       imageWidth = this.imageSize_[0];
       imageHeight = this.imageSize_[1];
     } else {
-      imageWidth = image.width;
-      imageHeight = image.height;
+      // TODO: remove the type cast when a closure-compiler > 20160315 is used.
+      // see: https://github.com/google/closure-compiler/pull/1664
+      imageWidth = /** @type {number} */ (image.width);
+      imageHeight = /** @type {number} */ (image.height);
     }
     var resolution = ol.extent.getHeight(imageExtent) / imageHeight;
     var targetWidth = Math.ceil(ol.extent.getWidth(imageExtent) / resolution);
     if (targetWidth != imageWidth) {
-      var canvas = /** @type {HTMLCanvasElement} */
-          (document.createElement('canvas'));
-      canvas.width = targetWidth;
-      canvas.height = /** @type {number} */ (imageHeight);
-      var context = canvas.getContext('2d');
+      var context = ol.dom.createCanvasContext2D(targetWidth, imageHeight);
+      var canvas = context.canvas;
       context.drawImage(image, 0, 0, imageWidth, imageHeight,
           0, 0, canvas.width, canvas.height);
       this.image_.setImage(canvas);
@@ -99447,7 +99517,6 @@ ol.source.wms.ServerType = {
 goog.provide('ol.source.ImageWMS');
 
 goog.require('goog.asserts');
-goog.require('goog.string');
 goog.require('goog.uri.utils');
 goog.require('ol');
 goog.require('ol.Image');
@@ -99460,6 +99529,7 @@ goog.require('ol.proj');
 goog.require('ol.source.Image');
 goog.require('ol.source.wms');
 goog.require('ol.source.wms.ServerType');
+goog.require('ol.string');
 
 
 /**
@@ -99816,7 +99886,7 @@ ol.source.ImageWMS.prototype.updateParams = function(params) {
  */
 ol.source.ImageWMS.prototype.updateV13_ = function() {
   var version = this.params_['VERSION'] || ol.DEFAULT_WMS_VERSION;
-  this.v13_ = goog.string.compareVersions(version, '1.3') >= 0;
+  this.v13_ = ol.string.compareVersions(version, '1.3') >= 0;
 };
 
 goog.provide('ol.source.OSM');
@@ -101797,7 +101867,6 @@ ol.source.TileUTFGridTile_.prototype.load = function() {
 goog.provide('ol.source.TileWMS');
 
 goog.require('goog.asserts');
-goog.require('goog.string');
 goog.require('goog.uri.utils');
 goog.require('ol');
 goog.require('ol.TileCoord');
@@ -101810,6 +101879,7 @@ goog.require('ol.source.TileImage');
 goog.require('ol.source.wms');
 goog.require('ol.source.wms.ServerType');
 goog.require('ol.tilecoord');
+goog.require('ol.string');
 
 
 /**
@@ -102182,7 +102252,7 @@ ol.source.TileWMS.prototype.updateParams = function(params) {
  */
 ol.source.TileWMS.prototype.updateV13_ = function() {
   var version = this.params_['VERSION'] || ol.DEFAULT_WMS_VERSION;
-  this.v13_ = goog.string.compareVersions(version, '1.3') >= 0;
+  this.v13_ = ol.string.compareVersions(version, '1.3') >= 0;
 };
 
 goog.provide('ol.tilegrid.WMTS');
@@ -103001,6 +103071,7 @@ goog.provide('ol.style.AtlasManager');
 
 goog.require('goog.asserts');
 goog.require('ol');
+goog.require('ol.dom');
 
 /**
  * Provides information for an image inside an atlas manager.
@@ -103284,19 +103355,15 @@ ol.style.Atlas = function(size, space) {
 
   /**
    * @private
-   * @type {HTMLCanvasElement}
+   * @type {CanvasRenderingContext2D}
    */
-  this.canvas_ = /** @type {HTMLCanvasElement} */
-      (document.createElement('CANVAS'));
-  this.canvas_.width = size;
-  this.canvas_.height = size;
+  this.context_ = ol.dom.createCanvasContext2D(size, size);
 
   /**
    * @private
-   * @type {CanvasRenderingContext2D}
+   * @type {HTMLCanvasElement}
    */
-  this.context_ = /** @type {CanvasRenderingContext2D} */
-      (this.canvas_.getContext('2d'));
+  this.canvas_ = this.context_.canvas;
 };
 
 
@@ -103437,6 +103504,7 @@ goog.require('goog.asserts');
 goog.require('ol');
 goog.require('ol.color');
 goog.require('ol.colorlike');
+goog.require('ol.dom');
 goog.require('ol.has');
 goog.require('ol.render.canvas');
 goog.require('ol.style.AtlasManager');
@@ -103787,18 +103855,13 @@ ol.style.RegularShape.prototype.render_ = function(atlasManager) {
 
   if (atlasManager === undefined) {
     // no atlas manager is used, create a new canvas
-    this.canvas_ = /** @type {HTMLCanvasElement} */
-        (document.createElement('CANVAS'));
-
-    this.canvas_.height = size;
-    this.canvas_.width = size;
+    var context = ol.dom.createCanvasContext2D(size, size);
+    this.canvas_ = context.canvas;
 
     // canvas.width and height are rounded to the closest integer
     size = this.canvas_.width;
     imageSize = size;
 
-    var context = /** @type {CanvasRenderingContext2D} */
-        (this.canvas_.getContext('2d'));
     this.draw_(renderOptions, context, 0, 0);
 
     this.createHitDetectionCanvas_(renderOptions);
@@ -103898,15 +103961,9 @@ ol.style.RegularShape.prototype.createHitDetectionCanvas_ = function(renderOptio
 
   // if no fill style is set, create an extra hit-detection image with a
   // default fill style
-  this.hitDetectionCanvas_ = /** @type {HTMLCanvasElement} */
-      (document.createElement('CANVAS'));
-  var canvas = this.hitDetectionCanvas_;
+  var context = ol.dom.createCanvasContext2D(renderOptions.size, renderOptions.size);
+  this.hitDetectionCanvas_ = context.canvas;
 
-  canvas.height = renderOptions.size;
-  canvas.width = renderOptions.size;
-
-  var context = /** @type {CanvasRenderingContext2D} */
-      (canvas.getContext('2d'));
   this.drawHitDetectionCanvas_(renderOptions, context, 0, 0);
 };
 
@@ -104555,30 +104612,96 @@ ngeo.baseTemplateUrl = 'ngeo';
 
 /**
  * @enum {string}
+ * @export
  */
 ngeo.FeatureProperties = {
+  /**
+   * @type {string}
+   * @export
+   */
   ANGLE: 'angle',
+  /**
+   * @type {string}
+   * @export
+   */
   COLOR: 'color',
+  /**
+   * @type {string}
+   * @export
+   */
   IS_CIRCLE: 'isCircle',
+  /**
+   * @type {string}
+   * @export
+   */
   IS_RECTANGLE: 'isRectangle',
+  /**
+   * @type {string}
+   * @export
+   */
   IS_TEXT: 'isText',
+  /**
+   * @type {string}
+   * @export
+   */
   NAME: 'name',
+  /**
+   * @type {string}
+   * @export
+   */
   OPACITY: 'opacity',
+  /**
+   * @type {string}
+   * @export
+   */
   SHOW_MEASURE: 'showMeasure',
+  /**
+   * @type {string}
+   * @export
+   */
   SIZE: 'size',
+  /**
+   * @type {string}
+   * @export
+   */
   STROKE: 'stroke'
 };
 
 
 /**
  * @enum {string}
+ * @export
  */
 ngeo.GeometryType = {
+  /**
+   * @type {string}
+   * @export
+   */
   CIRCLE: 'Circle',
+  /**
+   * @type {string}
+   * @export
+   */
   LINE_STRING: 'LineString',
+  /**
+   * @type {string}
+   * @export
+   */
   POINT: 'Point',
+  /**
+   * @type {string}
+   * @export
+   */
   POLYGON: 'Polygon',
+  /**
+   * @type {string}
+   * @export
+   */
   RECTANGLE: 'Rectangle',
+  /**
+   * @type {string}
+   * @export
+   */
   TEXT: 'Text'
 };
 
@@ -106415,8 +106538,15 @@ goog.provide('ngeo.FeatureHelper')
 
 goog.require('ngeo');
 goog.require('ngeo.interaction.Measure');
+goog.require('ol.Feature');
+goog.require('ol.geom.LineString');
+goog.require('ol.geom.MultiPoint');
+goog.require('ol.geom.Polygon');
+goog.require('ol.format.GPX');
+goog.require('ol.format.KML');
 goog.require('ol.style.Circle');
 goog.require('ol.style.Fill');
+goog.require('ol.style.RegularShape');
 goog.require('ol.style.Stroke');
 goog.require('ol.style.Style');
 goog.require('ol.style.Text');
@@ -106426,6 +106556,7 @@ goog.require('ol.style.Text');
  * Provides methods for features, such as:
  *  - style setting / getting
  *  - measurement
+ *  - export
  *
  * @constructor
  * @param {angular.$injector} $injector Main injector.
@@ -106439,7 +106570,7 @@ ngeo.FeatureHelper = function($injector) {
    * @type {?number}
    * @private
    */
-  this.decimals = null;
+  this.decimals_ = null;
 
   if ($injector.has('ngeoMeasureDecimals')) {
     this.decimals_ = $injector.get('ngeoMeasureDecimals');
@@ -106470,11 +106601,19 @@ ngeo.FeatureHelper.prototype.setProjection = function(projection) {
  * Set the style of a feature using its inner properties and depending on
  * its geometry type.
  * @param {ol.Feature} feature Feature.
+ * @param {boolean=} opt_select Whether the feature should be rendered as
+ *     selected, which includes additional vertex and halo styles.
  * @export
  */
-ngeo.FeatureHelper.prototype.setStyle = function(feature) {
-  var style = this.getStyle(feature);
-  feature.setStyle(style);
+ngeo.FeatureHelper.prototype.setStyle = function(feature, opt_select) {
+  var styles = [this.getStyle(feature)];
+  if (opt_select) {
+    if (this.supportsVertex_(feature)) {
+      styles.push(this.getVertexStyle());
+    }
+    styles.unshift(this.getHaloStyle_(feature));
+  }
+  feature.setStyle(styles);
 };
 
 
@@ -106523,7 +106662,7 @@ ngeo.FeatureHelper.prototype.getLineStringStyle_ = function(feature) {
 
   var strokeWidth = this.getStrokeProperty(feature);
   var showMeasure = this.getShowMeasureProperty(feature);
-  var color = this.getColorProperty(feature);
+  var color = this.getRGBAColorProperty(feature);
 
   var options = {
     stroke: new ol.style.Stroke({
@@ -106549,7 +106688,7 @@ ngeo.FeatureHelper.prototype.getLineStringStyle_ = function(feature) {
 ngeo.FeatureHelper.prototype.getPointStyle_ = function(feature) {
 
   var size = this.getSizeProperty(feature);
-  var color = this.getColorProperty(feature);
+  var color = this.getRGBAColorProperty(feature);
 
   var options = {
     image: new ol.style.Circle({
@@ -106580,13 +106719,11 @@ ngeo.FeatureHelper.prototype.getPolygonStyle_ = function(feature) {
 
   var strokeWidth = this.getStrokeProperty(feature);
   var opacity = this.getOpacityProperty(feature);
-  var color = this.getColorProperty(feature);
+  var color = this.getRGBAColorProperty(feature);
 
   // fill color with opacity
-  var rgbColor = ol.color.fromString(color);
-  var rgbaColor = rgbColor.slice();
-  rgbaColor[3] = opacity;
-  var fillColor = ol.color.toString(rgbaColor);
+  var fillColor = color.slice();
+  fillColor[3] = opacity;
 
   var options = {
     fill: new ol.style.Fill({
@@ -106619,11 +106756,134 @@ ngeo.FeatureHelper.prototype.getTextStyle_ = function(feature) {
   var label = this.getNameProperty(feature);
   var size = this.getSizeProperty(feature);
   var angle = this.getAngleProperty(feature);
-  var color = this.getColorProperty(feature);
+  var color = this.getRGBAColorProperty(feature);
 
   return new ol.style.Style({
     text: this.createTextStyle_(label, size, angle, color)
   });
+};
+
+
+/**
+ * Create and return a style object to be used for vertex.
+ * @param {boolean=} opt_incGeomFunc Whether to include the geometry function
+ *     or not. One wants to use the geometry function when you want to draw
+ *     the vertex of features that don't have point geometries. One doesn't
+ *     want to include the geometry function if you just want to have the
+ *     style object itself to be used to draw features that have point
+ *     geometries. Defaults to `true`.
+ * @return {ol.style.Style} Style.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getVertexStyle = function(opt_incGeomFunc) {
+  var incGeomFunc = opt_incGeomFunc !== undefined ? opt_incGeomFunc : true;
+
+  var options = {
+    image: new ol.style.RegularShape({
+      radius: 6,
+      points: 4,
+      angle: Math.PI / 4,
+      fill: new ol.style.Fill({
+        color: [255, 255, 255, 0.5]
+      }),
+      stroke: new ol.style.Stroke({
+        color: [0, 0, 0, 1]
+      })
+    })
+  };
+
+  if (incGeomFunc) {
+    options.geometry = function(feature) {
+      var geom = feature.getGeometry();
+
+      if (geom.getType() == ol.geom.GeometryType.POINT) {
+        return;
+      }
+
+      var coordinates;
+      if (geom instanceof ol.geom.LineString) {
+        coordinates = feature.getGeometry().getCoordinates();
+        return new ol.geom.MultiPoint(coordinates);
+      } else if (geom instanceof ol.geom.Polygon) {
+        coordinates = feature.getGeometry().getCoordinates()[0];
+        return new ol.geom.MultiPoint(coordinates);
+      } else {
+        return feature.getGeometry();
+      }
+    }
+  }
+
+  return new ol.style.Style(options);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {boolean} Whether the feature supports vertex or not.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.supportsVertex_ = function(feature) {
+  var supported = [
+    ngeo.GeometryType.LINE_STRING,
+    ngeo.GeometryType.POLYGON,
+    ngeo.GeometryType.RECTANGLE
+  ];
+  var type = this.getType(feature);
+  return ol.array.includes(supported, type);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {ol.style.Style} Style.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.getHaloStyle_ = function(feature) {
+  var type = this.getType(feature);
+  var style;
+  var haloSize = 3;
+  var size;
+
+  switch (type) {
+    case ngeo.GeometryType.POINT:
+      size = this.getSizeProperty(feature);
+      style = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: size + haloSize,
+          fill: new ol.style.Fill({
+            color: [255, 255, 255, 1]
+          })
+        })
+      });
+      break;
+    case ngeo.GeometryType.LINE_STRING:
+    case ngeo.GeometryType.CIRCLE:
+    case ngeo.GeometryType.POLYGON:
+    case ngeo.GeometryType.RECTANGLE:
+      var strokeWidth = this.getStrokeProperty(feature);
+      style = new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: [255, 255, 255, 1],
+          width: strokeWidth + haloSize * 2
+        })
+      });
+      break;
+    case ngeo.GeometryType.TEXT:
+      var label = this.getNameProperty(feature);
+      size = this.getSizeProperty(feature);
+      var angle = this.getAngleProperty(feature);
+      var color = [255, 255, 255, 1];
+      style = new ol.style.Style({
+        text: this.createTextStyle_(label, size, angle, color, haloSize * 2)
+      })
+      break;
+    default:
+      break;
+  }
+
+  goog.asserts.assert(style, 'Style should be thruthy');
+
+  return style;
 };
 
 
@@ -106660,6 +106920,16 @@ ngeo.FeatureHelper.prototype.getColorProperty = function(feature) {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @return {ol.Color} Color.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.getRGBAColorProperty = function(feature) {
+  return ol.color.fromString(this.getColorProperty(feature));
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
  * @return {string} Name.
  * @export
  */
@@ -106689,13 +106959,14 @@ ngeo.FeatureHelper.prototype.getOpacityProperty = function(feature) {
  * @export
  */
 ngeo.FeatureHelper.prototype.getShowMeasureProperty = function(feature) {
-  var showMeasure = (/** @type {boolean} */ (
-        feature.get(ngeo.FeatureProperties.SHOW_MEASURE)));
+  var showMeasure = feature.get(ngeo.FeatureProperties.SHOW_MEASURE);
   if (showMeasure === undefined) {
     showMeasure = false;
+  } else if (typeof showMeasure === 'string') {
+    showMeasure = (showMeasure === 'true') ? true : false;
   }
   goog.asserts.assertBoolean(showMeasure);
-  return showMeasure;
+  return /** @type {boolean} */ (showMeasure);
 };
 
 
@@ -106724,6 +106995,102 @@ ngeo.FeatureHelper.prototype.getStrokeProperty = function(feature) {
 };
 
 
+// === EXPORT ===
+
+
+/**
+ * Export features in the given format. The projection of the exported features
+ * is: `EPSG:4326`.
+ * @param {Array.<ol.Feature>} features Array of vector features.
+ * @param {string} formatType Format type to export the features.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.export = function(features, formatType) {
+  switch (formatType) {
+    case ngeo.FeatureHelper.FormatType.GPX:
+      this.exportGPX(features)
+      break;
+    case ngeo.FeatureHelper.FormatType.KML:
+      this.exportKML(features)
+      break;
+    default:
+      break;
+  }
+};
+
+
+/**
+ * Export features in GPX and download the result to the browser. The
+ * projection of the exported features is: `EPSG:4326`.
+ * @param {Array.<ol.Feature>} features Array of vector features.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.exportGPX = function(features) {
+  var format = new ol.format.GPX();
+  var mimeType = 'application/gpx+xml';
+  var fileName = 'export.gpx';
+  this.export_(features, format, fileName, mimeType);
+};
+
+
+/**
+ * Export features in KML and download the result to the browser. The
+ * projection of the exported features is: `EPSG:4326`.
+ * @param {Array.<ol.Feature>} features Array of vector features.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.exportKML = function(features) {
+  var format = new ol.format.KML();
+  var mimeType = 'application/vnd.google-earth.kml+xml';
+  var fileName = 'export.kml';
+  this.export_(features, format, fileName, mimeType);
+};
+
+
+/**
+ * Export features using a given format to a specific filename and download
+ * the result to the browser. The projection of the exported features is:
+ * `EPSG:4326`.
+ * @param {Array.<ol.Feature>} features Array of vector features.
+ * @param {ol.format.Feature} format Format
+ * @param {string} fileName Name of the file.
+ * @param {string=} opt_mimeType Mime type. Defaults to 'text/plain'.
+ * @private
+ */
+ngeo.FeatureHelper.prototype.export_ = function(features, format, fileName,
+    opt_mimeType) {
+  var mimeType = opt_mimeType !== undefined ? opt_mimeType : 'text/plain';
+
+  // clone the features to apply the original style to the clone
+  // (the original may have select style active)
+  var clones = [];
+  var clone;
+  features.forEach(function(feature) {
+    clone = new ol.Feature(feature.getProperties());
+    this.setStyle(clone, false);
+    clones.push(clone);
+  }, this);
+
+  var writeOptions = this.projection_ ? {
+    dataProjection: 'EPSG:4326',
+    featureProjection: this.projection_
+  } : {};
+
+  var data = format.writeFeatures(clones, writeOptions);
+
+  $('<a />', {
+    'download': fileName,
+    'href': [
+      'data:',
+      mimeType,
+      ';charset=utf-8,',
+      encodeURIComponent(data)
+    ].join(''),
+    'mimeType': mimeType
+  })[0].click();
+};
+
+
 // === OTHER UTILITY METHODS ===
 
 
@@ -106731,23 +107098,25 @@ ngeo.FeatureHelper.prototype.getStrokeProperty = function(feature) {
  * @param {string} text The text to display.
  * @param {number} size The size in `pt` of the text font.
  * @param {number=} opt_angle The angle in degrees of the text.
- * @param {string=} opt_color The color of the text
+ * @param {ol.Color=} opt_color The color of the text.
+ * @param {number=} opt_width The width of the outline color.
  * @return {ol.style.Text} Style.
  * @private
  */
 ngeo.FeatureHelper.prototype.createTextStyle_ = function(text, size,
-                                                        opt_angle, opt_color) {
+    opt_angle, opt_color, opt_width) {
 
   var angle = opt_angle !== undefined ? opt_angle : 0;
   var rotation = angle * Math.PI / 180;
   var font = ['normal', size + 'pt', 'Arial'].join(' ');
-  var color = opt_color !== undefined ? opt_color : '#000000';
+  var color = opt_color !== undefined ? opt_color : [0, 0, 0, 1];
+  var width = opt_width !== undefined ? opt_width : 3;
 
   return new ol.style.Text({
     font: font,
     text: text,
     fill: new ol.style.Fill({color: color}),
-    stroke: new ol.style.Stroke({color: '#ffffff', width: 3}),
+    stroke: new ol.style.Stroke({color: [255, 255, 255, 1], width: width}),
     rotation: rotation
   });
 };
@@ -106818,6 +107187,27 @@ ngeo.FeatureHelper.prototype.getType = function(feature) {
 
 
 ngeo.module.service('ngeoFeatureHelper', ngeo.FeatureHelper);
+
+
+// === FORMAT TYPES ===
+
+
+/**
+ * @enum {string}
+ * @export
+ */
+ngeo.FeatureHelper.FormatType = {
+  /**
+   * @type {string}
+   * @export
+   */
+  GPX: 'GPX',
+  /**
+   * @type {string}
+   * @export
+   */
+  KML: 'KML'
+};
 
 goog.provide('ngeo.drawpointDirective');
 
@@ -107750,6 +108140,7 @@ goog.require('ngeo.measureazimutDirective');
 goog.require('ngeo.measurelengthDirective');
 goog.require('ol.Feature');
 
+
 /**
  * Directive used to draw vector features on a map.
  * Example:
@@ -108012,8 +108403,13 @@ ngeo.DrawfeatureController.prototype.handleDrawEnd = function(type, event) {
   var name = this.gettextCatalog_.getString(type);
   feature.set(prop.NAME, name + ' ' + (this.features_.getLength() + 1));
 
+  /**
+   * @type {string}
+   */
+  var color = type !== ngeo.GeometryType.TEXT ? '#DB4436' : '#000000';
+  feature.set(prop.COLOR, color);
+
   feature.set(prop.ANGLE, 0);
-  feature.set(prop.COLOR, '#ed1c24');
   feature.set(prop.OPACITY, 0.2);
   feature.set(prop.SHOW_MEASURE, false);
   feature.set(prop.SIZE, 10);
@@ -108027,6 +108423,221 @@ ngeo.DrawfeatureController.prototype.handleDrawEnd = function(type, event) {
 };
 
 ngeo.module.controller('ngeoDrawfeatureController', ngeo.DrawfeatureController);
+
+goog.provide('ngeo.ExportfeaturesController');
+goog.provide('ngeo.exportfeaturesDirective');
+
+goog.require('ngeo');
+
+
+/**
+ * Directive used to export vector features in different types of format.
+ * To configure which formats to use, define the `ngeoExportFeatureFormats`
+ * constant, as such:
+ *
+ *     app.module.constant('ngeoExportFeatureFormats', [
+ *         ngeo.FeatureHelper.FormatType.KML,
+ *         ngeo.FeatureHelper.FormatType.GPX
+ *     ]);
+ *
+ * Example:
+ *
+ *     <button
+ *       ngeo-exportfeatures
+ *       ngeo-exportfeatures-features="ctrl.features"
+ *       class="btn btn-link">Export</button>
+ *
+ * @htmlAttribute {ol.Collection.<ol.Feature>} ngeo-exportfeatures-features The
+ *     features to export
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoExportfeatures
+ */
+ngeo.exportfeaturesDirective = function() {
+  return {
+    controller: 'ngeoExportfeaturesController',
+    scope: true,
+    bindToController: {
+      'features': '=ngeoExportfeaturesFeatures'
+    },
+    controllerAs: 'efCtrl'
+  };
+};
+
+
+ngeo.module.directive('ngeoExportfeatures', ngeo.exportfeaturesDirective);
+
+
+/**
+ * @param {angular.JQLite} $element Element.
+ * @param {angular.$injector} $injector Main injector.
+ * @param {!angular.Scope} $scope Angular scope.
+ * @param {ngeo.FeatureHelper} ngeoFeatureHelper Ngeo feature helper service.
+ * @constructor
+ * @ngInject
+ * @ngdoc controller
+ * @ngname ngeoExportfeaturesController
+ */
+ngeo.ExportfeaturesController = function($element, $injector, $scope,
+    ngeoFeatureHelper) {
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features;
+
+  /**
+   * @type {angular.JQLite}
+   * @private
+   */
+  this.element_ = $element;
+
+  var uid = goog.getUid(this);
+  var id = ['ngeo-exportfeature', uid].join('-');
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.id_ = id;
+
+  /**
+   * @type {ngeo.FeatureHelper}
+   * @private
+   */
+  this.featureHelper_ = ngeoFeatureHelper;
+
+  var formats;
+  if ($injector.has('ngeoExportFeatureFormats')) {
+    formats = $injector.get('ngeoExportFeatureFormats');
+  } else {
+    formats = [ngeo.FeatureHelper.FormatType.KML];
+  }
+
+  /**
+   * @type {?jQuery}
+   * @private
+   */
+  this.menu_ = null;
+
+  /**
+   * @type {Array.<jQuery>}
+   * @private
+   */
+  this.items_ = [];
+
+  // build the drop-down menu and items if there's more than one format
+  if (formats.length > 1) {
+    $element.attr('id', id);
+    var $menu = $('<ul />', {
+      'class': 'dropdown-menu',
+      'aria-labelledby': id
+    }).appendTo($element.parent()[0]);
+
+    this.menu_ = $menu;
+    var $item;
+
+    formats.forEach(function(format) {
+      $item = $('<li />')
+        .appendTo($menu)
+        .append($('<a />', {
+          'href': '#',
+          'text': format
+        })
+        .on(
+          ['click', id].join('.'),
+          this.handleMenuItemClick_.bind(this, format)
+        )
+      );
+      this.items_.push($item);
+    }, this);
+  }
+
+  /**
+   * @type {Array.<string>}
+   * @private
+   */
+  this.formats_ = formats;
+
+  $element.on(['click', id].join('.'), this.handleElementClick_.bind(this));
+
+  $scope.$on('$destroy', this.handleDestroy_.bind(this));
+};
+
+
+/**
+ * Called when the element bound to this directive is clicked. Use the feature
+ * helper to export the feature(s) depending on the format(s) available(s).
+ * If there's only one, the call to the export method is direct, otherwise
+ * a drop-down menu is show to let the user choose the format of the export.
+ * Finally, if there's only one feature in the collection to export and there's
+ * more than one format set, some formats may not support the type of geometry.
+ * If that's the case, then disable each format item in the drop-down menu
+ * that doesn't support the type of geometry.
+ * @private
+ */
+ngeo.ExportfeaturesController.prototype.handleElementClick_ = function() {
+
+  var features = this.features.getArray();
+
+  if (this.formats_.length === 1) {
+    this.featureHelper_.export(features, this.formats_[0]);
+  } else if (features.length === 1) {
+    var feature = features[0];
+    var geom = feature.getGeometry();
+    var $item;
+    this.formats_.forEach(function(format, i) {
+      $item = this.items_[i];
+      if (format === ngeo.FeatureHelper.FormatType.GPX) {
+        if (geom instanceof ol.geom.Point ||
+            geom instanceof ol.geom.LineString) {
+          $item.removeClass('disabled');
+        } else {
+          $item.addClass('disabled');
+        }
+      }
+    }, this);
+  }
+};
+
+
+/**
+ * Called when a menu item is clicked. Export the features to the selected
+ * format.
+ * @param {string} format Format.
+ * @private
+ */
+ngeo.ExportfeaturesController.prototype.handleMenuItemClick_ = function(
+    format) {
+  var features = this.features.getArray();
+  this.featureHelper_.export(features, format);
+};
+
+
+/**
+ * Cleanup event listeners and remove the menu from DOM, if any.
+ * @private
+ */
+ngeo.ExportfeaturesController.prototype.handleDestroy_ = function() {
+  var id = this.id_;
+
+  this.element_.off(['click', id].join('.'));
+
+  if (this.menu_) {
+    this.menu_.remove();
+    this.items_.forEach(function($item) {
+      $item.off(['click', id].join('.'));
+    }, this);
+    this.items_.length = 0;
+    this.menu_ = null;
+  }
+};
+
+
+ngeo.module.controller(
+    'ngeoExportfeaturesController', ngeo.ExportfeaturesController);
 
 goog.provide('ngeo.filereaderDirective');
 
@@ -108305,7 +108916,7 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
    * @export
    */
   this.layer = isRoot ? null : /** @type {ol.layer.Layer} */
-      ($scope.$eval(nodelayerExpr, {'node': this.node, 'depth': this.depth}));
+      ($scope.$eval(nodelayerExpr, {'node': this.node, 'depth': this.depth, 'parentCtrl' : this.parent}));
 
 
   var listenersExpr = $attrs['ngeoLayertreeListeners'];
@@ -108682,9 +109293,276 @@ ngeo.MobileGeolocationController.prototype.handleViewChange_ = function(event) {
 ngeo.module.controller('NgeoMobileGeolocationController',
     ngeo.MobileGeolocationController);
 
+goog.provide('ngeo.LayerHelper');
+
+goog.require('ngeo');
+goog.require('ol.Collection');
+goog.require('ol.array');
+goog.require('ol.format.WMTSCapabilities');
+goog.require('ol.layer.Group');
+goog.require('ol.layer.Image');
+goog.require('ol.layer.Tile');
+goog.require('ol.source.ImageWMS');
+goog.require('ol.source.WMTS');
+
+
+/**
+ * Provides help functions that helps you to create and manage layers.
+ * @param {angular.$q} $q Angular promises/deferred service.
+ * @param {angular.$http} $http Angular http service.
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoLayerHelper
+ * @ngInject
+ */
+ngeo.LayerHelper = function($q, $http) {
+
+  /**
+   * @type {angular.$q}
+   * @private
+   */
+  this.$q_ = $q;
+
+  /**
+   * @type {angular.$http}
+   * @private
+   */
+  this.$http_ = $http;
+};
+
+
+/**
+ * @const
+ */
+ngeo.LayerHelper.GROUP_KEY = 'groupName';
+
+
+/**
+ * Create and return a basic WMS layer with only a source URL and a dot
+ * separated layers names (see {@link ol.source.ImageWMS}).
+ * @param {string} sourceURL The source URL.
+ * @param {string} sourceLayersName A dot separated names string.
+ * @return {ol.layer.Image} WMS Layer.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
+    sourceLayersName) {
+  var layer = new ol.layer.Image({
+    source: new ol.source.ImageWMS({
+      url: sourceURL,
+      params: {'LAYERS': sourceLayersName}
+    })
+  });
+  return layer;
+};
+
+
+/**
+ * Create and return a promise that provides a WMTS layer with source on
+ * success, no layer else.
+ * The WMTS layer source will be configured by the capabilities that are
+ * loaded from the given capabilitiesUrl.
+ * The style object described in the capabilities for this layer will be added
+ * as key 'capabilitiesStyles' as param of the new layer.
+ * @param {string} capabilitiesURL The getCapabilities url.
+ * @param {string} layerName The name of the layer.
+ * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
+ *     no layer else.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
+    capabilitiesURL, layerName) {
+  var parser = new ol.format.WMTSCapabilities();
+  var layer = new ol.layer.Tile();
+  var $q = this.$q_;
+
+  return this.$http_.get(capabilitiesURL).then(function(response) {
+    var result;
+    if (response.data) {
+      result = parser.read(response.data);
+    }
+    if (result !== undefined) {
+      var options = ol.source.WMTS.optionsFromCapabilities(result,
+          {layer: layerName, requestEncoding: 'REST'});
+      layer.setSource(new ol.source.WMTS(options));
+
+      // Add styles from capabilities as param of the layer
+      var layers = result['Contents']['Layer'];
+      var l = ol.array.find(layers, function(elt, index, array) {
+        return elt['Identifier'] == layerName;
+      });
+      layer.set('capabilitiesStyles', l['Style']);
+
+      return $q.resolve(layer);
+    }
+    return $q.reject('Failed to get WMTS capabilities from ' +
+        capabilitiesURL);
+  });
+};
+
+
+/**
+ * Create and return an ol.layer.Group. You can pass a collection of layers to
+ * directly add them in the returned group.
+ * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
+ * returned Group.
+ * @return {ol.layer.Group} Layer group.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
+  var group = new ol.layer.Group();
+  if (goog.isDefAndNotNull(opt_layers)) {
+    group.setLayers(opt_layers);
+  }
+  return group;
+};
+
+
+/**
+ * Retrieve (or create if it doesn't exist) and return a group of layer from
+ * the base array of layers of a map. The given name is used as unique
+ * identifier. If the group is created, it will be automatically added to
+ * the map.
+ * @param {ol.Map} map A map.
+ * @param {string} groupName The name of the group.
+ * @return {ol.layer.Group} The group corresponding to the given name.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getGroupFromMap = function(map, groupName) {
+  var groups = map.getLayerGroup().getLayers();
+  var group;
+  groups.getArray().some(function(exitingGroup) {
+    if (exitingGroup.get(ngeo.LayerHelper.GROUP_KEY) === groupName) {
+      group = /** @type {ol.layer.Group} */ (exitingGroup);
+      return true;
+    } else {
+      return false;
+    }
+  });
+  if (!group) {
+    group = this.createBasicGroup();
+    group.set(ngeo.LayerHelper.GROUP_KEY, groupName);
+    map.addLayer(group);
+  }
+  return group;
+};
+
+
+/**
+ * Get an array of all layers in a group. The group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @return {Array.<ol.layer.Layer>} Layers.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
+  return this.getFlatLayers_(layer, []);
+};
+
+
+/**
+ * Get an array of all layers in a group. The group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @param {Array.<ol.layer.Base>} array An array to add layers.
+ * @return {Array.<ol.layer.Layer>} Layers.
+ * @private
+ */
+ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
+  if (layer instanceof ol.layer.Group) {
+    var sublayers = layer.getLayers();
+    sublayers.forEach(function(l) {
+      this.getFlatLayers_(l, array);
+    }, this);
+  } else {
+    if (array.indexOf(layer) < 0) {
+      array.push(layer);
+    }
+  }
+  return array;
+};
+
+
+/**
+ * Get a layer that has a `layerName` property equal to a given layer name from
+ * an array of layers. If one of the layers in the array is a group, then the
+ * layers contained in that group are searched as well.
+ * @param {string} layerName The name of the layer we're looking for.
+ * @param {Array.<ol.layer.Base>} layers Layers.
+ * @return {?ol.layer.Base} Layer.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getLayerByName = function(layerName, layers) {
+  var found = null;
+  layers.some(function(layer) {
+    if (layer instanceof ol.layer.Group) {
+      var sublayers = layer.getLayers().getArray();
+      found = this.getLayerByName(layerName, sublayers);
+    } else if (layer.get('layerName') === layerName) {
+      found = layer;
+    }
+    return !!found;
+  }, this);
+
+  return found;
+};
+
+
+/**
+ * Get the WMTS legend URL for the given layer.
+ * @param {ol.layer.Tile} layer Tile layer as returned by the
+ * ngeo layerHelper service.
+ * @return {?string} The legend URL or null.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getWMTSLegendURL = function(layer) {
+  // FIXME case of multiple styles ?  case of multiple legendUrl ?
+  var url;
+  var styles = layer.get('capabilitiesStyles');
+  if (styles !== undefined) {
+    var legendURL = styles[0]['legendURL'];
+    if (legendURL !== undefined) {
+      url = legendURL[0]['href'];
+    }
+  }
+  return url || null;
+};
+
+
+/**
+ * Get the WMS legend URL for the given node.
+ * @param {string} url The base url of the wms service.
+ * @param {string} layerName The name of a wms layer.
+ * @param {number} scale A scale.
+ * @param {string=} opt_legendRule rule parameters to add to the returned URL.
+ * @return {?string} The legend URL or null.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getWMSLegendURL = function(url,
+    layerName, scale, opt_legendRule) {
+  if (!url) {
+    return null;
+  }
+  url = goog.uri.utils.setParam(url, 'FORMAT', 'image/png');
+  url = goog.uri.utils.setParam(url, 'TRANSPARENT', true);
+  url = goog.uri.utils.setParam(url, 'SERVICE', 'wms');
+  url = goog.uri.utils.setParam(url, 'VERSION', '1.1.1');
+  url = goog.uri.utils.setParam(url, 'REQUEST', 'GetLegendGraphic');
+  url = goog.uri.utils.setParam(url, 'LAYER', layerName);
+  url = goog.uri.utils.setParam(url, 'SCALE', scale);
+  if (opt_legendRule !== undefined) {
+    url = goog.uri.utils.setParam(url, 'RULE', opt_legendRule);
+  }
+  return url;
+};
+
+
+ngeo.module.service('ngeoLayerHelper', ngeo.LayerHelper);
+
 goog.provide('ngeo.Query');
 
 goog.require('ngeo');
+goog.require('ngeo.LayerHelper');
 goog.require('ol.format.WMSGetFeatureInfo');
 goog.require('ol.source.ImageWMS');
 goog.require('ol.source.TileWMS');
@@ -109324,6 +110202,154 @@ ngeo.modalDirective = function($parse) {
 };
 
 ngeo.module.directive('ngeoModal', ngeo.modalDirective);
+
+goog.provide('ngeo.popoverDirective');
+goog.provide('ngeo.popoverAnchorDirective');
+goog.provide('ngeo.popoverContentDirective');
+goog.provide('ngeo.PopoverController');
+
+goog.require('ngeo');
+
+/**
+ * Provides a directive used to display a Bootstrap popover.
+ *
+ *<div ngeo-popover>
+ *  <a ngeo-popover-anchor class="btn btn-info">anchor 1</a>
+ *  <div ngeo-popover-content="">
+ *    <ul>
+ *      <li>action 1:
+ *        <input type="range"/>
+ *      </li>
+ *    </ul>
+ *  </div>
+ *</div>
+ * @ngdoc directive
+ * @ngInject
+ * @ngname ngeoPopover
+ * @return {angular.Directive} The Directive Definition Object.
+ */
+ngeo.popoverDirective = function() {
+  return {
+    restrict: 'A',
+    scope : true,
+    controller: 'NgeoPopoverController',
+    link : function(scope, elem, attrs, ngeoPopoverCtrl) {
+
+      ngeoPopoverCtrl.anchorElm.on('hidden.bs.popover', function() {
+        /**
+         * @type {{inState : Object}}
+         */
+        var popover = ngeoPopoverCtrl.anchorElm.data('bs.popover');
+        popover['inState'].click = false;
+      });
+
+      ngeoPopoverCtrl.anchorElm.on('inserted.bs.popover', function() {
+        ngeoPopoverCtrl.shown = true;
+        ngeoPopoverCtrl.bodyElm.parent().on('click', function(e) {
+          e.stopPropagation();
+        })
+      });
+
+      ngeoPopoverCtrl.anchorElm.popover({
+        container: 'body',
+        html: true,
+        content: ngeoPopoverCtrl.bodyElm
+      });
+
+      scope.$on('$destroy', function() {
+        ngeoPopoverCtrl.anchorElm.popover('destroy');
+        ngeoPopoverCtrl.anchorElm.unbind('inserted.bs.popover');
+        ngeoPopoverCtrl.anchorElm.unbind('hidden.bs.popover');
+      })
+    }
+  }
+};
+
+/**
+ * @ngdoc directive
+ * @ngInject
+ * @ngname ngeoPopoverAnchor
+ * @return {angular.Directive} The Directive Definition Object
+ */
+ngeo.popoverAnchorDirective = function() {
+  return {
+    restrict: 'A',
+    require: '^^ngeoPopover',
+    link: function(scope, elem, attrs, ngeoPopoverCtrl) {
+      ngeoPopoverCtrl.anchorElm = elem;
+    }
+  }
+};
+
+/**
+ * @ngdoc directive
+ * @ngInject
+ * @ngname ngeoPopoverContent
+ * @return {angular.Directive} The Directive Definition Object
+ */
+ngeo.popoverContentDirective = function() {
+  return {
+    restrict: 'A',
+    transclude: true,
+    require: '^^ngeoPopover',
+    link: function(scope, elem, attrs, ngeoPopoverCtrl, transclude) {
+      transclude(scope, function(transcludedElm, scope) {
+        ngeoPopoverCtrl.bodyElm = transcludedElm;
+      });
+    }
+  }
+};
+
+/**
+ * The controller for the 'popover' directive.
+ * @constructor
+ * @ngInject
+ * @export
+ * @ngdoc controller
+ * @ngname NgeoPopoverController
+ * @param {angular.Scope} $scope Scope.
+ */
+ngeo.PopoverController = function($scope) {
+  var self = this;
+  /**
+   * The state of the popover (displayed or not)
+   * @type {boolean}
+   * @export
+   */
+  this.shown = false;
+
+  /**
+   * @type {angular.JQLite|undefined}
+   * @export
+   */
+  this.anchorElm = undefined;
+
+  /**
+   * @type {angular.JQLite|undefined}
+   * @export
+   */
+  this.bodyElm = undefined;
+
+  function onClick(clickEvent) {
+
+    if (self.anchorElm[0] !== clickEvent.target && self.shown) {
+      self.shown = false;
+      self.anchorElm.popover('hide');
+    }
+
+  }
+
+  angular.element('body').on('click', onClick);
+
+  $scope.$on('$destroy', function() {
+    angular.element('body').off('click', onClick);
+  })
+};
+
+ngeo.module.controller('NgeoPopoverController', ngeo.PopoverController);
+ngeo.module.directive('ngeoPopover', ngeo.popoverDirective);
+ngeo.module.directive('ngeoPopoverAnchor', ngeo.popoverAnchorDirective);
+ngeo.module.directive('ngeoPopoverContent', ngeo.popoverContentDirective);
 
 goog.provide('ngeo.popupDirective');
 
@@ -118375,6 +119401,2127 @@ ngeo.interaction.MeasurePointMobile.prototype.handleMeasure = function(
   callback(output, coord);
 };
 
+goog.provide('ngeo.interaction.ModifyCircle');
+
+goog.require('goog.asserts');
+goog.require('ol');
+goog.require('ol.Collection');
+goog.require('ol.CollectionEventType');
+goog.require('ol.Feature');
+goog.require('ol.MapBrowserEvent.EventType');
+goog.require('ol.MapBrowserPointerEvent');
+goog.require('ol.ViewHint');
+goog.require('ol.coordinate');
+goog.require('ol.events');
+goog.require('ol.extent');
+goog.require('ol.geom.GeometryType');
+goog.require('ol.geom.Circle');
+goog.require('ol.geom.LineString');
+goog.require('ol.geom.Point');
+goog.require('ol.geom.Polygon');
+goog.require('ol.interaction.ModifyEvent');
+goog.require('ol.interaction.Pointer');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+goog.require('ol.structs.RBush');
+
+
+/**
+ * @typedef {{depth: (Array.<number>|undefined),
+ *            feature: ol.Feature,
+ *            geometry: ol.geom.SimpleGeometry,
+ *            index: (number|undefined),
+ *            segment: Array.<ol.Extent>}}
+ */
+ol.interaction.SegmentDataType;
+
+
+/**
+ * @classdesc
+ * Interaction for modifying feature geometries.
+ *
+ * @constructor
+ * @extends {ol.interaction.Pointer}
+ * @param {olx.interaction.ModifyOptions} options Options.
+ * @fires ngeo.interaction.ModifyCircleEvent
+ * @export
+ * @api
+ */
+ngeo.interaction.ModifyCircle = function(options) {
+
+  goog.base(this, {
+    handleDownEvent: ngeo.interaction.ModifyCircle.handleDownEvent_,
+    handleDragEvent: ngeo.interaction.ModifyCircle.handleDragEvent_,
+    handleEvent: ngeo.interaction.ModifyCircle.handleEvent,
+    handleUpEvent: ngeo.interaction.ModifyCircle.handleUpEvent_
+  });
+
+  /**
+   * Editing vertex.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.vertexFeature_ = null;
+
+  /**
+   * @type {ol.Pixel}
+   * @private
+   */
+  this.lastPixel_ = [0, 0];
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.modified_ = false;
+
+  /**
+   * Segment RTree for each layer
+   * @type {ol.structs.RBush.<ol.interaction.SegmentDataType>}
+   * @private
+   */
+  this.rBush_ = new ol.structs.RBush();
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.pixelTolerance_ = options.pixelTolerance !== undefined ?
+      options.pixelTolerance : 10;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.snappedToVertex_ = false;
+
+  /**
+   * Indicate whether the interaction is currently changing a feature's
+   * coordinates.
+   * @type {boolean}
+   * @private
+   */
+  this.changingFeature_ = false;
+
+  /**
+   * @type {Array}
+   * @private
+   */
+  this.dragSegments_ = null;
+
+  /**
+   * Draw overlay where sketch features are drawn.
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.overlay_ = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      useSpatialIndex: false,
+      wrapX: !!options.wrapX
+    }),
+    style: options.style ? options.style :
+        ngeo.interaction.ModifyCircle.getDefaultStyleFunction(),
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = options.features;
+
+  this.features_.forEach(this.addFeature_, this);
+  ol.events.listen(this.features_, ol.CollectionEventType.ADD,
+      this.handleFeatureAdd_, this);
+  ol.events.listen(this.features_, ol.CollectionEventType.REMOVE,
+      this.handleFeatureRemove_, this);
+
+};
+goog.inherits(ngeo.interaction.ModifyCircle, ol.interaction.Pointer);
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.addFeature_ = function(feature) {
+  if (feature.getGeometry().getType() === ol.geom.GeometryType.POLYGON &&
+      !!feature.get('isCircle')) {
+    var geometry = /** @type {ol.geom.Polygon}*/ (feature.getGeometry());
+    this.writeCircleGeometry_(feature, geometry);
+
+    var map = this.getMap();
+    if (map) {
+      this.handlePointerAtPixel_(this.lastPixel_, map);
+    }
+    ol.events.listen(feature, ol.events.EventType.CHANGE,
+        this.handleFeatureChange_, this);
+  }
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Map browser event
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.willModifyFeatures_ = function(evt) {
+  if (!this.modified_) {
+    this.modified_ = true;
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYSTART, this.features_, evt));
+  }
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.removeFeature_ = function(feature) {
+  this.removeFeatureSegmentData_(feature);
+  // Remove the vertex feature if the collection of canditate features
+  // is empty.
+  if (this.vertexFeature_ && this.features_.getLength() === 0) {
+    this.overlay_.getSource().removeFeature(this.vertexFeature_);
+    this.vertexFeature_ = null;
+  }
+  ol.events.unlisten(feature, ol.events.EventType.CHANGE,
+      this.handleFeatureChange_, this);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.removeFeatureSegmentData_ = function(feature) {
+  var rBush = this.rBush_;
+  var /** @type {Array.<ol.interaction.SegmentDataType>} */ nodesToRemove = [];
+  rBush.forEach(
+      /**
+       * @param {ol.interaction.SegmentDataType} node RTree node.
+       */
+      function(node) {
+        if (feature === node.feature) {
+          nodesToRemove.push(node);
+        }
+      });
+  for (var i = nodesToRemove.length - 1; i >= 0; --i) {
+    rBush.remove(nodesToRemove[i]);
+  }
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.ModifyCircle.prototype.setMap = function(map) {
+  this.overlay_.setMap(map);
+  goog.base(this, 'setMap', map);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.handleFeatureAdd_ = function(evt) {
+  var feature = evt.element;
+  goog.asserts.assertInstanceof(feature, ol.Feature,
+      'feature should be an ol.Feature');
+  this.addFeature_(feature);
+};
+
+
+/**
+ * @param {ol.events.Event} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.handleFeatureChange_ = function(evt) {
+  if (!this.changingFeature_) {
+    var feature = /** @type {ol.Feature} */ (evt.target);
+    this.removeFeature_(feature);
+    this.addFeature_(feature);
+  }
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.handleFeatureRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature_(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature
+ * @param {ol.geom.Polygon} geometry Geometry.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.writeCircleGeometry_ = function(feature, geometry) {
+  var rings = geometry.getCoordinates();
+  var coordinates, i, ii, j, jj, segment, segmentData;
+  for (j = 0, jj = rings.length; j < jj; ++j) {
+    coordinates = rings[j];
+    for (i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+      segment = coordinates.slice(i, i + 2);
+      segmentData = /** @type {ol.interaction.SegmentDataType} */ ({
+        feature: feature,
+        geometry: geometry,
+        depth: [j],
+        index: i,
+        segment: segment
+      });
+      this.rBush_.insert(ol.extent.boundingExtent(segment), segmentData);
+    }
+  }
+};
+
+
+/**
+ * @param {ol.Coordinate} coordinates Coordinates.
+ * @return {ol.Feature} Vertex feature.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.createOrUpdateVertexFeature_ = function(coordinates) {
+  var vertexFeature = this.vertexFeature_;
+  if (!vertexFeature) {
+    vertexFeature = new ol.Feature(new ol.geom.Point(coordinates));
+    this.vertexFeature_ = vertexFeature;
+    this.overlay_.getSource().addFeature(vertexFeature);
+  } else {
+    var geometry = /** @type {ol.geom.Point} */ (vertexFeature.getGeometry());
+    geometry.setCoordinates(coordinates);
+  }
+  return vertexFeature;
+};
+
+
+/**
+ * @param {ol.interaction.SegmentDataType} a The first segment data.
+ * @param {ol.interaction.SegmentDataType} b The second segment data.
+ * @return {number} The difference in indexes.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.compareIndexes_ = function(a, b) {
+  return a.index - b.index;
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @return {boolean} Start drag sequence?
+ * @this {ngeo.interaction.ModifyCircle}
+ * @private
+ */
+ngeo.interaction.ModifyCircle.handleDownEvent_ = function(evt) {
+  this.handlePointerAtPixel_(evt.pixel, evt.map);
+  this.dragSegments_ = [];
+  this.modified_ = false;
+  var vertexFeature = this.vertexFeature_;
+  if (vertexFeature) {
+    var geometry = /** @type {ol.geom.Point} */ (vertexFeature.getGeometry());
+    var vertex = geometry.getCoordinates();
+    var vertexExtent = ol.extent.boundingExtent([vertex]);
+    var segmentDataMatches = this.rBush_.getInExtent(vertexExtent);
+    var componentSegments = {};
+    segmentDataMatches.sort(ngeo.interaction.ModifyCircle.compareIndexes_);
+    for (var i = 0, ii = segmentDataMatches.length; i < ii; ++i) {
+      var segmentDataMatch = segmentDataMatches[i];
+      var segment = segmentDataMatch.segment;
+      var uid = goog.getUid(segmentDataMatch.feature);
+      var depth = segmentDataMatch.depth;
+      if (depth) {
+        uid += '-' + depth.join('-'); // separate feature components
+      }
+      if (!componentSegments[uid]) {
+        componentSegments[uid] = new Array(2);
+      }
+      if (ol.coordinate.equals(segment[0], vertex) &&
+          !componentSegments[uid][0]) {
+        this.dragSegments_.push([segmentDataMatch, 0]);
+        componentSegments[uid][0] = segmentDataMatch;
+      } else if (ol.coordinate.equals(segment[1], vertex) &&
+          !componentSegments[uid][1]) {
+        this.dragSegments_.push([segmentDataMatch, 1]);
+        componentSegments[uid][1] = segmentDataMatch;
+      }
+    }
+  }
+  return !!this.vertexFeature_;
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @this {ngeo.interaction.ModifyCircle}
+ * @private
+ */
+ngeo.interaction.ModifyCircle.handleDragEvent_ = function(evt) {
+  this.willModifyFeatures_(evt);
+  var vertex = evt.coordinate;
+  var geometry =
+      /** @type {ol.geom.Polygon}*/ (this.dragSegments_[0][0].geometry);
+  var center = ol.extent.getCenter(geometry.getExtent());
+
+  var line = new ol.geom.LineString([center, vertex]);
+
+
+  /**
+   * @type {ol.geom.Circle}
+   */
+  var circle = new ol.geom.Circle(center, line.getLength());
+  var coordinates = ol.geom.Polygon.fromCircle(circle, 64).getCoordinates();
+  this.setGeometryCoordinates_(geometry, coordinates);
+
+  this.createOrUpdateVertexFeature_(vertex);
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @return {boolean} Stop drag sequence?
+ * @this {ngeo.interaction.ModifyCircle}
+ * @private
+ */
+ngeo.interaction.ModifyCircle.handleUpEvent_ = function(evt) {
+  this.rBush_.clear();
+  this.writeCircleGeometry_(this.dragSegments_[0][0].feature,
+      this.dragSegments_[0][0].geometry);
+
+  if (this.modified_) {
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYEND, this.features_, evt));
+    this.modified_ = false;
+  }
+  return false;
+};
+
+
+/**
+ * Handles the {@link ol.MapBrowserEvent map browser event} and may modify the
+ * geometry.
+ * @param {ol.MapBrowserEvent} mapBrowserEvent Map browser event.
+ * @return {boolean} `false` to stop event propagation.
+ * @this {ngeo.interaction.ModifyCircle}
+ * @api
+ */
+ngeo.interaction.ModifyCircle.handleEvent = function(mapBrowserEvent) {
+  if (!(mapBrowserEvent instanceof ol.MapBrowserPointerEvent)) {
+    return true;
+  }
+
+  var handled;
+  if (!mapBrowserEvent.map.getView().getHints()[ol.ViewHint.INTERACTING] &&
+      mapBrowserEvent.type == ol.MapBrowserEvent.EventType.POINTERMOVE &&
+      !this.handlingDownUpSequence) {
+    this.handlePointerMove_(mapBrowserEvent);
+  }
+
+  return ol.interaction.Pointer.handleEvent.call(this, mapBrowserEvent) &&
+      !handled;
+};
+
+
+/**
+ * @param {ol.MapBrowserEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.handlePointerMove_ = function(evt) {
+  this.lastPixel_ = evt.pixel;
+  this.handlePointerAtPixel_(evt.pixel, evt.map);
+};
+
+
+/**
+ * @param {ol.Pixel} pixel Pixel
+ * @param {ol.Map} map Map.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.handlePointerAtPixel_ = function(pixel, map) {
+  var pixelCoordinate = map.getCoordinateFromPixel(pixel);
+  var sortByDistance = function(a, b) {
+    return ol.coordinate.squaredDistanceToSegment(pixelCoordinate, a.segment) -
+        ol.coordinate.squaredDistanceToSegment(pixelCoordinate, b.segment);
+  };
+
+  var lowerLeft = map.getCoordinateFromPixel(
+      [pixel[0] - this.pixelTolerance_, pixel[1] + this.pixelTolerance_]);
+  var upperRight = map.getCoordinateFromPixel(
+      [pixel[0] + this.pixelTolerance_, pixel[1] - this.pixelTolerance_]);
+  var box = ol.extent.boundingExtent([lowerLeft, upperRight]);
+
+  var rBush = this.rBush_;
+  var nodes = rBush.getInExtent(box);
+  if (nodes.length > 0) {
+    nodes.sort(sortByDistance);
+    var node = nodes[0];
+    var closestSegment = node.segment;
+    var vertex = (ol.coordinate.closestOnSegment(pixelCoordinate,
+        closestSegment));
+    var vertexPixel = map.getPixelFromCoordinate(vertex);
+    if (Math.sqrt(ol.coordinate.squaredDistance(pixel, vertexPixel)) <=
+        this.pixelTolerance_) {
+      var pixel1 = map.getPixelFromCoordinate(closestSegment[0]);
+      var pixel2 = map.getPixelFromCoordinate(closestSegment[1]);
+      var squaredDist1 = ol.coordinate.squaredDistance(vertexPixel, pixel1);
+      var squaredDist2 = ol.coordinate.squaredDistance(vertexPixel, pixel2);
+      var dist = Math.sqrt(Math.min(squaredDist1, squaredDist2));
+      this.snappedToVertex_ = dist <= this.pixelTolerance_;
+      if (this.snappedToVertex_) {
+        vertex = squaredDist1 > squaredDist2 ?
+            closestSegment[1] : closestSegment[0];
+        this.createOrUpdateVertexFeature_(vertex);
+        var vertexSegments = {};
+        vertexSegments[goog.getUid(closestSegment)] = true;
+        var segment;
+        for (var i = 1, ii = nodes.length; i < ii; ++i) {
+          segment = nodes[i].segment;
+          if ((ol.coordinate.equals(closestSegment[0], segment[0]) &&
+              ol.coordinate.equals(closestSegment[1], segment[1]) ||
+              (ol.coordinate.equals(closestSegment[0], segment[1]) &&
+              ol.coordinate.equals(closestSegment[1], segment[0])))) {
+            vertexSegments[goog.getUid(segment)] = true;
+          } else {
+            break;
+          }
+        }
+        return;
+      }
+    }
+  }
+  if (this.vertexFeature_) {
+    this.overlay_.getSource().removeFeature(this.vertexFeature_);
+    this.vertexFeature_ = null;
+  }
+};
+
+
+/**
+ * @param {ol.geom.SimpleGeometry} geometry Geometry.
+ * @param {Array} coordinates Coordinates.
+ * @private
+ */
+ngeo.interaction.ModifyCircle.prototype.setGeometryCoordinates_ = function(geometry, coordinates) {
+  this.changingFeature_ = true;
+  geometry.setCoordinates(coordinates);
+  this.changingFeature_ = false;
+};
+
+
+/**
+ * @return {ol.style.StyleFunction} Styles.
+ */
+ngeo.interaction.ModifyCircle.getDefaultStyleFunction = function() {
+  var style = ol.style.createDefaultEditingStyles();
+  return function(feature, resolution) {
+    return style[ol.geom.GeometryType.POINT];
+  };
+};
+
+goog.provide('ngeo.interaction.ModifyRectangle');
+
+goog.require('goog.asserts');
+goog.require('ol');
+goog.require('ol.Collection');
+goog.require('ol.CollectionEventType');
+goog.require('ol.Feature');
+goog.require('ol.MapBrowserPointerEvent');
+goog.require('ol.events');
+goog.require('ol.extent');
+goog.require('ol.geom.Point');
+goog.require('ol.geom.Polygon');
+goog.require('ol.interaction.ModifyEvent');
+goog.require('ol.interaction.Pointer');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+
+
+/**
+ * @typedef {{depth: (Array.<number>|undefined),
+ *            feature: ol.Feature,
+ *            geometry: ol.geom.SimpleGeometry,
+ *            index: (number|undefined),
+ *            segment: Array.<ol.Extent>}}
+ */
+ol.interaction.SegmentDataType;
+
+
+/**
+ * @classdesc
+ * Interaction for modifying feature geometries.
+ *
+ * @constructor
+ * @extends {ol.interaction.Pointer}
+ * @param {olx.interaction.ModifyOptions} options Options.
+ * @fires ngeo.interaction.ModifyCircleEvent
+ * @export
+ * @api
+ */
+ngeo.interaction.ModifyRectangle = function(options) {
+
+  goog.base(this, {
+    handleDownEvent: this.handleDown_,
+    handleMoveEvent: this.handleMove_,
+    handleDragEvent: this.handleDrag_,
+    handleUpEvent: this.handleUp_
+  });
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.modified_ = false;
+
+  /**
+   * Indicate whether the interaction is currently changing a feature's
+   * coordinates.
+   * @type {boolean}
+   * @private
+   */
+  this.changingFeature_ = false;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.pixelTolerance_ = options.pixelTolerance !== undefined ?
+      options.pixelTolerance : 10;
+
+  // Get the style for the box and the points
+  var style = options.style ? options.style : ol.interaction.Modify.getDefaultStyleFunction();
+
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.vectorBoxes_ = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      wrapX: !!options.wrapX
+    }),
+    style: style,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.vectorPoints_ = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      wrapX: !!options.wrapX
+    }),
+    style: style,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = options.features;
+
+  /**
+   * The feature currently modified.
+   * @type {ol.Feature}
+   * @private
+   */
+  this.feature_ = null;
+
+  /**
+   * @type {ol.Pixel}
+   * @private
+   */
+  this.coordinate_ = null;
+
+  ol.events.listen(this.features_, ol.CollectionEventType.ADD,
+      this.handleFeatureAdd_, this);
+  ol.events.listen(this.features_, ol.CollectionEventType.REMOVE,
+      this.handleFeatureRemove_, this);
+
+  this.features_.forEach(this.addFeature_, this);
+
+};
+goog.inherits(ngeo.interaction.ModifyRectangle, ol.interaction.Pointer);
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.addFeature_ = function(feature) {
+  var featureGeom = feature.getGeometry();
+  if (featureGeom instanceof ol.geom.Polygon) {
+    var boxSource = this.vectorBoxes_.getSource();
+    var pointSource = this.vectorPoints_.getSource();
+
+    try {
+      boxSource.addFeature(feature);
+    } catch (e) {
+      // If the feature is in the source already, its corners were already
+      // created, no need to create them again.
+      return;
+    }
+
+    // from each corners, create a point feature and add it to the point layer.
+    // each point is then associated with 2 siblings in order to update the
+    // siblings geometry at the same time when a point gets dragged around.
+    // mark each one as 'corner'
+    var corners = featureGeom.getCoordinates()[0];
+    while (corners.length > 4) {
+      if (corners[0][0] < corners[1][0] && corners[0][1] <= corners[1][1]) {
+        corners.pop();
+      } else {
+        corners.shift();
+      }
+    }
+    var pointFeatures = [];
+    var cornerPoint;
+    var cornerFeature;
+    goog.array.forEach(corners, function(corner) {
+      cornerPoint = new ol.geom.Point(corner);
+      cornerFeature = new ol.Feature({
+        'corner': true,
+        'geometry': cornerPoint,
+        'siblingX': null,
+        'siblingY': null
+      });
+      ol.events.listen(cornerPoint, ol.events.EventType.CHANGE,
+          goog.bind(this.handleCornerGeometryChange_, this, cornerFeature), this);
+
+      pointFeatures.push(cornerFeature);
+    }, this);
+    feature.set('corners', pointFeatures);
+
+    var previousFeature;
+    var nextFeature;
+    goog.array.forEach(pointFeatures, function(cornerFeature, index) {
+      previousFeature = pointFeatures[index - 1];
+      if (!previousFeature) {
+        previousFeature = pointFeatures[pointFeatures.length - 1];
+      }
+
+      nextFeature = pointFeatures[index + 1];
+      if (!nextFeature) {
+        nextFeature = pointFeatures[0];
+      }
+
+      if (index % 2 === 0) {
+        cornerFeature.set('siblingX', nextFeature);
+        cornerFeature.set('siblingY', previousFeature);
+      } else {
+        cornerFeature.set('siblingX', previousFeature);
+        cornerFeature.set('siblingY', nextFeature);
+      }
+
+    }, this);
+    pointSource.addFeatures(pointFeatures);
+  }
+
+};
+
+
+/**
+ * Callback method fired when the geometry of one of the corner features is
+ * changed.  Change the siblings geometry accordingly.  Prevent handling
+ * corner geometry change if an other action is already in progress,
+ * i.e. an other feature (corner or center) is already being dragged.
+ *
+ * @param {ol.Feature} feature the corner feature
+ * @param {goog.events.Event} event event
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleCornerGeometryChange_ = function(
+    feature, event) {
+
+  if (this.changingFeature_) {
+    return;
+  }
+
+  this.changingFeature_ = true;
+
+  // update the siblings coordinates
+  var point = feature.getGeometry();
+  goog.asserts.assertInstanceof(point, ol.geom.Point);
+  var coordinates = /** @type {ol.geom.Point} */ (point).getCoordinates();
+
+  var siblingX = feature.get('siblingX');
+  goog.asserts.assertInstanceof(siblingX, ol.Feature);
+  var siblingXPoint = siblingX.getGeometry();
+  goog.asserts.assertInstanceof(siblingXPoint, ol.geom.Point);
+  siblingXPoint.setCoordinates([
+    siblingXPoint.getCoordinates()[0],
+    coordinates[1]
+  ]);
+
+  var siblingY = feature.get('siblingY');
+  goog.asserts.assertInstanceof(siblingY, ol.Feature);
+  var siblingYPoint = siblingY.getGeometry();
+  goog.asserts.assertInstanceof(siblingYPoint, ol.geom.Point);
+  siblingYPoint.setCoordinates([
+    coordinates[0],
+    siblingYPoint.getCoordinates()[1]
+  ]);
+
+  // update box
+  var boxExtent = ol.extent.createEmpty();
+  var pointFeatures = this.vectorPoints_.getSource().getFeatures();
+  goog.array.forEach(pointFeatures, function(pointFeature) {
+    point = pointFeature.getGeometry();
+    ol.extent.extendCoordinate(boxExtent, /** @type {ol.geom.Point} */ (point).getCoordinates());
+  });
+
+  var corners = [];
+  ol.extent.forEachCorner(boxExtent, function(corner) {
+    corners.push(corner);
+  }, this);
+  var boxCoordinates = goog.array.concat(corners, [corners[0]]);
+
+  var boxFeatures = this.vectorBoxes_.getSource().getFeatures();
+  goog.array.forEach(boxFeatures, function(boxFeature) {
+    var geom = boxFeature.getGeometry();
+    goog.asserts.assertInstanceof(geom, ol.geom.Polygon);
+    geom.setCoordinates([boxCoordinates]);
+  }, this);
+
+
+  this.changingFeature_ = false;
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Map browser event
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.willModifyFeatures_ = function(evt) {
+  if (!this.modified_) {
+    this.modified_ = true;
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYSTART, this.features_, evt));
+  }
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.removeFeature_ = function(feature) {
+  var corners = feature.get('corners');
+  for (var i = 0; i < corners.length; i++) {
+    ol.events.unlisten(corners[i], ol.events.EventType.CHANGE,
+        this.handleCornerGeometryChange_);
+
+    this.vectorPoints_.getSource().removeFeature(corners[i]);
+  }
+  this.vectorBoxes_.getSource().removeFeature(feature);
+  this.feature_ = null;
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.ModifyRectangle.prototype.setMap = function(map) {
+  this.vectorBoxes_.setMap(map);
+  this.vectorPoints_.setMap(map);
+  this.vectorPoints_.setVisible(false);
+  goog.base(this, 'setMap', map);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleFeatureAdd_ = function(evt) {
+  var feature = evt.element;
+  goog.asserts.assertInstanceof(feature, ol.Feature,
+      'feature should be an ol.Feature');
+  this.addFeature_(feature);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleFeatureRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature_(feature);
+};
+
+
+/**
+ * Show/hide the points when hovering the polygon
+ * @param {ol.MapBrowserEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleMove_ = function(evt) {
+  var map = evt.map;
+  var feature = map.forEachFeatureAtPixel(evt.pixel,
+        function(feature, layer) {
+          return feature;
+        });
+
+  if (this.vectorPoints_.getVisible() != !!feature) {
+    if (feature) {
+      this.vectorPoints_.setVisible(true);
+    } else {
+      this.vectorPoints_.setVisible(false);
+    }
+    this.vectorPoints_.changed();
+  }
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @return {boolean} Start drag sequence?
+ * @this {ngeo.interaction.ModifyRectangle}
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleDown_ = function(evt) {
+  var map = evt.map;
+
+  var feature = map.forEachFeatureAtPixel(evt.pixel,
+      function(feature, layer) {
+        return feature;
+      }, undefined);
+
+  if (feature && feature.getGeometry() instanceof ol.geom.Point &&
+      feature.get('siblingX') && feature.get('siblingY')) {
+    this.coordinate_ = evt.coordinate;
+    this.feature_ = feature;
+
+    this.vectorPoints_.setVisible(true);
+
+    return true;
+  }
+
+  return false;
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @this {ngeo.interaction.ModifyRectangle}
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleDrag_ = function(evt) {
+  this.willModifyFeatures_(evt);
+
+  var geometry = /** @type {ol.geom.SimpleGeometry} */
+      (this.feature_.getGeometry());
+
+  if (geometry instanceof ol.geom.Point) {
+    this.vectorPoints_.setVisible(true);
+    var deltaX = evt.coordinate[0] - this.coordinate_[0];
+    var deltaY = evt.coordinate[1] - this.coordinate_[1];
+
+    geometry.translate(deltaX, deltaY);
+
+    this.coordinate_[0] = evt.coordinate[0];
+    this.coordinate_[1] = evt.coordinate[1];
+  }
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Event.
+ * @return {boolean} Stop drag sequence?
+ * @this {ngeo.interaction.ModifyRectangle}
+ * @private
+ */
+ngeo.interaction.ModifyRectangle.prototype.handleUp_ = function(evt) {
+  if (this.modified_) {
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYEND, this.features_, evt));
+    this.modified_ = false;
+  }
+  return false;
+};
+
+goog.provide('ngeo.interaction.Modify');
+
+goog.require('ngeo.interaction.ModifyCircle');
+goog.require('ngeo.interaction.ModifyRectangle');
+goog.require('ol.interaction.Interaction');
+goog.require('ol.Collection');
+goog.require('ol.interaction.Modify');
+
+
+/**
+ * This interaction combines multiple kind of feature modification interactions
+ * in order to be able to modify vector features depending on their geometry
+ * type. The different kind of interactions supported are:
+ *
+ * - `ol.interaction.Modify`
+ * - `ngeo.interaction.ModifyCircle`
+ * - `ngeo.interaction.ModifyRectangle`
+ *
+ * This interaction receives a collection of features. Its job is to listen
+ * to added/removed features to and from it and add them in the proper
+ * collection that is uniquely used for each inner interaction. Those inner
+ * interactions follow the `active` property of this interaction, i.e. when
+ * this interaction is activated, so do the inner interactions. Since they will
+ * never share the same feature, they don't collide with one an other.
+ *
+ * @constructor
+ * @extends {ol.interaction.Interaction}
+ * @param {olx.interaction.ModifyOptions} options Options.
+ * @export
+ */
+ngeo.interaction.Modify = function(options) {
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = options.features;
+
+  /**
+   * @type {!Array.<ol.events.Key>}
+   * @private
+   */
+  this.listenerKeys_ = [];
+
+  /**
+   * @type {Array.<ol.interaction.Interaction>}
+   * @private
+   */
+  this.interactions_ = [];
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.otherFeatures_ = new ol.Collection();
+
+  this.interactions_.push(new ol.interaction.Modify({
+    features: this.otherFeatures_,
+    pixelTolerance: options.pixelTolerance,
+    style: options.style,
+    wrapX: options.wrapX
+  }));
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.circleFeatures_ = new ol.Collection();
+
+  this.interactions_.push(new ngeo.interaction.ModifyCircle({
+    features: this.circleFeatures_,
+    pixelTolerance: options.pixelTolerance,
+    style: options.style,
+    wrapX: options.wrapX
+  }));
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.rectangleFeatures_ = new ol.Collection();
+
+  this.interactions_.push(new ngeo.interaction.ModifyRectangle({
+    features: this.rectangleFeatures_,
+    pixelTolerance: options.pixelTolerance,
+    style: options.style,
+    wrapX: options.wrapX
+  }));
+
+
+  goog.base(this, {
+    handleEvent: goog.functions.TRUE
+  });
+
+};
+goog.inherits(ngeo.interaction.Modify, ol.interaction.Interaction);
+
+
+/**
+ * Activate or deactivate the interaction.
+ * @param {boolean} active Active.
+ * @export
+ */
+ngeo.interaction.Modify.prototype.setActive = function(active) {
+  goog.base(this, 'setActive', active);
+  this.setState_();
+};
+
+
+/**
+ * Remove the interaction from its current map and attach it to the new map.
+ * Subclasses may set up event handlers to get notified about changes to
+ * the map here.
+ * @param {ol.Map} map Map.
+ */
+ngeo.interaction.Modify.prototype.setMap = function(map) {
+
+  var interactions = this.interactions_;
+
+  var currentMap = this.getMap();
+  if (currentMap) {
+    interactions.forEach(function(interaction) {
+      currentMap.removeInteraction(interaction);
+    }, this);
+  }
+
+  goog.base(this, 'setMap', map);
+
+  if (map) {
+    interactions.forEach(function(interaction) {
+      map.addInteraction(interaction);
+    }, this);
+  }
+
+  this.setState_();
+};
+
+
+/**
+ * Toggle interactions.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.setState_ = function() {
+  var map = this.getMap();
+  var active = this.getActive();
+  var interactions = this.interactions_;
+  var keys = this.listenerKeys_;
+
+  interactions.forEach(function(interaction) {
+    interaction.setActive(active && !!map);
+  }, this);
+
+  if (active && map) {
+    this.features_.forEach(this.addFeature_, this);
+    keys.push(ol.events.listen(this.features_, ol.CollectionEventType.ADD,
+        this.handleFeaturesAdd_, this));
+    keys.push(ol.events.listen(this.features_, ol.CollectionEventType.REMOVE,
+        this.handleFeaturesRemove_, this));
+  } else {
+    keys.forEach(function(key) {
+      ol.events.unlistenByKey(key);
+    }, this);
+    this.features_.forEach(this.removeFeature_, this);
+  }
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.handleFeaturesAdd_ = function(evt) {
+  var feature = evt.element;
+  goog.asserts.assertInstanceof(feature, ol.Feature,
+      'feature should be an ol.Feature');
+  this.addFeature_(feature);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.handleFeaturesRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature_(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.addFeature_ = function(feature) {
+  var collection = this.getFeatureCollection_(feature);
+  collection.push(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.removeFeature_ = function(feature) {
+  var collection = this.getFeatureCollection_(feature);
+  collection.remove(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @return {ol.Collection.<ol.Feature>} Collection of features for this feature.
+ * @private
+ */
+ngeo.interaction.Modify.prototype.getFeatureCollection_ = function(feature) {
+  var features;
+  var isCircle = feature.get(ngeo.FeatureProperties.IS_CIRCLE);
+  var isRectangle = feature.get(ngeo.FeatureProperties.IS_RECTANGLE);
+  if (isCircle === true || isCircle === 'true') {
+    features = this.circleFeatures_;
+  } else if (isRectangle === true || isRectangle === 'true') {
+    features = this.rectangleFeatures_;
+  } else {
+    features = this.otherFeatures_;
+  }
+  return features;
+};
+
+// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Constant declarations for common key codes.
+ *
+ * @author eae@google.com (Emil A Eklund)
+ * @see ../demos/keyhandler.html
+ */
+
+goog.provide('goog.events.KeyCodes');
+
+goog.require('goog.userAgent');
+
+goog.forwardDeclare('goog.events.BrowserEvent');
+
+
+/**
+ * Key codes for common characters.
+ *
+ * This list is not localized and therefore some of the key codes are not
+ * correct for non US keyboard layouts. See comments below.
+ *
+ * @enum {number}
+ */
+goog.events.KeyCodes = {
+  WIN_KEY_FF_LINUX: 0,
+  MAC_ENTER: 3,
+  BACKSPACE: 8,
+  TAB: 9,
+  NUM_CENTER: 12,  // NUMLOCK on FF/Safari Mac
+  ENTER: 13,
+  SHIFT: 16,
+  CTRL: 17,
+  ALT: 18,
+  PAUSE: 19,
+  CAPS_LOCK: 20,
+  ESC: 27,
+  SPACE: 32,
+  PAGE_UP: 33,    // also NUM_NORTH_EAST
+  PAGE_DOWN: 34,  // also NUM_SOUTH_EAST
+  END: 35,        // also NUM_SOUTH_WEST
+  HOME: 36,       // also NUM_NORTH_WEST
+  LEFT: 37,       // also NUM_WEST
+  UP: 38,         // also NUM_NORTH
+  RIGHT: 39,      // also NUM_EAST
+  DOWN: 40,       // also NUM_SOUTH
+  PLUS_SIGN: 43,  // NOT numpad plus
+  PRINT_SCREEN: 44,
+  INSERT: 45,  // also NUM_INSERT
+  DELETE: 46,  // also NUM_DELETE
+  ZERO: 48,
+  ONE: 49,
+  TWO: 50,
+  THREE: 51,
+  FOUR: 52,
+  FIVE: 53,
+  SIX: 54,
+  SEVEN: 55,
+  EIGHT: 56,
+  NINE: 57,
+  FF_SEMICOLON: 59,   // Firefox (Gecko) fires this for semicolon instead of 186
+  FF_EQUALS: 61,      // Firefox (Gecko) fires this for equals instead of 187
+  FF_DASH: 173,       // Firefox (Gecko) fires this for dash instead of 189
+  QUESTION_MARK: 63,  // needs localization
+  AT_SIGN: 64,
+  A: 65,
+  B: 66,
+  C: 67,
+  D: 68,
+  E: 69,
+  F: 70,
+  G: 71,
+  H: 72,
+  I: 73,
+  J: 74,
+  K: 75,
+  L: 76,
+  M: 77,
+  N: 78,
+  O: 79,
+  P: 80,
+  Q: 81,
+  R: 82,
+  S: 83,
+  T: 84,
+  U: 85,
+  V: 86,
+  W: 87,
+  X: 88,
+  Y: 89,
+  Z: 90,
+  META: 91,  // WIN_KEY_LEFT
+  WIN_KEY_RIGHT: 92,
+  CONTEXT_MENU: 93,
+  NUM_ZERO: 96,
+  NUM_ONE: 97,
+  NUM_TWO: 98,
+  NUM_THREE: 99,
+  NUM_FOUR: 100,
+  NUM_FIVE: 101,
+  NUM_SIX: 102,
+  NUM_SEVEN: 103,
+  NUM_EIGHT: 104,
+  NUM_NINE: 105,
+  NUM_MULTIPLY: 106,
+  NUM_PLUS: 107,
+  NUM_MINUS: 109,
+  NUM_PERIOD: 110,
+  NUM_DIVISION: 111,
+  F1: 112,
+  F2: 113,
+  F3: 114,
+  F4: 115,
+  F5: 116,
+  F6: 117,
+  F7: 118,
+  F8: 119,
+  F9: 120,
+  F10: 121,
+  F11: 122,
+  F12: 123,
+  NUMLOCK: 144,
+  SCROLL_LOCK: 145,
+
+  // OS-specific media keys like volume controls and browser controls.
+  FIRST_MEDIA_KEY: 166,
+  LAST_MEDIA_KEY: 183,
+
+  SEMICOLON: 186,             // needs localization
+  DASH: 189,                  // needs localization
+  EQUALS: 187,                // needs localization
+  COMMA: 188,                 // needs localization
+  PERIOD: 190,                // needs localization
+  SLASH: 191,                 // needs localization
+  APOSTROPHE: 192,            // needs localization
+  TILDE: 192,                 // needs localization
+  SINGLE_QUOTE: 222,          // needs localization
+  OPEN_SQUARE_BRACKET: 219,   // needs localization
+  BACKSLASH: 220,             // needs localization
+  CLOSE_SQUARE_BRACKET: 221,  // needs localization
+  WIN_KEY: 224,
+  MAC_FF_META:
+      224,  // Firefox (Gecko) fires this for the meta key instead of 91
+  MAC_WK_CMD_LEFT: 91,   // WebKit Left Command key fired, same as META
+  MAC_WK_CMD_RIGHT: 93,  // WebKit Right Command key fired, different from META
+  WIN_IME: 229,
+
+  // "Reserved for future use". Some programs (e.g. the SlingPlayer 2.4 ActiveX
+  // control) fire this as a hacky way to disable screensavers.
+  VK_NONAME: 252,
+
+  // We've seen users whose machines fire this keycode at regular one
+  // second intervals. The common thread among these users is that
+  // they're all using Dell Inspiron laptops, so we suspect that this
+  // indicates a hardware/bios problem.
+  // http://en.community.dell.com/support-forums/laptop/f/3518/p/19285957/19523128.aspx
+  PHANTOM: 255
+};
+
+
+/**
+ * Returns true if the event contains a text modifying key.
+ * @param {goog.events.BrowserEvent} e A key event.
+ * @return {boolean} Whether it's a text modifying key.
+ */
+goog.events.KeyCodes.isTextModifyingKeyEvent = function(e) {
+  if (e.altKey && !e.ctrlKey || e.metaKey ||
+      // Function keys don't generate text
+      e.keyCode >= goog.events.KeyCodes.F1 &&
+          e.keyCode <= goog.events.KeyCodes.F12) {
+    return false;
+  }
+
+  // The following keys are quite harmless, even in combination with
+  // CTRL, ALT or SHIFT.
+  switch (e.keyCode) {
+    case goog.events.KeyCodes.ALT:
+    case goog.events.KeyCodes.CAPS_LOCK:
+    case goog.events.KeyCodes.CONTEXT_MENU:
+    case goog.events.KeyCodes.CTRL:
+    case goog.events.KeyCodes.DOWN:
+    case goog.events.KeyCodes.END:
+    case goog.events.KeyCodes.ESC:
+    case goog.events.KeyCodes.HOME:
+    case goog.events.KeyCodes.INSERT:
+    case goog.events.KeyCodes.LEFT:
+    case goog.events.KeyCodes.MAC_FF_META:
+    case goog.events.KeyCodes.META:
+    case goog.events.KeyCodes.NUMLOCK:
+    case goog.events.KeyCodes.NUM_CENTER:
+    case goog.events.KeyCodes.PAGE_DOWN:
+    case goog.events.KeyCodes.PAGE_UP:
+    case goog.events.KeyCodes.PAUSE:
+    case goog.events.KeyCodes.PHANTOM:
+    case goog.events.KeyCodes.PRINT_SCREEN:
+    case goog.events.KeyCodes.RIGHT:
+    case goog.events.KeyCodes.SCROLL_LOCK:
+    case goog.events.KeyCodes.SHIFT:
+    case goog.events.KeyCodes.UP:
+    case goog.events.KeyCodes.VK_NONAME:
+    case goog.events.KeyCodes.WIN_KEY:
+    case goog.events.KeyCodes.WIN_KEY_RIGHT:
+      return false;
+    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
+      return !goog.userAgent.GECKO;
+    default:
+      return e.keyCode < goog.events.KeyCodes.FIRST_MEDIA_KEY ||
+          e.keyCode > goog.events.KeyCodes.LAST_MEDIA_KEY;
+  }
+};
+
+
+/**
+ * Returns true if the key fires a keypress event in the current browser.
+ *
+ * Accoridng to MSDN [1] IE only fires keypress events for the following keys:
+ * - Letters: A - Z (uppercase and lowercase)
+ * - Numerals: 0 - 9
+ * - Symbols: ! @ # $ % ^ & * ( ) _ - + = < [ ] { } , . / ? \ | ' ` " ~
+ * - System: ESC, SPACEBAR, ENTER
+ *
+ * That's not entirely correct though, for instance there's no distinction
+ * between upper and lower case letters.
+ *
+ * [1] http://msdn2.microsoft.com/en-us/library/ms536939(VS.85).aspx)
+ *
+ * Safari is similar to IE, but does not fire keypress for ESC.
+ *
+ * Additionally, IE6 does not fire keydown or keypress events for letters when
+ * the control or alt keys are held down and the shift key is not. IE7 does
+ * fire keydown in these cases, though, but not keypress.
+ *
+ * @param {number} keyCode A key code.
+ * @param {number=} opt_heldKeyCode Key code of a currently-held key.
+ * @param {boolean=} opt_shiftKey Whether the shift key is held down.
+ * @param {boolean=} opt_ctrlKey Whether the control key is held down.
+ * @param {boolean=} opt_altKey Whether the alt key is held down.
+ * @return {boolean} Whether it's a key that fires a keypress event.
+ */
+goog.events.KeyCodes.firesKeyPressEvent = function(
+    keyCode, opt_heldKeyCode, opt_shiftKey, opt_ctrlKey, opt_altKey) {
+  if (!goog.userAgent.IE && !goog.userAgent.EDGE &&
+      !(goog.userAgent.WEBKIT && goog.userAgent.isVersionOrHigher('525'))) {
+    return true;
+  }
+
+  if (goog.userAgent.MAC && opt_altKey) {
+    return goog.events.KeyCodes.isCharacterKey(keyCode);
+  }
+
+  // Alt but not AltGr which is represented as Alt+Ctrl.
+  if (opt_altKey && !opt_ctrlKey) {
+    return false;
+  }
+
+  // Saves Ctrl or Alt + key for IE and WebKit 525+, which won't fire keypress.
+  // Non-IE browsers and WebKit prior to 525 won't get this far so no need to
+  // check the user agent.
+  if (goog.isNumber(opt_heldKeyCode)) {
+    opt_heldKeyCode = goog.events.KeyCodes.normalizeKeyCode(opt_heldKeyCode);
+  }
+  if (!opt_shiftKey &&
+      (opt_heldKeyCode == goog.events.KeyCodes.CTRL ||
+       opt_heldKeyCode == goog.events.KeyCodes.ALT ||
+       goog.userAgent.MAC && opt_heldKeyCode == goog.events.KeyCodes.META)) {
+    return false;
+  }
+
+  // Some keys with Ctrl/Shift do not issue keypress in WEBKIT.
+  if ((goog.userAgent.WEBKIT || goog.userAgent.EDGE) && opt_ctrlKey &&
+      opt_shiftKey) {
+    switch (keyCode) {
+      case goog.events.KeyCodes.BACKSLASH:
+      case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
+      case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
+      case goog.events.KeyCodes.TILDE:
+      case goog.events.KeyCodes.SEMICOLON:
+      case goog.events.KeyCodes.DASH:
+      case goog.events.KeyCodes.EQUALS:
+      case goog.events.KeyCodes.COMMA:
+      case goog.events.KeyCodes.PERIOD:
+      case goog.events.KeyCodes.SLASH:
+      case goog.events.KeyCodes.APOSTROPHE:
+      case goog.events.KeyCodes.SINGLE_QUOTE:
+        return false;
+    }
+  }
+
+  // When Ctrl+<somekey> is held in IE, it only fires a keypress once, but it
+  // continues to fire keydown events as the event repeats.
+  if (goog.userAgent.IE && opt_ctrlKey && opt_heldKeyCode == keyCode) {
+    return false;
+  }
+
+  switch (keyCode) {
+    case goog.events.KeyCodes.ENTER:
+      return true;
+    case goog.events.KeyCodes.ESC:
+      return !(goog.userAgent.WEBKIT || goog.userAgent.EDGE);
+  }
+
+  return goog.events.KeyCodes.isCharacterKey(keyCode);
+};
+
+
+/**
+ * Returns true if the key produces a character.
+ * This does not cover characters on non-US keyboards (Russian, Hebrew, etc.).
+ *
+ * @param {number} keyCode A key code.
+ * @return {boolean} Whether it's a character key.
+ */
+goog.events.KeyCodes.isCharacterKey = function(keyCode) {
+  if (keyCode >= goog.events.KeyCodes.ZERO &&
+      keyCode <= goog.events.KeyCodes.NINE) {
+    return true;
+  }
+
+  if (keyCode >= goog.events.KeyCodes.NUM_ZERO &&
+      keyCode <= goog.events.KeyCodes.NUM_MULTIPLY) {
+    return true;
+  }
+
+  if (keyCode >= goog.events.KeyCodes.A && keyCode <= goog.events.KeyCodes.Z) {
+    return true;
+  }
+
+  // Safari sends zero key code for non-latin characters.
+  if ((goog.userAgent.WEBKIT || goog.userAgent.EDGE) && keyCode == 0) {
+    return true;
+  }
+
+  switch (keyCode) {
+    case goog.events.KeyCodes.SPACE:
+    case goog.events.KeyCodes.PLUS_SIGN:
+    case goog.events.KeyCodes.QUESTION_MARK:
+    case goog.events.KeyCodes.AT_SIGN:
+    case goog.events.KeyCodes.NUM_PLUS:
+    case goog.events.KeyCodes.NUM_MINUS:
+    case goog.events.KeyCodes.NUM_PERIOD:
+    case goog.events.KeyCodes.NUM_DIVISION:
+    case goog.events.KeyCodes.SEMICOLON:
+    case goog.events.KeyCodes.FF_SEMICOLON:
+    case goog.events.KeyCodes.DASH:
+    case goog.events.KeyCodes.EQUALS:
+    case goog.events.KeyCodes.FF_EQUALS:
+    case goog.events.KeyCodes.COMMA:
+    case goog.events.KeyCodes.PERIOD:
+    case goog.events.KeyCodes.SLASH:
+    case goog.events.KeyCodes.APOSTROPHE:
+    case goog.events.KeyCodes.SINGLE_QUOTE:
+    case goog.events.KeyCodes.OPEN_SQUARE_BRACKET:
+    case goog.events.KeyCodes.BACKSLASH:
+    case goog.events.KeyCodes.CLOSE_SQUARE_BRACKET:
+      return true;
+    default:
+      return false;
+  }
+};
+
+
+/**
+ * Normalizes key codes from OS/Browser-specific value to the general one.
+ * @param {number} keyCode The native key code.
+ * @return {number} The normalized key code.
+ */
+goog.events.KeyCodes.normalizeKeyCode = function(keyCode) {
+  if (goog.userAgent.GECKO) {
+    return goog.events.KeyCodes.normalizeGeckoKeyCode(keyCode);
+  } else if (goog.userAgent.MAC && goog.userAgent.WEBKIT) {
+    return goog.events.KeyCodes.normalizeMacWebKitKeyCode(keyCode);
+  } else {
+    return keyCode;
+  }
+};
+
+
+/**
+ * Normalizes key codes from their Gecko-specific value to the general one.
+ * @param {number} keyCode The native key code.
+ * @return {number} The normalized key code.
+ */
+goog.events.KeyCodes.normalizeGeckoKeyCode = function(keyCode) {
+  switch (keyCode) {
+    case goog.events.KeyCodes.FF_EQUALS:
+      return goog.events.KeyCodes.EQUALS;
+    case goog.events.KeyCodes.FF_SEMICOLON:
+      return goog.events.KeyCodes.SEMICOLON;
+    case goog.events.KeyCodes.FF_DASH:
+      return goog.events.KeyCodes.DASH;
+    case goog.events.KeyCodes.MAC_FF_META:
+      return goog.events.KeyCodes.META;
+    case goog.events.KeyCodes.WIN_KEY_FF_LINUX:
+      return goog.events.KeyCodes.WIN_KEY;
+    default:
+      return keyCode;
+  }
+};
+
+
+/**
+ * Normalizes key codes from their Mac WebKit-specific value to the general one.
+ * @param {number} keyCode The native key code.
+ * @return {number} The normalized key code.
+ */
+goog.events.KeyCodes.normalizeMacWebKitKeyCode = function(keyCode) {
+  switch (keyCode) {
+    case goog.events.KeyCodes.MAC_WK_CMD_RIGHT:  // 93
+      return goog.events.KeyCodes.META;          // 91
+    default:
+      return keyCode;
+  }
+};
+
+goog.provide('ngeo.interaction.Translate');
+
+goog.require('goog.events.KeyCodes');
+goog.require('ol.Feature');
+goog.require('ol.geom.LineString');
+goog.require('ol.geom.Point');
+goog.require('ol.geom.Polygon');
+goog.require('ol.interaction.Translate');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+
+
+/**
+ * An extension of the OpenLayers Translate interaction that adds the following
+ * features to it:
+ *
+ * - show a small arrow icon in the middle of the features allowing a visual
+ *   aspect that tells the user "this feature can be moved"
+ * - pressing the ESC key automatically deactivate the interaction.
+ *
+ * @constructor
+ * @extends {ol.interaction.Translate}
+ * @param {ngeox.interaction.TranslateOptions} options Options.
+ * @export
+ */
+ngeo.interaction.Translate = function(options) {
+
+  /**
+   * @type {!Array.<ol.events.Key>}
+   * @private
+   */
+  this.listenerKeys_ = [];
+
+  /**
+   * @type {!Object.<number, ol.events.Key>}
+   * @private
+   */
+  this.featureListenerKeys_ = {};
+
+  /**
+   * @type {?goog.events.Key}
+   * @private
+   */
+  this.keyPressListenerKey_ = null;
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.myFeatures_ = options.features !== undefined ? options.features : null;
+
+  /**
+   * @type {ol.source.Vector}
+   * @private
+   */
+  this.vectorSource_ = new ol.source.Vector({
+    useSpatialIndex: false
+  });
+
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.vectorLayer_ = new ol.layer.Vector({
+    source: this.vectorSource_,
+    style: options.style,
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+  /**
+   * @type {!Object.<number, ol.Feature>}
+   * @private
+   */
+  this.centerFeatures_ = {};
+
+  goog.base(this, /** @type {olx.interaction.TranslateOptions} */ (options));
+};
+goog.inherits(ngeo.interaction.Translate, ol.interaction.Translate);
+
+
+/**
+ * Activate or deactivate the interaction.
+ * @param {boolean} active Active.
+ * @export
+ */
+ngeo.interaction.Translate.prototype.setActive = function(active) {
+
+  if (this.keyPressListenerKey_) {
+    goog.events.unlistenByKey(this.keyPressListenerKey_);
+    this.keyPressListenerKey_ = null;
+  }
+
+  goog.base(this, 'setActive', active);
+
+  if (active) {
+    this.keyPressListenerKey_ = goog.events.listen(
+      document,
+      goog.events.EventType.KEYUP,
+      this.handleKeyUp_,
+      false,
+      this
+    );
+  }
+
+  this.setState_();
+};
+
+
+/**
+ * Remove the interaction from its current map and attach it to the new map.
+ * Subclasses may set up event handlers to get notified about changes to
+ * the map here.
+ * @param {ol.Map} map Map.
+ */
+ngeo.interaction.Translate.prototype.setMap = function(map) {
+
+  var currentMap = this.getMap();
+  if (currentMap) {
+    currentMap.removeLayer(this.vectorLayer_);
+  }
+
+  goog.base(this, 'setMap', map);
+
+  if (map) {
+    map.addLayer(this.vectorLayer_);
+  }
+
+  this.setState_();
+};
+
+
+/**
+ * @private
+ */
+ngeo.interaction.Translate.prototype.setState_ = function() {
+  var map = this.getMap();
+  var active = this.getActive();
+  var features = this.myFeatures_;
+  var keys = this.listenerKeys_;
+
+  if (map && active && features) {
+    features.forEach(this.addFeature_, this);
+    keys.push(ol.events.listen(features, ol.CollectionEventType.ADD,
+        this.handleFeaturesAdd_, this));
+    keys.push(ol.events.listen(features, ol.CollectionEventType.REMOVE,
+        this.handleFeaturesRemove_, this));
+  } else {
+
+    if (map) {
+      var elem = map.getTargetElement();
+      elem.style.cursor = 'default';
+    }
+
+    keys.forEach(function(key) {
+      ol.events.unlistenByKey(key);
+    }, this);
+    features.forEach(this.removeFeature_, this);
+  }
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.handleFeaturesAdd_ = function(evt) {
+  var feature = evt.element;
+  goog.asserts.assertInstanceof(feature, ol.Feature,
+      'feature should be an ol.Feature');
+  this.addFeature_(feature);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Event.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.handleFeaturesRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature_(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.addFeature_ = function(feature) {
+  var uid = goog.getUid(feature);
+  var geometry = feature.getGeometry();
+  goog.asserts.assertInstanceof(geometry, ol.geom.Geometry);
+
+  this.featureListenerKeys_[uid] = ol.events.listen(
+      geometry,
+      ol.events.EventType.CHANGE,
+      this.handleGeometryChange_.bind(this, feature),
+      this
+  );
+
+  var point = this.getGeometryCenterPoint_(geometry);
+  var centerFeature = new ol.Feature(point);
+  this.centerFeatures_[uid] = centerFeature;
+  this.vectorSource_.addFeature(centerFeature);
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.removeFeature_ = function(feature) {
+  var uid = goog.getUid(feature);
+  if (this.featureListenerKeys_[uid]) {
+    ol.events.unlistenByKey(this.featureListenerKeys_[uid]);
+    delete this.featureListenerKeys_[uid];
+
+    this.vectorSource_.removeFeature(this.centerFeatures_[uid]);
+    delete this.centerFeatures_[uid];
+  }
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature being moved.
+ * @param {ol.events.Event} evt Event.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.handleGeometryChange_ = function(feature,
+    evt) {
+  var geometry = evt.target;
+  goog.asserts.assertInstanceof(geometry, ol.geom.Geometry);
+
+  var point = this.getGeometryCenterPoint_(geometry);
+  var uid = goog.getUid(feature);
+  this.centerFeatures_[uid].setGeometry(point);
+};
+
+
+/**
+ * @param {ol.geom.Geometry} geometry Geometry.
+ * @return {ol.geom.Point} The center point of the geometry.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.getGeometryCenterPoint_ = function(
+    geometry) {
+
+  var center;
+  var point;
+
+  if (geometry instanceof ol.geom.Polygon) {
+    point = geometry.getInteriorPoint()
+  } else if (geometry instanceof ol.geom.LineString) {
+    center = geometry.getCoordinateAt(0.5);
+  } else {
+    var extent = geometry.getExtent();
+    center = ol.extent.getCenter(extent);
+  }
+
+  if (!point && center) {
+    point = new ol.geom.Point(center);
+  }
+
+  goog.asserts.assert(point, 'Point should be thruthy');
+
+  return point;
+};
+
+
+/**
+ * Deactivate this interaction if the ESC key is pressed.
+ * @param {goog.events.Event} evt Event.
+ * @private
+ */
+ngeo.interaction.Translate.prototype.handleKeyUp_ = function(evt) {
+  if (evt.keyCode === goog.events.KeyCodes.ESC) {
+    this.setActive(false);
+  }
+};
+
+goog.provide('ngeo.Menu');
+goog.provide('ngeo.MenuEvent');
+goog.provide('ngeo.MenuEventType');
+
+goog.require('ol.Overlay');
+goog.require('ol.events.Event');
+
+
+/**
+ * @enum {string}
+ */
+ngeo.MenuEventType = {
+  /**
+   * Triggered upon clicking an action button
+   * @event ngeo.MenuEvent#actionclick
+   */
+  ACTION_CLICK: 'actionclick'
+};
+
+
+/**
+ * @classdesc
+ * Events emitted by {@link ngeo.Menu} instances are instances of this type.
+ *
+ * @constructor
+ * @extends {ol.events.Event}
+ * @implements {ngeox.MenuEvent}
+ * @param {ngeo.MenuEventType} type Type.
+ * @param {string} action Action name that was clicked.
+ */
+ngeo.MenuEvent = function(type, action) {
+
+  goog.base(this, type);
+
+  /**
+   * The action name that was clicked.
+   * @type {string}
+   * @api stable
+   */
+  this.action = action;
+
+};
+goog.inherits(ngeo.MenuEvent, ol.events.Event);
+
+
+/**
+ * @classdesc
+ * An OpenLayers overlay that shows a contextual menu with configurable actions
+ * anchored from its top left to a specific location. An event is fired when
+ * any of the action is clicked. It can be closed using the close button, or
+ * can be automatically closed when any action is clicked.
+ *
+ * @constructor
+ * @extends {ol.Overlay}
+ * @param {ngeox.MenuOptions=} menuOptions Menu options.
+ * @param {olx.OverlayOptions=} opt_overlayOptions Overlay options.
+ */
+ngeo.Menu = function(menuOptions, opt_overlayOptions) {
+
+  var options = opt_overlayOptions !== undefined ? opt_overlayOptions : {};
+
+  options.positioning = ol.OverlayPositioning.TOP_LEFT;
+
+  /**
+   * @type {Array.<goog.events.Key>}
+   * @private
+   */
+  this.listenerKeys_ = [];
+
+  /**
+   * @type {Array.<ol.events.Key>}
+   * @private
+   */
+  this.olListenerKeys_ = [];
+
+  var contentEl = $('<div/>', {
+    'class': 'panel panel-default'
+  });
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.autoClose_ = menuOptions.autoClose !== undefined ?
+      menuOptions.autoClose : true;
+
+  var headerEl = $('<div>', {
+    'class': 'panel-heading'
+  }).appendTo(contentEl);
+
+  // titleEl
+  if (menuOptions.title) {
+    $('<span>', {
+      text: menuOptions.title
+    }).appendTo(headerEl);
+  }
+
+  /**
+   * @type {jQuery}
+   * @private
+   */
+  this.closeEl_ = $('<button>', {
+    'type': 'button',
+    'class': 'close',
+    'aria-hidden': true,
+    'html': '&times;'
+  }).appendTo(headerEl);
+
+  // actionsEl
+  var actionsEl = $('<div>', {
+    'class': 'list-group'
+  }).appendTo(contentEl);
+
+  /**
+   * @type {Array.<jQuery>}
+   * @private
+   */
+  this.actions_ = [];
+
+  menuOptions.actions.forEach(function(action) {
+    this.actions_.push(
+      $('<button>', {
+        'class': 'list-group-item',
+        'data-name': action.name,
+        'text': [
+          ' ',
+          (action.label) !== undefined ? action.label : action.name
+        ].join('')
+      })
+        .appendTo(actionsEl)
+        .prepend($('<span>', {
+          'class': action.cls !== undefined ? action.cls : ''
+        }))
+    );
+  }, this);
+
+  options.element = contentEl[0];
+
+  goog.base(this, options);
+
+};
+goog.inherits(ngeo.Menu, ol.Overlay);
+
+
+/**
+ * @param {ol.Map|undefined} map Map.
+ * @export
+ */
+ngeo.Menu.prototype.setMap = function(map) {
+
+  var keys = this.listenerKeys_;
+  var olKeys = this.olListenerKeys_;
+
+  var currentMap = this.getMap();
+  if (currentMap) {
+    keys.forEach(function(key) {
+      goog.events.unlistenByKey(key);
+    }, this);
+    keys.length = 0;
+    olKeys.forEach(function(key) {
+      ol.events.unlistenByKey(key);
+    }, this);
+    olKeys.length = 0;
+  }
+
+  goog.base(this, 'setMap', map);
+
+  if (map) {
+    keys.push(goog.events.listen(this.closeEl_[0],
+        goog.events.EventType.CLICK, this.close, false, this));
+    this.actions_.forEach(function(action) {
+      var data = action.data();
+      keys.push(
+        goog.events.listen(
+          action[0],
+          goog.events.EventType.CLICK,
+          this.handleActionClick_.bind(this, data.name),
+          false,
+          this
+        )
+      );
+    }, this);
+    olKeys.push(
+      ol.events.listen(
+        map,
+        ol.MapBrowserEvent.EventType.POINTERMOVE,
+        this.handleMapPointerMove_,
+        this
+      )
+    );
+  }
+
+};
+
+
+/**
+ * @export
+ */
+ngeo.Menu.prototype.close = function() {
+  this.setPosition(undefined);
+};
+
+
+/**
+ * @param {string} action The action name that was clicked.
+ * @private
+ */
+ngeo.Menu.prototype.handleActionClick_ = function(action) {
+
+  this.dispatchEvent(
+      new ngeo.MenuEvent(ngeo.MenuEventType.ACTION_CLICK, action));
+
+  if (this.autoClose_) {
+    this.close();
+  }
+};
+
+
+/**
+ * When the mouse is hovering the menu, set the event coordinate and pixel
+ * values to Infinity to do as if the mouse had been move out of range of the
+ * map. This prevents behaviours such as vertex still appearing while mouse
+ * hovering edges of features bound to an active modify control while the
+ * cursor is on top of the menu.
+ * @param {ol.MapBrowserEvent} evt Event.
+ * @private
+ */
+ngeo.Menu.prototype.handleMapPointerMove_ = function(evt) {
+  var target = evt.originalEvent.target;
+  goog.asserts.assertInstanceof(target, Element);
+
+  var element = this.getElement();
+  goog.asserts.assertInstanceof(element, Element);
+
+  if (goog.dom.contains(element, target)) {
+    evt.coordinate = [Infinity, Infinity];
+    evt.pixel = [Infinity, Infinity];
+  }
+};
+
 goog.provide('ngeo.Popover');
 
 goog.require('ol.Overlay');
@@ -119096,272 +122243,6 @@ ngeo.getBrowserLanguageFactory = function($window) {
 
 
 ngeo.module.factory('ngeoGetBrowserLanguage', ngeo.getBrowserLanguageFactory);
-
-goog.provide('ngeo.LayerHelper');
-
-goog.require('ngeo');
-goog.require('ol.Collection');
-goog.require('ol.array');
-goog.require('ol.format.WMTSCapabilities');
-goog.require('ol.layer.Group');
-goog.require('ol.layer.Image');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.ImageWMS');
-goog.require('ol.source.WMTS');
-
-
-/**
- * Provides help functions that helps you to create and manage layers.
- * @param {angular.$q} $q Angular promises/deferred service.
- * @param {angular.$http} $http Angular http service.
- * @constructor
- * @ngdoc service
- * @ngname ngeoLayerHelper
- * @ngInject
- */
-ngeo.LayerHelper = function($q, $http) {
-
-  /**
-   * @type {angular.$q}
-   * @private
-   */
-  this.$q_ = $q;
-
-  /**
-   * @type {angular.$http}
-   * @private
-   */
-  this.$http_ = $http;
-};
-
-
-/**
- * @const
- */
-ngeo.LayerHelper.GROUP_KEY = 'groupName';
-
-
-/**
- * Create and return a basic WMS layer with only a source URL and a dot
- * separated layers names (see {@link ol.source.ImageWMS}).
- * @param {string} sourceURL The source URL.
- * @param {string} sourceLayersName A dot separated names string.
- * @return {ol.layer.Image} WMS Layer.
- * @export
- */
-ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
-    sourceLayersName) {
-  var layer = new ol.layer.Image({
-    source: new ol.source.ImageWMS({
-      url: sourceURL,
-      params: {'LAYERS': sourceLayersName}
-    })
-  });
-  return layer;
-};
-
-
-/**
- * Create and return a promise that provides a WMTS layer with source on
- * success, no layer else.
- * The WMTS layer source will be configured by the capabilities that are
- * loaded from the given capabilitiesUrl.
- * The style object described in the capabilities for this layer will be added
- * as key 'capabilitiesStyles' as param of the new layer.
- * @param {string} capabilitiesURL The getCapabilities url.
- * @param {string} layerName The name of the layer.
- * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
- *     no layer else.
- * @export
- */
-ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
-    capabilitiesURL, layerName) {
-  var parser = new ol.format.WMTSCapabilities();
-  var layer = new ol.layer.Tile();
-  var $q = this.$q_;
-
-  return this.$http_.get(capabilitiesURL).then(function(response) {
-    var result;
-    if (response.data) {
-      result = parser.read(response.data);
-    }
-    if (result !== undefined) {
-      var options = ol.source.WMTS.optionsFromCapabilities(result,
-          {layer: layerName, requestEncoding: 'REST'});
-      layer.setSource(new ol.source.WMTS(options));
-
-      // Add styles from capabilities as param of the layer
-      var layers = result['Contents']['Layer'];
-      var l = ol.array.find(layers, function(elt, index, array) {
-        return elt['Identifier'] == layerName;
-      });
-      layer.set('capabilitiesStyles', l['Style']);
-
-      return $q.resolve(layer);
-    }
-    return $q.reject('Failed to get WMTS capabilities from ' +
-        capabilitiesURL);
-  });
-};
-
-
-/**
- * Create and return an ol.layer.Group. You can pass a collection of layers to
- * directly add them in the returned group.
- * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
- * returned Group.
- * @return {ol.layer.Group} Layer group.
- * @export
- */
-ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
-  var group = new ol.layer.Group();
-  if (goog.isDefAndNotNull(opt_layers)) {
-    group.setLayers(opt_layers);
-  }
-  return group;
-};
-
-
-/**
- * Retrieve (or create if it doesn't exist) and return a group of layer from
- * the base array of layers of a map. The given name is used as unique
- * identifier. If the group is created, it will be automatically added to
- * the map.
- * @param {ol.Map} map A map.
- * @param {string} groupName The name of the group.
- * @return {ol.layer.Group} The group corresponding to the given name.
- * @export
- */
-ngeo.LayerHelper.prototype.getGroupFromMap = function(map, groupName) {
-  var groups = map.getLayerGroup().getLayers();
-  var group;
-  groups.getArray().some(function(exitingGroup) {
-    if (exitingGroup.get(ngeo.LayerHelper.GROUP_KEY) === groupName) {
-      group = /** @type {ol.layer.Group} */ (exitingGroup);
-      return true;
-    } else {
-      return false;
-    }
-  });
-  if (!group) {
-    group = this.createBasicGroup();
-    group.set(ngeo.LayerHelper.GROUP_KEY, groupName);
-    map.addLayer(group);
-  }
-  return group;
-};
-
-
-/**
- * Get an array of all layers in a group. The group can contain multiple levels
- * of others groups.
- * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @return {Array.<ol.layer.Layer>} Layers.
- * @export
- */
-ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
-  return this.getFlatLayers_(layer, []);
-};
-
-
-/**
- * Get an array of all layers in a group. The group can contain multiple levels
- * of others groups.
- * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @param {Array.<ol.layer.Base>} array An array to add layers.
- * @return {Array.<ol.layer.Layer>} Layers.
- * @private
- */
-ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
-  if (layer instanceof ol.layer.Group) {
-    var sublayers = layer.getLayers();
-    sublayers.forEach(function(l) {
-      this.getFlatLayers_(l, array);
-    }, this);
-  } else {
-    if (array.indexOf(layer) < 0) {
-      array.push(layer);
-    }
-  }
-  return array;
-};
-
-
-/**
- * Get a layer that has a `layerName` property equal to a given layer name from
- * an array of layers. If one of the layers in the array is a group, then the
- * layers contained in that group are searched as well.
- * @param {string} layerName The name of the layer we're looking for.
- * @param {Array.<ol.layer.Base>} layers Layers.
- * @return {?ol.layer.Base} Layer.
- * @export
- */
-ngeo.LayerHelper.prototype.getLayerByName = function(layerName, layers) {
-  var found = null;
-  layers.some(function(layer) {
-    if (layer instanceof ol.layer.Group) {
-      var sublayers = layer.getLayers().getArray();
-      found = this.getLayerByName(layerName, sublayers);
-    } else if (layer.get('layerName') === layerName) {
-      found = layer;
-    }
-    return !!found;
-  }, this);
-
-  return found;
-};
-
-
-/**
- * Get the WMTS legend URL for the given layer.
- * @param {ol.layer.Tile} layer Tile layer as returned by the
- * ngeo layerHelper service.
- * @return {?string} The legend URL or null.
- * @export
- */
-ngeo.LayerHelper.prototype.getWMTSLegendURL = function(layer) {
-  // FIXME case of multiple styles ?  case of multiple legendUrl ?
-  var url;
-  var styles = layer.get('capabilitiesStyles');
-  if (styles !== undefined) {
-    var legendURL = styles[0]['legendURL'];
-    if (legendURL !== undefined) {
-      url = legendURL[0]['href'];
-    }
-  }
-  return url || null;
-};
-
-
-/**
- * Get the WMS legend URL for the given node.
- * @param {string} url The base url of the wms service.
- * @param {string} layerName The name of a wms layer.
- * @param {number} scale A scale.
- * @param {string=} opt_legendRule rule parameters to add to the returned URL.
- * @return {?string} The legend URL or null.
- * @export
- */
-ngeo.LayerHelper.prototype.getWMSLegendURL = function(url,
-    layerName, scale, opt_legendRule) {
-  if (!url) {
-    return null;
-  }
-  url = goog.uri.utils.setParam(url, 'FORMAT', 'image/png');
-  url = goog.uri.utils.setParam(url, 'TRANSPARENT', true);
-  url = goog.uri.utils.setParam(url, 'SERVICE', 'wms');
-  url = goog.uri.utils.setParam(url, 'VERSION', '1.1.1');
-  url = goog.uri.utils.setParam(url, 'REQUEST', 'GetLegendGraphic');
-  url = goog.uri.utils.setParam(url, 'LAYER', layerName);
-  url = goog.uri.utils.setParam(url, 'SCALE', scale);
-  if (opt_legendRule !== undefined) {
-    url = goog.uri.utils.setParam(url, 'RULE', opt_legendRule);
-  }
-  return url;
-};
-
-
-ngeo.module.service('ngeoLayerHelper', ngeo.LayerHelper);
 
 goog.provide('ngeo.Location');
 goog.provide('ngeo.MockLocationProvider');
@@ -131259,6 +134140,11 @@ goog.exportProperty(
     ol.source.CartoDB.prototype,
     'setAttributions',
     ol.source.CartoDB.prototype.setAttributions);
+
+goog.exportProperty(
+    ol.source.CartoDB.prototype,
+    'setConfig',
+    ol.source.CartoDB.prototype.setConfig);
 
 goog.exportProperty(
     ol.source.CartoDB.prototype,
