@@ -104619,52 +104619,52 @@ ngeo.FeatureProperties = {
    * @type {string}
    * @export
    */
-  ANGLE: 'angle',
+  ANGLE: 'a',
   /**
    * @type {string}
    * @export
    */
-  COLOR: 'color',
+  COLOR: 'c',
   /**
    * @type {string}
    * @export
    */
-  IS_CIRCLE: 'isCircle',
+  IS_CIRCLE: 'l',
   /**
    * @type {string}
    * @export
    */
-  IS_RECTANGLE: 'isRectangle',
+  IS_RECTANGLE: 'r',
   /**
    * @type {string}
    * @export
    */
-  IS_TEXT: 'isText',
+  IS_TEXT: 't',
   /**
    * @type {string}
    * @export
    */
-  NAME: 'name',
+  NAME: 'n',
   /**
    * @type {string}
    * @export
    */
-  OPACITY: 'opacity',
+  OPACITY: 'o',
   /**
    * @type {string}
    * @export
    */
-  SHOW_MEASURE: 'showMeasure',
+  SHOW_MEASURE: 'm',
   /**
    * @type {string}
    * @export
    */
-  SIZE: 'size',
+  SIZE: 's',
   /**
    * @type {string}
    * @export
    */
-  STROKE: 'stroke'
+  STROKE: 'k'
 };
 
 
@@ -106534,7 +106534,7 @@ ngeo.interaction.Measure.prototype.handleDrawInteractionActiveChange_ =
       }
     };
 
-goog.provide('ngeo.FeatureHelper')
+goog.provide('ngeo.FeatureHelper');
 
 goog.require('ngeo');
 goog.require('ngeo.interaction.Measure');
@@ -106810,7 +106810,7 @@ ngeo.FeatureHelper.prototype.getVertexStyle = function(opt_incGeomFunc) {
       } else {
         return feature.getGeometry();
       }
-    }
+    };
   }
 
   return new ol.style.Style(options);
@@ -106875,7 +106875,7 @@ ngeo.FeatureHelper.prototype.getHaloStyle_ = function(feature) {
       var color = [255, 255, 255, 1];
       style = new ol.style.Style({
         text: this.createTextStyle_(label, size, angle, color, haloSize * 2)
-      })
+      });
       break;
     default:
       break;
@@ -107008,10 +107008,10 @@ ngeo.FeatureHelper.prototype.getStrokeProperty = function(feature) {
 ngeo.FeatureHelper.prototype.export = function(features, formatType) {
   switch (formatType) {
     case ngeo.FeatureHelper.FormatType.GPX:
-      this.exportGPX(features)
+      this.exportGPX(features);
       break;
     case ngeo.FeatureHelper.FormatType.KML:
-      this.exportKML(features)
+      this.exportKML(features);
       break;
     default:
       break;
@@ -108095,7 +108095,7 @@ ngeo.measurelengthDirective = function($compile, gettext) {
       });
 
       drawFeatureCtrl.registerInteraction(measureLength);
-      drawFeatureCtrl.measureLength = measureLength
+      drawFeatureCtrl.measureLength = measureLength;
 
       ol.events.listen(
           measureLength,
@@ -108819,7 +108819,7 @@ ngeo.layertreeDirective = function($compile, ngeoLayertreeTemplateUrl) {
     scope: true,
     templateUrl: ngeoLayertreeTemplateUrl,
     controller: 'NgeoLayertreeController'
-  }
+  };
 };
 
 
@@ -110034,7 +110034,7 @@ ngeo.Query.prototype.getLayerSourceId_ = function(layer) {
 ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
   var ids = layer.get(this.sourceIdsProperty_) || [];
   goog.asserts.assertArray(ids);
-  var clone = ids.slice()
+  var clone = ids.slice();
   return clone;
 };
 
@@ -110240,7 +110240,6 @@ ngeo.popoverDirective = function() {
     scope : true,
     controller: 'NgeoPopoverController',
     link : function(scope, elem, attrs, ngeoPopoverCtrl) {
-
       ngeoPopoverCtrl.anchorElm.on('hidden.bs.popover', function() {
         /**
          * @type {{inState : Object}}
@@ -110253,7 +110252,7 @@ ngeo.popoverDirective = function() {
         ngeoPopoverCtrl.shown = true;
         ngeoPopoverCtrl.bodyElm.parent().on('click', function(e) {
           e.stopPropagation();
-        })
+        });
       });
 
       ngeoPopoverCtrl.anchorElm.popover({
@@ -110266,9 +110265,9 @@ ngeo.popoverDirective = function() {
         ngeoPopoverCtrl.anchorElm.popover('destroy');
         ngeoPopoverCtrl.anchorElm.unbind('inserted.bs.popover');
         ngeoPopoverCtrl.anchorElm.unbind('hidden.bs.popover');
-      })
+      });
     }
-  }
+  };
 };
 
 /**
@@ -110284,7 +110283,7 @@ ngeo.popoverAnchorDirective = function() {
     link: function(scope, elem, attrs, ngeoPopoverCtrl) {
       ngeoPopoverCtrl.anchorElm = elem;
     }
-  }
+  };
 };
 
 /**
@@ -110303,7 +110302,7 @@ ngeo.popoverContentDirective = function() {
         ngeoPopoverCtrl.bodyElm = transcludedElm;
       });
     }
-  }
+  };
 };
 
 /**
@@ -110349,7 +110348,7 @@ ngeo.PopoverController = function($scope) {
 
   $scope.$on('$destroy', function() {
     angular.element('body').off('click', onClick);
-  })
+  });
 };
 
 ngeo.module.controller('NgeoPopoverController', ngeo.PopoverController);
@@ -117648,8 +117647,8 @@ ngeo.sortableDirective = function($timeout) {
         function(scope, element, attrs) {
 
           var sortable = /** @type {Array} */
-              (scope.$eval(attrs['ngeoSortable']));
-          goog.asserts.assert(goog.isArray(sortable));
+              (scope.$eval(attrs['ngeoSortable'])) || [];
+          goog.asserts.assert(Array.isArray(sortable));
 
           var optionsObject = scope.$eval(attrs['ngeoSortableOptions']);
           var options = getOptions(optionsObject);
@@ -117662,7 +117661,7 @@ ngeo.sortableDirective = function($timeout) {
           scope.$watchCollection(function() {
             return sortable;
           }, function() {
-            resetUpDragDrop();
+            sortable.length && $timeout(resetUpDragDrop, 0);
           });
 
           /**
@@ -117696,6 +117695,10 @@ ngeo.sortableDirective = function($timeout) {
               dragListGroup.setDraggerElClass(options['draggerClassName']);
             }
 
+            if (options['currDragItemClassName'] !== undefined) {
+              dragListGroup.setCurrDragItemClass(options['currDragItemClassName']);
+            }
+
             /** @type {number} */
             var hoverNextItemIdx = -1;
 
@@ -117705,6 +117708,11 @@ ngeo.sortableDirective = function($timeout) {
             goog.events.listen(dragListGroup, 'dragstart', function(e) {
               hoverNextItemIdx = -1;
               hoverList = null;
+              /**
+               * Adding dynamically the width of the draggerEl to fit the currDragItem width.
+               * - > the draggerEl is clipped to the body with an absolute position.
+               */
+              angular.element(e.draggerEl).css('width', e.currDragItem.offsetWidth);
             });
 
             goog.events.listen(dragListGroup, 'dragmove', function(e) {
@@ -118095,7 +118103,7 @@ ngeo.format.FeatureHash.encodeStyleFill_ = function(fillStyle, encodedStyles, op
       opt_propertyName : 'fillColor';
   var fillColor = fillStyle.getColor();
   if (fillColor !== null) {
-    goog.asserts.assert(goog.isArray(fillColor), 'only supporting fill colors');
+    goog.asserts.assert(Array.isArray(fillColor), 'only supporting fill colors');
     var fillColorRgba = ol.color.asArray(fillColor);
     var fillColorHex = goog.color.rgbArrayToHex(fillColorRgba);
     if (encodedStyles.length > 0) {
@@ -118782,7 +118790,7 @@ ngeo.format.FeatureHash.prototype.writeFeatureText = function(feature, opt_optio
       var styles = styleFunction.call(feature, 0);
       if (styles !== null) {
         var encodedStyles = [];
-        styles = goog.isArray(styles) ? styles : [styles];
+        styles = Array.isArray(styles) ? styles : [styles];
         ngeo.format.FeatureHash.encodeStyles_(
             styles, geometry.getType(), encodedStyles);
         if (encodedStyles.length > 0) {
@@ -119948,16 +119956,6 @@ goog.require('ol.source.Vector');
 
 
 /**
- * @typedef {{depth: (Array.<number>|undefined),
- *            feature: ol.Feature,
- *            geometry: ol.geom.SimpleGeometry,
- *            index: (number|undefined),
- *            segment: Array.<ol.Extent>}}
- */
-ol.interaction.SegmentDataType;
-
-
-/**
  * @classdesc
  * Interaction for modifying feature geometries.
  *
@@ -120005,19 +120003,6 @@ ngeo.interaction.ModifyRectangle = function(options) {
    * @type {ol.layer.Vector}
    * @private
    */
-  this.vectorBoxes_ = new ol.layer.Vector({
-    source: new ol.source.Vector({
-      wrapX: !!options.wrapX
-    }),
-    style: style,
-    updateWhileAnimating: true,
-    updateWhileInteracting: true
-  });
-
-  /**
-   * @type {ol.layer.Vector}
-   * @private
-   */
   this.vectorPoints_ = new ol.layer.Vector({
     source: new ol.source.Vector({
       wrapX: !!options.wrapX
@@ -120046,6 +120031,12 @@ ngeo.interaction.ModifyRectangle = function(options) {
    */
   this.coordinate_ = null;
 
+  /**
+   * @type {Object.<number, ngeo.interaction.ModifyRectangle.CacheItem>}
+   * @private
+   */
+  this.cache_ = {};
+
   ol.events.listen(this.features_, ol.CollectionEventType.ADD,
       this.handleFeatureAdd_, this);
   ol.events.listen(this.features_, ol.CollectionEventType.REMOVE,
@@ -120064,16 +120055,12 @@ goog.inherits(ngeo.interaction.ModifyRectangle, ol.interaction.Pointer);
 ngeo.interaction.ModifyRectangle.prototype.addFeature_ = function(feature) {
   var featureGeom = feature.getGeometry();
   if (featureGeom instanceof ol.geom.Polygon) {
-    var boxSource = this.vectorBoxes_.getSource();
-    var pointSource = this.vectorPoints_.getSource();
 
-    try {
-      boxSource.addFeature(feature);
-    } catch (e) {
-      // If the feature is in the source already, its corners were already
-      // created, no need to create them again.
+    // If the feature's corners are already set, no need to set them again
+    if (feature.get('corners')) {
       return;
     }
+    var pointSource = this.vectorPoints_.getSource();
 
     // from each corners, create a point feature and add it to the point layer.
     // each point is then associated with 2 siblings in order to update the
@@ -120090,7 +120077,7 @@ ngeo.interaction.ModifyRectangle.prototype.addFeature_ = function(feature) {
     var pointFeatures = [];
     var cornerPoint;
     var cornerFeature;
-    goog.array.forEach(corners, function(corner) {
+    corners.forEach(function(corner) {
       cornerPoint = new ol.geom.Point(corner);
       cornerFeature = new ol.Feature({
         'corner': true,
@@ -120103,11 +120090,15 @@ ngeo.interaction.ModifyRectangle.prototype.addFeature_ = function(feature) {
 
       pointFeatures.push(cornerFeature);
     }, this);
-    feature.set('corners', pointFeatures);
+    var uid = goog.getUid(feature);
+    var item = /** @type {ngeo.interaction.ModifyRectangle.CacheItem} */ ({
+      corners: pointFeatures
+    });
+    this.cache_[uid] = item;
 
     var previousFeature;
     var nextFeature;
-    goog.array.forEach(pointFeatures, function(cornerFeature, index) {
+    pointFeatures.forEach(function(cornerFeature, index) {
       previousFeature = pointFeatures[index - 1];
       if (!previousFeature) {
         previousFeature = pointFeatures[pointFeatures.length - 1];
@@ -120178,7 +120169,7 @@ ngeo.interaction.ModifyRectangle.prototype.handleCornerGeometryChange_ = functio
   // update box
   var boxExtent = ol.extent.createEmpty();
   var pointFeatures = this.vectorPoints_.getSource().getFeatures();
-  goog.array.forEach(pointFeatures, function(pointFeature) {
+  pointFeatures.forEach(function(pointFeature) {
     point = pointFeature.getGeometry();
     ol.extent.extendCoordinate(boxExtent, /** @type {ol.geom.Point} */ (point).getCoordinates());
   });
@@ -120189,8 +120180,7 @@ ngeo.interaction.ModifyRectangle.prototype.handleCornerGeometryChange_ = functio
   }, this);
   var boxCoordinates = goog.array.concat(corners, [corners[0]]);
 
-  var boxFeatures = this.vectorBoxes_.getSource().getFeatures();
-  goog.array.forEach(boxFeatures, function(boxFeature) {
+  this.features_.forEach(function(boxFeature) {
     var geom = boxFeature.getGeometry();
     goog.asserts.assertInstanceof(geom, ol.geom.Polygon);
     geom.setCoordinates([boxCoordinates]);
@@ -120219,15 +120209,19 @@ ngeo.interaction.ModifyRectangle.prototype.willModifyFeatures_ = function(evt) {
  * @private
  */
 ngeo.interaction.ModifyRectangle.prototype.removeFeature_ = function(feature) {
-  var corners = feature.get('corners');
+  var uid = goog.getUid(feature);
+  var item = this.cache_[uid];
+  var corners = item.corners;
   for (var i = 0; i < corners.length; i++) {
     ol.events.unlisten(corners[i], ol.events.EventType.CHANGE,
         this.handleCornerGeometryChange_);
 
     this.vectorPoints_.getSource().removeFeature(corners[i]);
   }
-  this.vectorBoxes_.getSource().removeFeature(feature);
+  feature.set('corners', undefined);
   this.feature_ = null;
+  corners.length = 0;
+  delete this.cache_[uid];
 };
 
 
@@ -120235,7 +120229,6 @@ ngeo.interaction.ModifyRectangle.prototype.removeFeature_ = function(feature) {
  * @inheritDoc
  */
 ngeo.interaction.ModifyRectangle.prototype.setMap = function(map) {
-  this.vectorBoxes_.setMap(map);
   this.vectorPoints_.setMap(map);
   this.vectorPoints_.setVisible(false);
   goog.base(this, 'setMap', map);
@@ -120353,6 +120346,14 @@ ngeo.interaction.ModifyRectangle.prototype.handleUp_ = function(evt) {
   }
   return false;
 };
+
+
+/**
+ * @typedef {{
+ *     corners: Array.<ol.Feature>
+ * }}
+ */
+ngeo.interaction.ModifyRectangle.CacheItem;
 
 goog.provide('ngeo.interaction.Modify');
 
@@ -121259,7 +121260,7 @@ ngeo.interaction.Translate.prototype.getGeometryCenterPoint_ = function(
   var point;
 
   if (geometry instanceof ol.geom.Polygon) {
-    point = geometry.getInteriorPoint()
+    point = geometry.getInteriorPoint();
   } else if (geometry instanceof ol.geom.LineString) {
     center = geometry.getCoordinateAt(0.5);
   } else {
@@ -121722,7 +121723,7 @@ ngeo.AutoProjection.prototype.stringToCoordinates = function(str) {
       return [x, y];
     }
   }
-  return null
+  return null;
 };
 
 
@@ -122188,13 +122189,26 @@ ngeo.decorateLayer = function(layer) {
 
 ngeo.module.value('ngeoDecorateLayer', ngeo.decorateLayer);
 
-goog.provide('ngeo.Features')
+goog.provide('ngeo.Features');
 goog.require('ngeo');
 
 goog.require('ol.Collection');
 
 
 ngeo.module.value('ngeoFeatures', new ol.Collection());
+
+goog.provide('ngeo.filters');
+
+goog.require('ngeo');
+
+// format a number as a scale
+ngeo.module.filter('scalify', ['$filter', function(filter) {
+  var number = filter('number');
+  return function(scale) {
+    var text = number(scale, 0) || '';
+    return '1 : ' + text.replace(/,/g, '\'');
+  };
+}]);
 
 goog.provide('ngeo.GetBrowserLanguage');
 
@@ -122230,7 +122244,7 @@ ngeo.getBrowserLanguageFactory = function($window) {
         var nav = $window.navigator;
         var browserLanguages = nav.languages || nav.language ||
             nav.browserLanguage || nav.systemLanguage || nav.userLanguage;
-        if (!goog.isArray(browserLanguages)) {
+        if (!Array.isArray(browserLanguages)) {
           browserLanguages = [browserLanguages];
         }
         browserLanguages = browserLanguages.map(function(item) {
@@ -123331,7 +123345,7 @@ ngeo.Print.prototype.encodeMap_ = function(map, scale, object) {
   var viewCenter = view.getCenter();
   var viewProjection = view.getProjection();
   var viewResolution = view.getResolution();
-  var viewRotation = object.rotation || view.getRotation() * 180 / Math.PI;
+  var viewRotation = object.rotation || ol.math.toDegrees(view.getRotation());
 
   goog.asserts.assert(viewCenter !== undefined);
   goog.asserts.assert(viewProjection !== undefined);
@@ -123570,9 +123584,9 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
     /**
      * @type {Array<ol.style.Style>}
      */
-    var styles = (styleData !== null && !goog.isArray(styleData)) ?
+    var styles = (styleData !== null && !Array.isArray(styleData)) ?
         [styleData] : styleData;
-    goog.asserts.assert(goog.isArray(styles));
+    goog.asserts.assert(Array.isArray(styles));
 
     if (styles !== null && styles.length > 0) {
       var isOriginalFeatureAdded = false;
@@ -123593,7 +123607,7 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
             isOriginalFeatureAdded = true;
           }
         } else {
-          var styledFeature = originalFeature.clone()
+          var styledFeature = originalFeature.clone();
           styledFeature.setGeometry(geometry);
           geojsonFeature = geojsonFormat.writeFeatureObject(styledFeature);
           geometry = styledFeature.getGeometry();
@@ -123694,7 +123708,7 @@ ngeo.Print.prototype.encodeVectorStyleFill_ = function(symbolizer, fillStyle) {
       var hex = goog.color.alpha.parse(fillColor).hex;
       fillColor = goog.color.alpha.hexToRgba(hex);
     }
-    goog.asserts.assert(goog.isArray(fillColor), 'only supporting fill colors');
+    goog.asserts.assert(Array.isArray(fillColor), 'only supporting fill colors');
     symbolizer.fillColor = goog.color.rgbArrayToHex(fillColor);
     symbolizer.fillOpacity = fillColor[3];
   }
@@ -123908,7 +123922,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
     if (fillStyle !== null) {
       var fillColor = fillStyle.getColor();
       goog.asserts.assert(
-          goog.isArray(fillColor), 'only supporting fill colors');
+          Array.isArray(fillColor), 'only supporting fill colors');
       var fillColorRgba = ol.color.asArray(fillColor);
       symbolizer.fontColor = goog.color.rgbArrayToHex(fillColorRgba);
     }
@@ -124115,7 +124129,7 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize,
         context.lineTo(0, 0);
         context.closePath();
 
-        var rotation = (opt_rotation ? opt_rotation() * Math.PI / 180 : 0);
+        var rotation = (opt_rotation ? ol.math.toRadians(opt_rotation()) : 0);
         // diagonal = distance p1 to center.
         var diagonal = Math.sqrt(Math.pow(extentHalfWidth, 2) +
             Math.pow(extentHalfHeight, 2));

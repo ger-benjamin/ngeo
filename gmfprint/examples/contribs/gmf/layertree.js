@@ -91,7 +91,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
   this.setModeFlush = function() {
     var isModeFlush = this.modeFlush == 'flush' ? true : false;
     this.gmfTreeManager.setModeFlush(isModeFlush);
-  }
+  };
 
   this.setModeFlush();
 
@@ -105,7 +105,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
       this.gmfTreeManager.addTheme(value);
     }
     return this.themes;
-  }
+  };
 
   /**
    * @param {GmfThemesNode|undefined} value A group or undefined to get groups.
@@ -117,7 +117,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
       this.gmfTreeManager.addGroups([value]);
     }
     return this.groups;
-  }
+  };
 
   /**
    * @param {GmfThemesNode|undefined} value A group or undefined to get groups.
@@ -129,7 +129,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
       this.gmfTreeManager.addGroupByLayerName(value.name);
     }
     return this.layers;
-  }
+  };
 
   /**
    * @param {GmfThemesNode|undefined} value A Theme or group node, or undefined
@@ -142,7 +142,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
       this.gmfTreeManager.removeGroup(value);
     }
     return this.gmfTreeManager.tree.children;
-  }
+  };
 
   gmfThemes.getThemesObject().then(function(themes) {
     if (themes) {
@@ -192,7 +192,7 @@ app.MainController = function(gmfThemes, gmfTreeManager) {
     if (!alreadyAdded) {
       nodes.push(node);
     }
-  }
+  };
 };
 
 app.module.controller('MainController', app.MainController);
