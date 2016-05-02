@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: DecorateGeolocation <small>service:ngeoDecorateGeolocation</small></title>
+    <title>JSDoc: Class: DecorateLayerLoading <small>service:ngeoDecorateLayerLoading</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: DecorateGeolocation <small>service:ngeoDecorateGeolocation</small></h1>
+    <h1 class="page-title">Class: DecorateLayerLoading <small>service:ngeoDecorateLayerLoading</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="DecorateGeolocation">
-            <span class="ancestors">ngeo.</span>DecorateGeolocation
+        <h2 id="DecorateLayerLoading">
+            <span class="ancestors">ngeo.</span>DecorateLayerLoading
         </h2>
         
     
@@ -42,18 +42,19 @@
 
     
 
-    <h4 class="name" id="DecorateGeolocation"><span class="type-signature"></span>new DecorateGeolocation<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="DecorateLayerLoading"><span class="type-signature"></span>new DecorateLayerLoading<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Provides a function that adds a &quot;tracking&quot; property (using
-<code>Object.defineProperty</code>) to the <code>ol.Geolocation</code> instance, making it
-possible to activate/deactivate the tracking mode.</p>
+    <p>Provides a function that adds a 'loading 'property (using
+<code>Object.defineProperty</code>) to an ol.layer.Group or a layer with
+an ol.source.Tile or an ol.source.Image source.
+This property is true when the layer is loading and false otherwise.</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code> &lt;input type=&quot;checkbox&quot; ngModel=&quot;geolocation.tracking&quot; /></code></pre><p>See our live example: <code>../examples/geolocation.html</code></p>
+<pre class="prettyprint source"><code> &lt;span ng-if=&quot;layer.loading&quot;>please wait&lt;/span></code></pre>
 </div>
 
 
@@ -100,8 +101,8 @@ possible to activate/deactivate the tracking mode.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decorategeolocation.js">src/services/decorategeolocation.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decorategeolocation.js#L22">line 22</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decoratelayerloading.js">src/services/decoratelayerloading.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decoratelayerloading.js#L21">line 21</a>
     </li></ul></dd>
     
 

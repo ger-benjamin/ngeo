@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: DecorateGeolocation <small>service:ngeoDecorateGeolocation</small></title>
+    <title>JSDoc: Class: AuthenticationEvent</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: DecorateGeolocation <small>service:ngeoDecorateGeolocation</small></h1>
+    <h1 class="page-title">Class: AuthenticationEvent</h1>
 
     
 
@@ -28,9 +28,11 @@
 
 <header>
     
-        <h2 id="DecorateGeolocation">
-            <span class="ancestors">ngeo.</span>DecorateGeolocation
+        <h2 id="AuthenticationEvent">
+            <span class="ancestors">gmf.</span>AuthenticationEvent
         </h2>
+        
+            <div class="class-description"><p>Event emitted by the authentication service.</p></div>
         
     
 </header>
@@ -41,20 +43,15 @@
         
 
     
+    <h2>Constructor</h2>
+    
 
-    <h4 class="name" id="DecorateGeolocation"><span class="type-signature"></span>new DecorateGeolocation<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="AuthenticationEvent"><span class="type-signature"></span>new AuthenticationEvent<span class="signature">(type, user)</span><span class="type-signature"></span></h4>
 
     
 
 
 
-<div class="description">
-    <p>Provides a function that adds a &quot;tracking&quot; property (using
-<code>Object.defineProperty</code>) to the <code>ol.Geolocation</code> instance, making it
-possible to activate/deactivate the tracking mode.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code> &lt;input type=&quot;checkbox&quot; ngModel=&quot;geolocation.tracking&quot; /></code></pre><p>See our live example: <code>../examples/geolocation.html</code></p>
-</div>
 
 
 
@@ -62,6 +59,67 @@ possible to activate/deactivate the tracking mode.</p>
 
 
 
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Event type.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>user</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The current user.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -100,8 +158,8 @@ possible to activate/deactivate the tracking mode.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decorategeolocation.js">src/services/decorategeolocation.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/decorategeolocation.js#L22">line 22</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/authenticationservice.js">contribs/gmf/src/services/authenticationservice.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/authenticationservice.js#L100">line 100</a>
     </li></ul></dd>
     
 
@@ -131,6 +189,17 @@ possible to activate/deactivate the tracking mode.</p>
     </div>
 
     
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="http://openlayers.org/en/master/apidoc/ol.events.Event.html">ol.events.Event</a></li>
+    </ul>
+
+
+    
 
     
 
@@ -140,6 +209,84 @@ possible to activate/deactivate the tracking mode.</p>
 
     
 
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="user"><span class="type-signature"></span>user<span class="type-signature"> :<a href="gmf.html#User">gmf.User</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>The logged-in user.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="gmf.html#User">gmf.User</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/authenticationservice.js">contribs/gmf/src/services/authenticationservice.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/authenticationservice.js#L108">line 108</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
     
 
     

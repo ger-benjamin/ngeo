@@ -108706,11 +108706,83 @@ ngeo.filereaderDirective = function($window) {
 
 ngeo.module.directive('ngeoFilereader', ngeo.filereaderDirective);
 
+goog.provide('ngeo.DecorateLayer');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+
+
+/**
+ * Provides a function that adds properties (using
+ * `Object.defineProperty`) to the layer, making it possible to control layer
+ * properties with ngModel.
+ *
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="layer.visible" />
+ *
+ * See our live examples:
+ * {@link ../examples/layeropacity.html}
+ * {@link ../examples/layervisibility.html}
+ *
+ * @typedef {function(ol.layer.Base)}
+ * @ngdoc service
+ * @ngname ngeoDecorateLayer
+ */
+ngeo.DecorateLayer;
+
+
+/**
+ * @param {ol.layer.Base} layer Layer to decorate.
+ */
+ngeo.decorateLayer = function(layer) {
+  goog.asserts.assertInstanceof(layer, ol.layer.Base);
+
+  Object.defineProperty(layer, 'visible', {
+    configurable: true,
+    get:
+        /**
+         * @return {boolean} Visible.
+         */
+        function() {
+          return layer.getVisible();
+        },
+    set:
+        /**
+         * @param {boolean} val Visible.
+         */
+        function(val) {
+          layer.setVisible(val);
+        }
+  });
+
+  Object.defineProperty(layer, 'opacity', {
+    configurable: true,
+    get:
+        /**
+         * @return {string} Opacity.
+         */
+        function() {
+          return (Math.round(layer.getOpacity() * 100) / 100) + '';
+        },
+    set:
+        /**
+         * @param {string} val Opacity.
+         */
+        function(val) {
+          layer.setOpacity(+val);
+        }
+  });
+};
+
+
+ngeo.module.value('ngeoDecorateLayer', ngeo.decorateLayer);
+
 goog.provide('ngeo.LayertreeController');
 goog.provide('ngeo.layertreeDirective');
 
 goog.require('ngeo');
-
+goog.require('ngeo.DecorateLayer');
 
 ngeo.module.value('ngeoLayertreeTemplateUrl',
     /**
@@ -108831,13 +108903,14 @@ ngeo.module.directive('ngeoLayertree', ngeo.layertreeDirective);
  * @param {angular.Scope} $scope Scope.
  * @param {angular.JQLite} $element Element.
  * @param {angular.Attributes} $attrs Attributes.
+ * @param {ngeo.DecorateLayer} ngeoDecorateLayer layer decorator service.
  * @constructor
  * @ngInject
  * @export
  * @ngdoc controller
  * @ngname NgeoLayertreeController
  */
-ngeo.LayertreeController = function($scope, $element, $attrs) {
+ngeo.LayertreeController = function($scope, $element, $attrs, ngeoDecorateLayer) {
 
   var isRoot = $attrs['ngeoLayertreeNotroot'] === undefined;
 
@@ -108917,6 +108990,10 @@ ngeo.LayertreeController = function($scope, $element, $attrs) {
    */
   this.layer = isRoot ? null : /** @type {ol.layer.Layer} */
       ($scope.$eval(nodelayerExpr, {'node': this.node, 'depth': this.depth, 'parentCtrl' : this.parent}));
+
+  if (this.layer) {
+    ngeoDecorateLayer(this.layer);
+  }
 
 
   var listenersExpr = $attrs['ngeoLayertreeListeners'];
@@ -110221,7 +110298,7 @@ goog.require('ngeo');
  *
  *<div ngeo-popover>
  *  <a ngeo-popover-anchor class="btn btn-info">anchor 1</a>
- *  <div ngeo-popover-content="">
+ *  <div ngeo-popover-content>
  *    <ul>
  *      <li>action 1:
  *        <input type="range"/>
@@ -110295,11 +110372,11 @@ ngeo.popoverAnchorDirective = function() {
 ngeo.popoverContentDirective = function() {
   return {
     restrict: 'A',
-    transclude: true,
+    transclude: 'element',
     require: '^^ngeoPopover',
     link: function(scope, elem, attrs, ngeoPopoverCtrl, transclude) {
       transclude(scope, function(transcludedElm, scope) {
-        ngeoPopoverCtrl.bodyElm = transcludedElm;
+        ngeoPopoverCtrl.bodyElm = transcludedElm.contents();
       });
     }
   };
@@ -118331,6 +118408,9 @@ ngeo.format.FeatureHash.readMultiPolygonGeometry_ = function(text) {
  * @private
  */
 ngeo.format.FeatureHash.setStyleInFeature_ = function(text, feature) {
+  if (text == '') {
+    return;
+  }
   var fillColor, fontSize, fontColor, pointRadius, strokeColor, strokeWidth;
   var parts = text.split('\'');
   for (var i = 0; i < parts.length; ++i) {
@@ -118676,12 +118756,14 @@ ngeo.format.FeatureHash.prototype.readFeatureFromText = function(text, opt_optio
     var attributesText = splitIndex >= 0 ?
         attributesAndStylesText.substring(0, splitIndex) :
         attributesAndStylesText;
-    var parts = attributesText.split('\'');
-    for (var i = 0; i < parts.length; ++i) {
-      var part = decodeURIComponent(parts[i]);
-      var keyVal = part.split('*');
-      goog.asserts.assert(keyVal.length === 2);
-      feature.set(keyVal[0], keyVal[1]);
+    if (attributesText != '') {
+      var parts = attributesText.split('\'');
+      for (var i = 0; i < parts.length; ++i) {
+        var part = decodeURIComponent(parts[i]);
+        var keyVal = part.split('*');
+        goog.asserts.assert(keyVal.length === 2);
+        feature.set(keyVal[0], keyVal[1]);
+      }
     }
     if (splitIndex >= 0) {
       var stylesText = attributesAndStylesText.substring(splitIndex + 1);
@@ -122117,77 +122199,88 @@ ngeo.debounceServiceFactory = function($timeout) {
 
 ngeo.module.factory('ngeoDebounce', ngeo.debounceServiceFactory);
 
-goog.provide('ngeo.DecorateLayer');
+goog.provide('ngeo.DecorateLayerLoading');
 
 goog.require('goog.asserts');
 goog.require('ngeo');
 
 
 /**
- * Provides a function that adds properties (using
- * `Object.defineProperty`) to the layer, making it possible to control layer
- * properties with ngModel.
+ * Provides a function that adds a 'loading 'property (using
+ * `Object.defineProperty`) to an ol.layer.Group or a layer with
+ * an ol.source.Tile or an ol.source.Image source.
+ * This property is true when the layer is loading and false otherwise.
  *
  * Example:
  *
- *      <input type="checkbox" ngModel="layer.visible" />
+ *      <span ng-if="layer.loading">please wait</span>
  *
- * See our live examples:
- * {@link ../examples/layeropacity.html}
- * {@link ../examples/layervisibility.html}
- *
- * @typedef {function(ol.layer.Base)}
+ * @typedef {function(ol.layer.Base, angular.Scope)}
  * @ngdoc service
- * @ngname ngeoDecorateLayer
+ * @ngname ngeoDecorateLayerLoading
  */
-ngeo.DecorateLayer;
+ngeo.DecorateLayerLoading;
 
 
 /**
  * @param {ol.layer.Base} layer Layer to decorate.
+ * @param {angular.Scope} $scope Scope.
  */
-ngeo.decorateLayer = function(layer) {
+ngeo.decorateLayerLoading = function(layer, $scope) {
   goog.asserts.assertInstanceof(layer, ol.layer.Base);
 
-  Object.defineProperty(layer, 'visible', {
+  var sources = [];
+  if (layer instanceof ol.layer.Group) {
+    // layer group
+    sources = layer.getLayersArray().map(function(layer) {
+      goog.asserts.assert(layer instanceof ol.layer.Layer);
+      return layer.getSource();
+    });
+  } else {
+    goog.asserts.assert(layer instanceof ol.layer.Layer);
+    sources = [layer.getSource()];
+  }
+
+  layer.set('load_count', 0, true);
+  sources.forEach(function(source) {
+    var incrementEvents, decrementEvents;
+    if (source instanceof ol.source.Tile) {
+      incrementEvents = ['tileloadstart'];
+      decrementEvents = ['tileloadend', 'tileloaderror'];
+    } else if (source instanceof ol.source.Image) {
+      incrementEvents = ['imageloadstart'];
+      decrementEvents = ['imageloadend', 'imageloaderror'];
+    } else {
+      goog.asserts.fail('unsupported source type');
+    }
+    source.on(incrementEvents, function() {
+      var load_count = /** @type {number} */ (layer.get('load_count'));
+      layer.set('load_count', ++load_count, true);
+      $scope.$applyAsync();
+    });
+    source.on(decrementEvents, function() {
+      var load_count = /** @type {number} */ (layer.get('load_count'));
+      layer.set('load_count', --load_count, true);
+      $scope.$applyAsync();
+    });
+
+  });
+
+  Object.defineProperty(layer, 'loading', {
     configurable: true,
     get:
         /**
-         * @return {boolean} Visible.
+         * @return {boolean} Loading.
          */
         function() {
-          return layer.getVisible();
-        },
-    set:
-        /**
-         * @param {boolean} val Visible.
-         */
-        function(val) {
-          layer.setVisible(val);
+          return /** @type {number} */ (layer.get('load_count')) > 0;
         }
   });
 
-  Object.defineProperty(layer, 'opacity', {
-    configurable: true,
-    get:
-        /**
-         * @return {string} Opacity.
-         */
-        function() {
-          return (Math.round(layer.getOpacity() * 100) / 100) + '';
-        },
-    set:
-        /**
-         * @param {string} val Opacity.
-         */
-        function(val) {
-          layer.setOpacity(+val);
-        }
-  });
 };
 
 
-ngeo.module.value('ngeoDecorateLayer', ngeo.decorateLayer);
+ngeo.module.value('ngeoDecorateLayerLoading', ngeo.decorateLayerLoading);
 
 goog.provide('ngeo.Features');
 goog.require('ngeo');
