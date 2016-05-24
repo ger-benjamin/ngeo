@@ -47,8 +47,8 @@ app.MainController = function() {
       })
     ],
     view: new ol.View({
-      center: [0, 0],
-      zoom: 4
+      center: [828042, 5933739],
+      zoom: 8
     })
   });
 };
