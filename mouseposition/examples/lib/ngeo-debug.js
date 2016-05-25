@@ -585,7 +585,7 @@ goog.addDependency = function(relPath, provides, requires, opt_loadFlags) {
     }
     for (var i = 0; provide = provides[i]; i++) {
       deps.nameToPath[provide] = path;
-      deps.pathIsModule[path] = opt_loadFlags['module'] == 'goog';
+      deps.loadFlags[path] = opt_loadFlags;
     }
     for (var j = 0; require = requires[j]; j++) {
       if (!(path in deps.requires)) {
@@ -805,13 +805,21 @@ goog.loadedModules_ = {};
 goog.DEPENDENCIES_ENABLED = !COMPILED && goog.ENABLE_DEBUG_LOADER;
 
 
+/** @define {boolean} Whether to always transpile every file. */
+goog.define('goog.ALWAYS_TRANSPILE', false);
+
+
+/** @define {boolean} Never transpile if this is set. */
+goog.define('goog.NEVER_TRANSPILE', false);
+
+
 if (goog.DEPENDENCIES_ENABLED) {
   /**
    * This object is used to keep track of dependencies and other data that is
    * used for loading scripts.
    * @private
    * @type {{
-   *   pathIsModule: !Object<string, boolean>,
+   *   loadFlags: !Object<string, !Object<string, string>>,
    *   nameToPath: !Object<string, string>,
    *   requires: !Object<string, !Object<string, boolean>>,
    *   visited: !Object<string, boolean>,
@@ -820,7 +828,7 @@ if (goog.DEPENDENCIES_ENABLED) {
    * }}
    */
   goog.dependencies_ = {
-    pathIsModule: {},  // 1 to 1
+    loadFlags: {},  // 1 to 1
 
     nameToPath: {},  // 1 to 1
 
@@ -892,24 +900,30 @@ if (goog.DEPENDENCIES_ENABLED) {
   };
 
 
-  /** @const @private {boolean} */
+  /**
+   * Whether the browser is IE9 or earlier, which needs special handling
+   * for deferred modules.
+   * @const @private {boolean}
+   */
   goog.IS_OLD_IE_ =
       !!(!goog.global.atob && goog.global.document && goog.global.document.all);
 
 
   /**
-   * Given a URL initiate retrieval and execution of the module.
+   * Given a URL initiate retrieval and execution of a script that needs
+   * pre-processing.
    * @param {string} src Script source URL.
+   * @param {boolean} isModule Whether this is a goog.module.
+   * @param {boolean} needsTranspile Whether this source needs transpilation.
    * @private
    */
-  goog.importModule_ = function(src) {
+  goog.importProcessedScript_ = function(src, isModule, needsTranspile) {
     // In an attempt to keep browsers from timing out loading scripts using
     // synchronous XHRs, put each load in its own script block.
-    var bootstrap = 'goog.retrieveAndExecModule_("' + src + '");';
+    var bootstrap = 'goog.retrieveAndExec_("' + src + '", ' + isModule + ', ' +
+        needsTranspile + ');';
 
-    if (goog.importScript_('', bootstrap)) {
-      goog.dependencies_.written[src] = true;
-    }
+    goog.importScript_('', bootstrap);
   };
 
 
@@ -1003,7 +1017,9 @@ if (goog.DEPENDENCIES_ENABLED) {
    */
   goog.isDeferredModule_ = function(name) {
     var path = goog.getPathFromDeps_(name);
-    if (path && goog.dependencies_.pathIsModule[path]) {
+    var loadFlags = path && goog.dependencies_.loadFlags[path] || {};
+    if (path && (loadFlags['module'] == 'goog' ||
+                 goog.needsTranspile_(loadFlags['lang']))) {
       var abspath = goog.basePath + path;
       return (abspath) in goog.dependencies_.deferred;
     }
@@ -1067,7 +1083,7 @@ if (goog.DEPENDENCIES_ENABLED) {
     // Because this executes synchronously, we don't need to do any additional
     // bookkeeping. When "goog.loadModule" the namespace will be marked as
     // having been provided which is sufficient.
-    goog.retrieveAndExecModule_(url);
+    goog.retrieveAndExec_(url, true, false);
   };
 
 
@@ -1212,10 +1228,8 @@ if (goog.DEPENDENCIES_ENABLED) {
         }
       }
 
-      var isOldIE = goog.IS_OLD_IE_;
-
       if (opt_sourceText === undefined) {
-        if (!isOldIE) {
+        if (!goog.IS_OLD_IE_) {
           if (goog.ENABLE_CHROME_APP_SAFE_SCRIPT_LOADING) {
             goog.appendScriptSrcNode_(src);
           } else {
@@ -1239,6 +1253,66 @@ if (goog.DEPENDENCIES_ENABLED) {
       return false;
     }
   };
+
+
+  /**
+   * Determines whether the given language needs to be transpiled.
+   * @param {string} lang
+   * @return {boolean}
+   * @private
+   */
+  goog.needsTranspile_ = function(lang) {
+    if (goog.ALWAYS_TRANSPILE) {
+      return true;
+    } else if (goog.NEVER_TRANSPILE) {
+      return false;
+    } else if (!goog.transpiledLanguages_) {
+      goog.transpiledLanguages_ = {'es5': true, 'es6': true, 'es6-impl': true};
+      /** @preserveTry */
+      try {
+        // Perform some quick conformance checks, to distinguish
+        // between browsers that support es5, es6-impl, or es6.
+
+        // Identify ES3-only browsers by their incorrect treatment of commas.
+        goog.transpiledLanguages_['es5'] = eval('[1,].length!=1');
+
+        // As browsers mature, features will be moved from the full test
+        // into the impl test.  This must happen before the corresponding
+        // features are changed in the Closure Compiler's FeatureSet object.
+
+        // Test 1: es6-impl [FF49, Edge 13, Chrome 49]
+        //   (a) let/const keyword, (b) class expressions, (c) Map object,
+        //   (d) iterable arguments, (e) spread operator
+        var es6implTest =
+            'let a={};const X=class{constructor(){}x(z){return new Map([' +
+            '...arguments]).get(z[0])==3}};return new X().x([a,3])';
+
+        // Test 2: es6 [FF50 (?), Edge 14 (?), Chrome 50]
+        //   (a) default params (specifically shadowing locals),
+        //   (b) destructuring, (c) block-scoped functions,
+        //   (d) for-of (const), (e) new.target/Reflect.construct
+        var es6fullTest =
+            'class X{constructor(){if(new.target!=String)throw 1;this.x=42}}' +
+            'let q=Reflect.construct(X,[],String);if(q.x!=42||!(q instanceof ' +
+            'String))throw 1;for(const a of[2,3]){if(a==2)continue;function ' +
+            'f(z={a}){let a=0;return z.a}{function f(){return 0;}}return f()' +
+            '==3}';
+
+        if (eval('(()=>{"use strict";' + es6implTest + '})()')) {
+          goog.transpiledLanguages_['es6-impl'] = false;
+        }
+        if (eval('(()=>{"use strict";' + es6fullTest + '})()')) {
+          goog.transpiledLanguages_['es6'] = false;
+        }
+      } catch (err) {
+      }
+    }
+    return !!goog.transpiledLanguages_[lang];
+  };
+
+
+  /** @private {?Object<string, boolean>} */
+  goog.transpiledLanguages_ = null;
 
 
   /** @private {number} */
@@ -1326,10 +1400,14 @@ if (goog.DEPENDENCIES_ENABLED) {
     for (var i = 0; i < scripts.length; i++) {
       var path = scripts[i];
       if (path) {
-        if (!deps.pathIsModule[path]) {
-          goog.importScript_(goog.basePath + path);
+        var loadFlags = deps.loadFlags[path] || {};
+        var needsTranspile = goog.needsTranspile_(loadFlags['lang']);
+        if (loadFlags['module'] == 'goog' || needsTranspile) {
+          goog.importProcessedScript_(
+              goog.basePath + path, loadFlags['module'] == 'goog',
+              needsTranspile);
         } else {
-          goog.importModule_(goog.basePath + path);
+          goog.importScript_(goog.basePath + path);
         }
       } else {
         goog.moduleLoaderState_ = moduleState;
@@ -1394,7 +1472,7 @@ goog.normalizePath_ = function(path) {
 /**
  * Loads file by synchronous XHR. Should not be used in production environments.
  * @param {string} src Source URL.
- * @return {string} File contents.
+ * @return {?string} File contents, or null if load failed.
  * @private
  */
 goog.loadFileSync_ = function(src) {
@@ -1405,17 +1483,19 @@ goog.loadFileSync_ = function(src) {
     var xhr = new goog.global['XMLHttpRequest']();
     xhr.open('get', src, false);
     xhr.send();
-    return xhr.responseText;
+    return xhr.status == 200 ? xhr.responseText : null;
   }
 };
 
 
 /**
- * Retrieve and execute a module.
+ * Retrieve and execute a script that needs some sort of wrapping.
  * @param {string} src Script source URL.
+ * @param {boolean} isModule Whether to load as a module.
+ * @param {boolean} needsTranspile Whether to transpile down to ES3.
  * @private
  */
-goog.retrieveAndExecModule_ = function(src) {
+goog.retrieveAndExec_ = function(src, isModule, needsTranspile) {
   if (!COMPILED) {
     // The full but non-canonicalized URL for later use.
     var originalPath = src;
@@ -1427,20 +1507,71 @@ goog.retrieveAndExecModule_ = function(src) {
         goog.global.CLOSURE_IMPORT_SCRIPT || goog.writeScriptTag_;
 
     var scriptText = goog.loadFileSync_(src);
+    if (scriptText == null) {
+      throw new Error('Load of "' + src + '" failed');
+    }
 
-    if (scriptText != null) {
-      var execModuleScript = goog.wrapModule_(src, scriptText);
-      var isOldIE = goog.IS_OLD_IE_;
-      if (isOldIE) {
-        goog.dependencies_.deferred[originalPath] = execModuleScript;
-        goog.queuedModules_.push(originalPath);
-      } else {
-        importScript(src, execModuleScript);
-      }
+    if (needsTranspile) {
+      scriptText = goog.transpile_.call(goog.global, scriptText, src);
+    }
+
+    if (isModule) {
+      scriptText = goog.wrapModule_(src, scriptText);
     } else {
-      throw new Error('load of ' + src + 'failed');
+      scriptText += '\n//# sourceURL=' + src;
+    }
+    var isOldIE = goog.IS_OLD_IE_;
+    if (isOldIE) {
+      goog.dependencies_.deferred[originalPath] = scriptText;
+      goog.queuedModules_.push(originalPath);
+    } else {
+      importScript(src, scriptText);
     }
   }
+};
+
+
+/**
+ * Lazily retrieves the transpiler and applies it to the source.
+ * @param {string} code JS code.
+ * @param {string} path Path to the code.
+ * @return {string} The transpiled code.
+ * @private
+ */
+goog.transpile_ = function(code, path) {
+  var jscomp = goog.global['$jscomp'];
+  if (!jscomp) {
+    goog.global['$jscomp'] = jscomp = {};
+  }
+  var transpile = jscomp.transpile;
+  if (!transpile) {
+    var transpilerPath = goog.basePath + 'transpile.js';
+    var transpilerCode = goog.loadFileSync_(transpilerPath);
+    if (transpilerCode) {
+      // This must be executed synchronously, since by the time we know we
+      // need it, we're about to load and write the ES6 code synchronously,
+      // so a normal script-tag load will be too slow.
+      eval(transpilerCode + '\n//# sourceURL=' + transpilerPath);
+      // Note: transpile.js reassigns goog.global['$jscomp'] so pull it again.
+      jscomp = goog.global['$jscomp'];
+      transpile = jscomp.transpile;
+    }
+  }
+  if (!transpile) {
+    // The transpiler is an optional component.  If it's not available then
+    // replace it with a pass-through function that simply logs.
+    var suffix = ' requires transpilation but no transpiler was found.';
+    transpile = jscomp.transpile = function(code, path) {
+      // TODO(user): figure out some way to get this error to show up
+      // in test results, noting that the failure may occur in many
+      // different ways, including in loadModule() before the test
+      // runner even comes up.
+      goog.logToConsole_(path + suffix);
+      return code;
+    };
+  }
+  // Note: any transpilation errors/warnings will be logged to the console.
+  return transpile(code, path);
 };
 
 
@@ -2449,8 +2580,11 @@ goog.defineClass.ClassDescriptor;
 
 
 /**
- * @define {boolean} Whether the instances returned by
- * goog.defineClass should be sealed when possible.
+ * @define {boolean} Whether the instances returned by goog.defineClass should
+ *     be sealed when possible.
+ *
+ * When sealing is disabled the constructor function will not be wrapped by
+ * goog.defineClass, making it incompatible with ES6 class methods.
  */
 goog.define('goog.defineClass.SEAL_CLASS_INSTANCES', goog.DEBUG);
 
@@ -2466,30 +2600,46 @@ goog.define('goog.defineClass.SEAL_CLASS_INSTANCES', goog.DEBUG);
  * @private
  */
 goog.defineClass.createSealingConstructor_ = function(ctr, superClass) {
-  if (goog.defineClass.SEAL_CLASS_INSTANCES &&
-      Object.seal instanceof Function) {
-    // Don't seal subclasses of unsealable-tagged legacy classes.
-    if (superClass && superClass.prototype &&
-        superClass.prototype[goog.UNSEALABLE_CONSTRUCTOR_PROPERTY_]) {
-      return ctr;
-    }
-    /**
-     * @this {Object}
-     * @return {?}
-     */
-    var wrappedCtr = function() {
-      // Don't seal an instance of a subclass when it calls the constructor of
-      // its super class as there is most likely still setup to do.
-      var instance = ctr.apply(this, arguments) || this;
-      instance[goog.UID_PROPERTY_] = instance[goog.UID_PROPERTY_];
-      if (this.constructor === wrappedCtr) {
-        Object.seal(instance);
-      }
-      return instance;
-    };
-    return wrappedCtr;
+  if (!goog.defineClass.SEAL_CLASS_INSTANCES) {
+    // Do now wrap the constructor when sealing is disabled. Angular code
+    // depends on this for injection to work properly.
+    return ctr;
   }
-  return ctr;
+
+  // Compute whether the constructor is sealable at definition time, rather
+  // than when the instance is being constructed.
+  var superclassSealable = !goog.defineClass.isUnsealable_(superClass);
+
+  /**
+   * @this {Object}
+   * @return {?}
+   */
+  var wrappedCtr = function() {
+    // Don't seal an instance of a subclass when it calls the constructor of
+    // its super class as there is most likely still setup to do.
+    var instance = ctr.apply(this, arguments) || this;
+    instance[goog.UID_PROPERTY_] = instance[goog.UID_PROPERTY_];
+
+    if (this.constructor === wrappedCtr && superclassSealable &&
+        Object.seal instanceof Function) {
+      Object.seal(instance);
+    }
+    return instance;
+  };
+
+  return wrappedCtr;
+};
+
+
+/**
+ * @param {Function} ctr The constructor to test.
+ * @returns {boolean} Whether the constructor has been tagged as unsealable
+ *     using goog.tagUnsealableClass.
+ * @private
+ */
+goog.defineClass.isUnsealable_ = function(ctr) {
+  return ctr && ctr.prototype &&
+      ctr.prototype[goog.UNSEALABLE_CONSTRUCTOR_PROPERTY_];
 };
 
 
@@ -2538,7 +2688,7 @@ goog.defineClass.applyProperties_ = function(target, source) {
 
 /**
  * Sealing classes breaks the older idiom of assigning properties on the
- * prototype rather than in the constructor.  As such, goog.defineClass
+ * prototype rather than in the constructor. As such, goog.defineClass
  * must not seal subclasses of these old-style classes until they are fixed.
  * Until then, this marks a class as "broken", instructing defineClass
  * not to seal subclasses.
@@ -11836,7 +11986,7 @@ goog.vec.Mat4.getDiagonal = function(mat, vec, opt_diagonal) {
 /**
  * Sets the specified column with the supplied values.
  *
- * @param {goog.vec.Mat4.AnyType} mat The matrix to recieve the values.
+ * @param {goog.vec.Mat4.AnyType} mat The matrix to receive the values.
  * @param {number} column The column index to set the values on.
  * @param {number} v0 The value for row 0.
  * @param {number} v1 The value for row 1.
@@ -12598,7 +12748,7 @@ goog.vec.Mat4.makeFrustum = function(mat, left, right, bottom, top, near, far) {
 
 
 /**
- * Makse the given 4x4 matrix  perspective projection matrix given a
+ * Makes the given 4x4 matrix  perspective projection matrix given a
  * field of view and aspect ratio.
  *
  * @param {goog.vec.Mat4.AnyType} mat The matrix.
@@ -18535,7 +18685,7 @@ goog.array.binarySearch_ = function(
  * <code>goog.array.defaultCompare</code>, which compares the elements using
  * the built in < and > operators.  This will produce the expected behavior
  * for homogeneous arrays of String(s) and Number(s), unlike the native sort,
- * but will give unpredictable results for heterogenous lists of strings and
+ * but will give unpredictable results for heterogeneous lists of strings and
  * numbers with different numbers of digits.
  *
  * This sort is not guaranteed to be stable.
@@ -19075,6 +19225,26 @@ goog.array.copyByIndex = function(arr, index_arr) {
   var result = [];
   goog.array.forEach(index_arr, function(index) { result.push(arr[index]); });
   return result;
+};
+
+
+/**
+ * Maps each element of the input array into zero or more elements of the output
+ * array.
+ *
+ * @param {!IArrayLike<VALUE>|string} arr Array or array like object
+ *     over which to iterate.
+ * @param {function(this:THIS, VALUE, number, ?): !Array<RESULT>} f The function
+ *     to call for every element. This function takes 3 arguments (the element,
+ *     the index and the array) and should return an array. The result will be
+ *     used to extend a new array.
+ * @param {THIS=} opt_obj The object to be used as the value of 'this' within f.
+ * @return {!Array<RESULT>} a new array with the concatenation of all arrays
+ *     returned from f.
+ * @template THIS, VALUE, RESULT
+ */
+goog.array.concatMap = function(arr, f, opt_obj) {
+  return goog.array.concat.apply([], goog.array.map(arr, f, opt_obj));
 };
 
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
@@ -20732,6 +20902,32 @@ goog.provide('goog.object');
 
 
 /**
+ * Whether two values are not observably distinguishable. This
+ * correctly detects that 0 is not the same as -0 and two NaNs are
+ * practically equivalent.
+ *
+ * The implementation is as suggested by harmony:egal proposal.
+ *
+ * @param {*} v The first value to compare.
+ * @param {*} v2 The second value to compare.
+ * @return {boolean} Whether two values are not observably distinguishable.
+ * @see http://wiki.ecmascript.org/doku.php?id=harmony:egal
+ */
+goog.object.is = function(v, v2) {
+  if (v === v2) {
+    // 0 === -0, but they are not identical.
+    // We need the cast because the compiler requires that v2 is a
+    // number (although 1/v2 works with non-number). We cast to ? to
+    // stop the compiler from type-checking this statement.
+    return v !== 0 || 1 / v === 1 / /** @type {?} */ (v2);
+  }
+
+  // NaN is non-reflexive: NaN !== NaN, although they are identical.
+  return v !== v && v2 !== v2;
+};
+
+
+/**
  * Calls a function for each element in an object/map/hash.
  *
  * @param {Object<K,V>} obj The object over which to iterate.
@@ -20854,9 +21050,6 @@ goog.object.every = function(obj, f, opt_obj) {
  * @return {number} The number of key-value pairs in the object map.
  */
 goog.object.getCount = function(obj) {
-  // JS1.5 has __count__ but it has been deprecated so it raises a warning...
-  // in other words do not use. Also __count__ only includes the fields on the
-  // actual object and not in the prototype chain.
   var rv = 0;
   for (var key in obj) {
     rv++;
@@ -21195,7 +21388,7 @@ goog.object.equals = function(a, b) {
 
 
 /**
- * Does a flat clone of the object.
+ * Returns a shallow clone of the object.
  *
  * @param {Object<K,V>} obj Object to clone.
  * @return {!Object<K,V>} Clone of the input object.
@@ -21429,12 +21622,13 @@ goog.require('goog.string');
 
 
 /**
- * @return {boolean} Whether the user's browser is Opera.
+ * @return {boolean} Whether the user's browser is Opera.  Note: Chromium
+ *     based Opera (Opera 15+) is detected as Chrome to avoid unnecessary
+ *     special casing.
  * @private
  */
 goog.labs.userAgent.browser.matchOpera_ = function() {
-  return goog.labs.userAgent.util.matchUserAgent('Opera') ||
-      goog.labs.userAgent.util.matchUserAgent('OPR');
+  return goog.labs.userAgent.util.matchUserAgent('Opera');
 };
 
 
@@ -21514,7 +21708,6 @@ goog.labs.userAgent.browser.matchIosWebview_ = function() {
 goog.labs.userAgent.browser.matchChrome_ = function() {
   return (goog.labs.userAgent.util.matchUserAgent('Chrome') ||
           goog.labs.userAgent.util.matchUserAgent('CriOS')) &&
-      !goog.labs.userAgent.browser.matchOpera_() &&
       !goog.labs.userAgent.browser.matchEdge_();
 };
 
@@ -21646,7 +21839,7 @@ goog.labs.userAgent.browser.getVersion = function() {
   if (goog.labs.userAgent.browser.isOpera()) {
     // Opera 10 has Version/10.0 but Opera/9.8, so look for "Version" first.
     // Opera uses 'OPR' for more recent UAs.
-    return lookUpValueWithKeys(['Version', 'Opera', 'OPR']);
+    return lookUpValueWithKeys(['Version', 'Opera']);
   }
 
   // Check Edge before Chrome since it has Chrome in the string.
@@ -22318,13 +22511,20 @@ goog.define('goog.userAgent.ASSUME_IPAD', false);
 
 
 /**
+ * @define {boolean} Whether the user agent is running on an iPod.
+ */
+goog.define('goog.userAgent.ASSUME_IPOD', false);
+
+
+/**
  * @type {boolean}
  * @private
  */
 goog.userAgent.PLATFORM_KNOWN_ = goog.userAgent.ASSUME_MAC ||
     goog.userAgent.ASSUME_WINDOWS || goog.userAgent.ASSUME_LINUX ||
     goog.userAgent.ASSUME_X11 || goog.userAgent.ASSUME_ANDROID ||
-    goog.userAgent.ASSUME_IPHONE || goog.userAgent.ASSUME_IPAD;
+    goog.userAgent.ASSUME_IPHONE || goog.userAgent.ASSUME_IPAD ||
+    goog.userAgent.ASSUME_IPOD;
 
 
 /**
@@ -22417,6 +22617,15 @@ goog.userAgent.IPHONE = goog.userAgent.PLATFORM_KNOWN_ ?
 goog.userAgent.IPAD = goog.userAgent.PLATFORM_KNOWN_ ?
     goog.userAgent.ASSUME_IPAD :
     goog.labs.userAgent.platform.isIpad();
+
+
+/**
+ * Whether the user agent is running on an iPod.
+ * @type {boolean}
+ */
+goog.userAgent.IPOD = goog.userAgent.PLATFORM_KNOWN_ ?
+    goog.userAgent.ASSUME_IPOD :
+    goog.labs.userAgent.platform.isIpod();
 
 
 /**
@@ -25850,7 +26059,7 @@ goog.html.SafeHtml.AttributeValue;
  *
  * @param {string} tagName The name of the tag. Only tag names consisting of
  *     [a-zA-Z0-9-] are allowed. Tag names documented above are disallowed.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -25900,11 +26109,11 @@ goog.html.SafeHtml.verifyTagName = function(tagName) {
  *
  * @see https://developer.mozilla.org/en/docs/Web/HTML/Element/iframe#attr-sandbox
  *
- * @param {goog.html.TrustedResourceUrl=} opt_src The value of the src
+ * @param {?goog.html.TrustedResourceUrl=} opt_src The value of the src
  *     attribute. If null or undefined src will not be set.
- * @param {goog.html.SafeHtml=} opt_srcdoc The value of the srcdoc attribute.
+ * @param {?goog.html.SafeHtml=} opt_srcdoc The value of the srcdoc attribute.
  *     If null or undefined srcdoc will not be set.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -26003,7 +26212,7 @@ goog.html.SafeHtml.canUseSandboxIframe = function() {
  * Creates a SafeHtml representing a script tag with the src attribute.
  * @param {!goog.html.TrustedResourceUrl} src The value of the src
  * attribute.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=}
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=}
  * opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined
@@ -26031,7 +26240,7 @@ goog.html.SafeHtml.createScriptSrc = function(src, opt_attributes) {
  * @param {!goog.html.SafeStyleSheet|!Array<!goog.html.SafeStyleSheet>}
  *     styleSheet Content to put inside the tag. Array elements are
  *     concatenated.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Mapping from attribute names to their values. Only attribute names
  *     consisting of [a-zA-Z0-9-] are allowed. Value of null or undefined causes
  *     the attribute to be omitted.
@@ -26183,7 +26392,7 @@ goog.html.SafeHtml.getStyleValue_ = function(value) {
  * optional attributes and optional content.
  * @param {!goog.i18n.bidi.Dir} dir Directionality.
  * @param {string} tagName
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  * @param {!goog.html.SafeHtml.TextOrHtml_|
  *     !Array<!goog.html.SafeHtml.TextOrHtml_>=} opt_content
  * @return {!goog.html.SafeHtml} The SafeHtml content with the tag.
@@ -26293,7 +26502,7 @@ goog.html.SafeHtml.prototype.initSecurityPrivateDoNotAccessOrElse_ = function(
  * Like create() but does not restrict which tags can be constructed.
  *
  * @param {string} tagName Tag name. Set or validated by caller.
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  * @param {(!goog.html.SafeHtml.TextOrHtml_|
  *     !Array<!goog.html.SafeHtml.TextOrHtml_>)=} opt_content
  * @return {!goog.html.SafeHtml}
@@ -26343,7 +26552,7 @@ goog.html.SafeHtml.createSafeHtmlTagSecurityPrivateDoNotAccessOrElse = function(
 /**
  * Creates a string with attributes to insert after tagName.
  * @param {string} tagName
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  * @return {string} Returns an empty string if there are no attributes, returns
  *     a string starting with a space otherwise.
  * @throws {Error} If attribute value is unsafe for the given tag and attribute.
@@ -26365,13 +26574,13 @@ goog.html.SafeHtml.stringifyAttributes = function(tagName, opt_attributes) {
     }
   }
   return result;
-}
+};
 
 
 /**
  * @param {!Object<string, string>} fixedAttributes
  * @param {!Object<string, string>} defaultAttributes
- * @param {!Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
+ * @param {?Object<string, ?goog.html.SafeHtml.AttributeValue>=} opt_attributes
  *     Optional attributes passed to create*().
  * @return {!Object<string, ?goog.html.SafeHtml.AttributeValue>}
  * @throws {Error} If opt_attributes contains an attribute with the same name
@@ -26806,184 +27015,6 @@ goog.dom.safe.openInWindow = function(
       // https://html.spec.whatwg.org/multipage/browsers.html#dom-open .
       opt_name ? goog.string.Const.unwrap(opt_name) : '', opt_specs,
       opt_replace);
-};
-
-// Copyright 2013 The Closure Library Authors. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS-IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/**
- * @fileoverview Transitional utilities to unsafely trust random strings as
- * goog.html types. Intended for temporary use when upgrading a library that
- * used to accept plain strings to use safe types, but where it's not
- * practical to transitively update callers.
- *
- * IMPORTANT: No new code should use the conversion functions in this file,
- * they are intended for refactoring old code to use goog.html types. New code
- * should construct goog.html types via their APIs, template systems or
- * sanitizers. If that’s not possible it should use
- * goog.html.uncheckedconversions and undergo security review.
-
- *
- * The semantics of the conversions in goog.html.legacyconversions are very
- * different from the ones provided by goog.html.uncheckedconversions. The
- * latter are for use in code where it has been established through manual
- * security review that the value produced by a piece of code will always
- * satisfy the SafeHtml contract (e.g., the output of a secure HTML sanitizer).
- * In uses of goog.html.legacyconversions, this guarantee is not given -- the
- * value in question originates in unreviewed legacy code and there is no
- * guarantee that it satisfies the SafeHtml contract.
- *
- * There are only three valid uses of legacyconversions:
- *
- * 1. Introducing a goog.html version of a function which currently consumes
- * string and passes that string to a DOM API which can execute script - and
- * hence cause XSS - like innerHTML. For example, Dialog might expose a
- * setContent method which takes a string and sets the innerHTML property of
- * an element with it. In this case a setSafeHtmlContent function could be
- * added, consuming goog.html.SafeHtml instead of string, and using
- * goog.dom.safe.setInnerHtml instead of directly setting innerHTML.
- * setContent could then internally use legacyconversions to create a SafeHtml
- * from string and pass the SafeHtml to setSafeHtmlContent. In this scenario
- * remember to document the use of legacyconversions in the modified setContent
- * and consider deprecating it as well.
- *
- * 2. Automated refactoring of application code which handles HTML as string
- * but needs to call a function which only takes goog.html types. For example,
- * in the Dialog scenario from (1) an alternative option would be to refactor
- * setContent to accept goog.html.SafeHtml instead of string and then refactor
- * all current callers to use legacyconversions to pass SafeHtml. This is
- * generally preferable to (1) because it keeps the library clean of
- * legacyconversions, and makes code sites in application code that are
- * potentially vulnerable to XSS more apparent.
- *
- * 3. Old code which needs to call APIs which consume goog.html types and for
- * which it is prohibitively expensive to refactor to use goog.html types.
- * Generally, this is code where safety from XSS is either hopeless or
- * unimportant.
- *
- * @visibility {//closure/goog/html:approved_for_legacy_conversion}
- * @visibility {//closure/goog/bin/sizetests:__pkg__}
- */
-
-
-goog.provide('goog.html.legacyconversions');
-
-goog.require('goog.html.SafeHtml');
-goog.require('goog.html.SafeStyle');
-goog.require('goog.html.SafeStyleSheet');
-goog.require('goog.html.SafeUrl');
-goog.require('goog.html.TrustedResourceUrl');
-
-
-/**
- * Performs an "unchecked conversion" from string to SafeHtml for legacy API
- * purposes.
- *
- * Please read fileoverview documentation before using.
- *
- * @param {string} html A string to be converted to SafeHtml.
- * @return {!goog.html.SafeHtml} The value of html, wrapped in a SafeHtml
- *     object.
- */
-goog.html.legacyconversions.safeHtmlFromString = function(html) {
-  goog.html.legacyconversions.reportCallback_();
-  return goog.html.SafeHtml.createSafeHtmlSecurityPrivateDoNotAccessOrElse(
-      html, null /* dir */);
-};
-
-
-/**
- * Performs an "unchecked conversion" from string to SafeStyle for legacy API
- * purposes.
- *
- * Please read fileoverview documentation before using.
- *
- * @param {string} style A string to be converted to SafeStyle.
- * @return {!goog.html.SafeStyle} The value of style, wrapped in a SafeStyle
- *     object.
- */
-goog.html.legacyconversions.safeStyleFromString = function(style) {
-  goog.html.legacyconversions.reportCallback_();
-  return goog.html.SafeStyle.createSafeStyleSecurityPrivateDoNotAccessOrElse(
-      style);
-};
-
-
-/**
- * Performs an "unchecked conversion" from string to SafeStyleSheet for legacy
- * API purposes.
- *
- * Please read fileoverview documentation before using.
- *
- * @param {string} styleSheet A string to be converted to SafeStyleSheet.
- * @return {!goog.html.SafeStyleSheet} The value of style sheet, wrapped in
- *     a SafeStyleSheet object.
- */
-goog.html.legacyconversions.safeStyleSheetFromString = function(styleSheet) {
-  goog.html.legacyconversions.reportCallback_();
-  return goog.html.SafeStyleSheet
-      .createSafeStyleSheetSecurityPrivateDoNotAccessOrElse(styleSheet);
-};
-
-
-/**
- * Performs an "unchecked conversion" from string to SafeUrl for legacy API
- * purposes.
- *
- * Please read fileoverview documentation before using.
- *
- * @param {string} url A string to be converted to SafeUrl.
- * @return {!goog.html.SafeUrl} The value of url, wrapped in a SafeUrl
- *     object.
- */
-goog.html.legacyconversions.safeUrlFromString = function(url) {
-  goog.html.legacyconversions.reportCallback_();
-  return goog.html.SafeUrl.createSafeUrlSecurityPrivateDoNotAccessOrElse(url);
-};
-
-
-/**
- * Performs an "unchecked conversion" from string to TrustedResourceUrl for
- * legacy API purposes.
- *
- * Please read fileoverview documentation before using.
- *
- * @param {string} url A string to be converted to TrustedResourceUrl.
- * @return {!goog.html.TrustedResourceUrl} The value of url, wrapped in a
- *     TrustedResourceUrl object.
- */
-goog.html.legacyconversions.trustedResourceUrlFromString = function(url) {
-  goog.html.legacyconversions.reportCallback_();
-  return goog.html.TrustedResourceUrl
-      .createTrustedResourceUrlSecurityPrivateDoNotAccessOrElse(url);
-};
-
-/**
- * @private {function(): undefined}
- */
-goog.html.legacyconversions.reportCallback_ = goog.nullFunction;
-
-
-/**
- * Sets a function that will be called every time a legacy conversion is
- * performed. The function is called with no parameters but it can use
- * goog.debug.getStacktrace to get a stacktrace.
- *
- * @param {function(): undefined} callback Error callback as defined above.
- */
-goog.html.legacyconversions.setReportCallback = function(callback) {
-  goog.html.legacyconversions.reportCallback_ = callback;
 };
 
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
@@ -27525,7 +27556,6 @@ goog.require('goog.dom.NodeType');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.safe');
 goog.require('goog.html.SafeHtml');
-goog.require('goog.html.legacyconversions');
 goog.require('goog.math.Coordinate');
 goog.require('goog.math.Size');
 goog.require('goog.object');
@@ -28363,7 +28393,8 @@ goog.dom.createTable_ = function(doc, rows, columns, fillWithNbsp) {
 
 
 /**
- * Converts HTML markup into a node.
+ * Converts HTML markup into a node. This is a safe version of
+ * {@code goog.dom.htmlToDocumentFragment} which is now deleted.
  * @param {!goog.html.SafeHtml} html The HTML markup to convert.
  * @return {!Node} The resulting node.
  */
@@ -28389,27 +28420,6 @@ goog.dom.safeHtmlToNode_ = function(doc, html) {
     goog.dom.safe.setInnerHtml(tempDiv, html);
   }
   return goog.dom.childrenToNode_(doc, tempDiv);
-};
-
-
-/**
- * Converts an HTML string into a document fragment. The string must be
- * sanitized in order to avoid cross-site scripting. For example
- * {@code goog.dom.htmlToDocumentFragment('&lt;img src=x onerror=alert(0)&gt;')}
- * triggers an alert in all browsers, even if the returned document fragment
- * is thrown away immediately.
- *
- * NOTE: This method doesn't work if your htmlString contains elements that
- * can't be contained in a <div>. For example, <tr>.
- *
- * @param {string} htmlString The HTML string to convert.
- * @return {!Node} The resulting document fragment.
- * @deprecated Use {@link goog.dom.safeHtmlToNode} instead.
- */
-goog.dom.htmlToDocumentFragment = function(htmlString) {
-  return goog.dom.safeHtmlToNode_(document,
-      // For now, we are blindly trusting that the HTML is safe.
-      goog.html.legacyconversions.safeHtmlFromString(htmlString));
 };
 
 
@@ -29988,28 +29998,14 @@ goog.dom.DomHelper.prototype.createTable = function(
 /**
  * Converts an HTML into a node or a document fragment. A single Node is used if
  * {@code html} only generates a single node. If {@code html} generates multiple
- * nodes then these are put inside a {@code DocumentFragment}.
+ * nodes then these are put inside a {@code DocumentFragment}. This is a safe
+ * version of {@code goog.dom.DomHelper#htmlToDocumentFragment} which is now
+ * deleted.
  * @param {!goog.html.SafeHtml} html The HTML markup to convert.
  * @return {!Node} The resulting node.
  */
 goog.dom.DomHelper.prototype.safeHtmlToNode = function(html) {
   return goog.dom.safeHtmlToNode_(this.document_, html);
-};
-
-
-/**
- * Converts an HTML string into a node or a document fragment.  A single Node
- * is used if the {@code htmlString} only generates a single node.  If the
- * {@code htmlString} generates multiple nodes then these are put inside a
- * {@code DocumentFragment}.
- *
- * @param {string} htmlString The HTML string to convert.
- * @return {!Node} The resulting node.
- * @deprecated Use {@link goog.dom.DomHelper.prototype.safeHtmlToNode} instead.
- */
-goog.dom.DomHelper.prototype.htmlToDocumentFragment = function(htmlString) {
-  return goog.dom.safeHtmlToNode_(this.document_,
-      goog.html.legacyconversions.safeHtmlFromString(htmlString));
 };
 
 
@@ -30586,6 +30582,184 @@ goog.dom.vendor.getPrefixedPropertyName = function(propertyName, opt_object) {
 goog.dom.vendor.getPrefixedEventType = function(eventType) {
   var prefix = goog.dom.vendor.getVendorJsPrefix() || '';
   return (prefix + eventType).toLowerCase();
+};
+
+// Copyright 2013 The Closure Library Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS-IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Transitional utilities to unsafely trust random strings as
+ * goog.html types. Intended for temporary use when upgrading a library that
+ * used to accept plain strings to use safe types, but where it's not
+ * practical to transitively update callers.
+ *
+ * IMPORTANT: No new code should use the conversion functions in this file,
+ * they are intended for refactoring old code to use goog.html types. New code
+ * should construct goog.html types via their APIs, template systems or
+ * sanitizers. If that’s not possible it should use
+ * goog.html.uncheckedconversions and undergo security review.
+
+ *
+ * The semantics of the conversions in goog.html.legacyconversions are very
+ * different from the ones provided by goog.html.uncheckedconversions. The
+ * latter are for use in code where it has been established through manual
+ * security review that the value produced by a piece of code will always
+ * satisfy the SafeHtml contract (e.g., the output of a secure HTML sanitizer).
+ * In uses of goog.html.legacyconversions, this guarantee is not given -- the
+ * value in question originates in unreviewed legacy code and there is no
+ * guarantee that it satisfies the SafeHtml contract.
+ *
+ * There are only three valid uses of legacyconversions:
+ *
+ * 1. Introducing a goog.html version of a function which currently consumes
+ * string and passes that string to a DOM API which can execute script - and
+ * hence cause XSS - like innerHTML. For example, Dialog might expose a
+ * setContent method which takes a string and sets the innerHTML property of
+ * an element with it. In this case a setSafeHtmlContent function could be
+ * added, consuming goog.html.SafeHtml instead of string, and using
+ * goog.dom.safe.setInnerHtml instead of directly setting innerHTML.
+ * setContent could then internally use legacyconversions to create a SafeHtml
+ * from string and pass the SafeHtml to setSafeHtmlContent. In this scenario
+ * remember to document the use of legacyconversions in the modified setContent
+ * and consider deprecating it as well.
+ *
+ * 2. Automated refactoring of application code which handles HTML as string
+ * but needs to call a function which only takes goog.html types. For example,
+ * in the Dialog scenario from (1) an alternative option would be to refactor
+ * setContent to accept goog.html.SafeHtml instead of string and then refactor
+ * all current callers to use legacyconversions to pass SafeHtml. This is
+ * generally preferable to (1) because it keeps the library clean of
+ * legacyconversions, and makes code sites in application code that are
+ * potentially vulnerable to XSS more apparent.
+ *
+ * 3. Old code which needs to call APIs which consume goog.html types and for
+ * which it is prohibitively expensive to refactor to use goog.html types.
+ * Generally, this is code where safety from XSS is either hopeless or
+ * unimportant.
+ *
+ * @visibility {//closure/goog/html:approved_for_legacy_conversion}
+ * @visibility {//closure/goog/bin/sizetests:__pkg__}
+ */
+
+
+goog.provide('goog.html.legacyconversions');
+
+goog.require('goog.html.SafeHtml');
+goog.require('goog.html.SafeStyle');
+goog.require('goog.html.SafeStyleSheet');
+goog.require('goog.html.SafeUrl');
+goog.require('goog.html.TrustedResourceUrl');
+
+
+/**
+ * Performs an "unchecked conversion" from string to SafeHtml for legacy API
+ * purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} html A string to be converted to SafeHtml.
+ * @return {!goog.html.SafeHtml} The value of html, wrapped in a SafeHtml
+ *     object.
+ */
+goog.html.legacyconversions.safeHtmlFromString = function(html) {
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.SafeHtml.createSafeHtmlSecurityPrivateDoNotAccessOrElse(
+      html, null /* dir */);
+};
+
+
+/**
+ * Performs an "unchecked conversion" from string to SafeStyle for legacy API
+ * purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} style A string to be converted to SafeStyle.
+ * @return {!goog.html.SafeStyle} The value of style, wrapped in a SafeStyle
+ *     object.
+ */
+goog.html.legacyconversions.safeStyleFromString = function(style) {
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.SafeStyle.createSafeStyleSecurityPrivateDoNotAccessOrElse(
+      style);
+};
+
+
+/**
+ * Performs an "unchecked conversion" from string to SafeStyleSheet for legacy
+ * API purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} styleSheet A string to be converted to SafeStyleSheet.
+ * @return {!goog.html.SafeStyleSheet} The value of style sheet, wrapped in
+ *     a SafeStyleSheet object.
+ */
+goog.html.legacyconversions.safeStyleSheetFromString = function(styleSheet) {
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.SafeStyleSheet
+      .createSafeStyleSheetSecurityPrivateDoNotAccessOrElse(styleSheet);
+};
+
+
+/**
+ * Performs an "unchecked conversion" from string to SafeUrl for legacy API
+ * purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} url A string to be converted to SafeUrl.
+ * @return {!goog.html.SafeUrl} The value of url, wrapped in a SafeUrl
+ *     object.
+ */
+goog.html.legacyconversions.safeUrlFromString = function(url) {
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.SafeUrl.createSafeUrlSecurityPrivateDoNotAccessOrElse(url);
+};
+
+
+/**
+ * Performs an "unchecked conversion" from string to TrustedResourceUrl for
+ * legacy API purposes.
+ *
+ * Please read fileoverview documentation before using.
+ *
+ * @param {string} url A string to be converted to TrustedResourceUrl.
+ * @return {!goog.html.TrustedResourceUrl} The value of url, wrapped in a
+ *     TrustedResourceUrl object.
+ */
+goog.html.legacyconversions.trustedResourceUrlFromString = function(url) {
+  goog.html.legacyconversions.reportCallback_();
+  return goog.html.TrustedResourceUrl
+      .createTrustedResourceUrlSecurityPrivateDoNotAccessOrElse(url);
+};
+
+/**
+ * @private {function(): undefined}
+ */
+goog.html.legacyconversions.reportCallback_ = goog.nullFunction;
+
+
+/**
+ * Sets a function that will be called every time a legacy conversion is
+ * performed. The function is called with no parameters but it can use
+ * goog.debug.getStacktrace to get a stacktrace.
+ *
+ * @param {function(): undefined} callback Error callback as defined above.
+ */
+goog.html.legacyconversions.setReportCallback = function(callback) {
+  goog.html.legacyconversions.reportCallback_ = callback;
 };
 
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
@@ -31579,7 +31753,7 @@ goog.reflect.canAccessProperty = function(obj, prop) {
 goog.reflect.cache = function(cacheObj, key, valueFn, opt_keyFn) {
   var storedKey = opt_keyFn ? opt_keyFn(key) : key;
 
-  if (storedKey in cacheObj) {
+  if (Object.prototype.hasOwnProperty.call(cacheObj, storedKey)) {
     return cacheObj[storedKey];
   }
 
@@ -32197,7 +32371,7 @@ goog.style.getContainerOffsetToScrollInto = function(
     var relY = elementPos.y - container.scrollTop;
     if (goog.userAgent.IE && !goog.userAgent.isDocumentModeOrHigher(10)) {
       // In older versions of IE getPageOffset(element) does not include the
-      // container border so it has to be added to accomodate.
+      // container border so it has to be added to accommodate.
       relX += containerBorder.left;
       relY += containerBorder.top;
     }
@@ -37329,7 +37503,7 @@ goog.functions.error = function(message) {
  * @return {!Function} The error-throwing function.
  */
 goog.functions.fail = function(err) {
-  return function() { throw err; }
+  return function() { throw err; };
 };
 
 
@@ -37398,7 +37572,7 @@ goog.functions.withReturnValue = function(f, retValue) {
 
 
 /**
- * Creates a function that returns whether its arguement equals the given value.
+ * Creates a function that returns whether its argument equals the given value.
  *
  * Example:
  * var key = goog.object.findKey(obj, goog.functions.equalTo('needle'));
@@ -37588,7 +37762,7 @@ goog.functions.cacheReturnValue = function(fn) {
     }
 
     return value;
-  }
+  };
 };
 
 
@@ -80011,7 +80185,7 @@ goog.structs.Map.prototype.remove = function(key) {
     this.count_--;
     this.version_++;
 
-    // clean up the keys array if the threshhold is hit
+    // clean up the keys array if the threshold is hit
     if (this.keys_.length > 2 * this.count_) {
       this.cleanupKeysArray_();
     }
@@ -81460,7 +81634,7 @@ goog.Uri = function(opt_uri, opt_ignoreCase) {
     this.ignoreCase_ = !!opt_ignoreCase;
 
     // Set the parts -- decoding as we do so.
-    // COMPATABILITY NOTE - In IE, unmatched fields may be empty strings,
+    // COMPATIBILITY NOTE - In IE, unmatched fields may be empty strings,
     // whereas in other browsers they will be undefined.
     this.setScheme(m[goog.uri.utils.ComponentIndex.SCHEME] || '', true);
     this.setUserInfo(m[goog.uri.utils.ComponentIndex.USER_INFO] || '', true);
@@ -113177,6 +113351,7 @@ goog.events.EventType = {
   READYSTATECHANGE: 'readystatechange',
   RESIZE: 'resize',
   SCROLL: 'scroll',
+  TIMEUPDATE: 'timeupdate',
   UNLOAD: 'unload',
 
   // HTML 5 History events
@@ -117139,7 +117314,7 @@ goog.style.bidi.getScrollLeft = function(element) {
 
 
 /**
- * Returns the "offsetStart" of an element, analagous to offsetLeft but
+ * Returns the "offsetStart" of an element, analogous to offsetLeft but
  * normalized for right-to-left environments and various browser
  * inconsistencies. This value returned can always be passed to setScrollOffset
  * to scroll to an element's left edge in a left-to-right offsetParent or
@@ -124560,97 +124735,75 @@ ngeo.Scalify = function($filter) {
 
 ngeo.module.filter('ngeoScalify', ngeo.Scalify);
 
-
 /**
- * Format a couple of numbers as Swiss coordinates.
+ * Format a couple of numbers as number coordinates.
  *
  * Example without parameters:
  *
- *      <p>{{[600000.1234, 200000.5678] | ngeoSwissCoordinates}}</p>
- *      <!-- will Become 600'000, 200'001 -->
- *      <p>{{[2600000.1234, 1200000.5678] | ngeoSwissCoordinates}}</p>
- *      <!-- will Become 2'600'000, 1'200'001 -->
+ *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates}}</p>
+ *      <!-- will Become 7 47 -->
  *
- * Example with defined fractionDigits, prefix, separator and suffix (you can
- *     not use the colon symbole).
+ * Example with defined fractionDigits and template:
  *
- *      <p>{{[600000.1234, 200000.5678] | ngeoSwissCoordinates:[:; :]}}</p>
- *      <!-- will Become [600'000; 200'001] -->
- *      <p>{{[2600000.1234, 1200000.5678] | ngeoSwissCoordinates:[:; :]}}</p>
- *      <!-- will Become [2'600'000; 1'200'001] -->
+ *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates:2:co {x} E; {y} N}}</p>
+ *      <!-- will Become co 7.12 E; 46.99 N -->
  *
- * @return {function(Array.<number>, string, string, string): string} A
- *     function to format numbers into an Swiss coordinates string.
+ * Example without fractionDigits but with defined template and localize:
+ *
+ *      <!-- With en-US localization -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
+ *      <!-- will Become 2,600,000, 1,600,000 -->
+ *      <br/>
+ *      <!-- With fr-CH localization -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
+ *      <!-- will Become 2'600'000, 1'600'000 -->
+ *      <br/>
+ *      <!-- Without localization (or localize to false) -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}}}</p>
+ *      <!-- will Become 2'600'000, 1'600'000 -->
+ *
+ * @param {angular.$filter} $filter Angular filter
+ * @return {function(ol.Coordinate, number=, string=): string} A
+ *     function to format numbers into coordinates string.
  * @ngInject
  * @ngdoc filter
- * @ngname ngeoSwissCoordinates
+ * @ngname ngeoNumberCoordinates
  */
-ngeo.SwissCoordinates = function() {
+ngeo.NumberCoordinates = function($filter) {
   /**
-   * @param {Array.<number>} coordinates Array of two numbers.
-   * @param {string=} opt_prefix Optional prefix.
-   * @param {string=} opt_separator Optional separatator. default to ' '.
-   * @param {string=} opt_suffix Optional suffix.
-   * @return {string} Swiss formated coordinates.
-   */
-  var filterFn = function(coordinates, opt_prefix, opt_separator, opt_suffix) {
-    var prefix = opt_prefix ? opt_prefix : '';
-    var separator = opt_separator ? opt_separator : ', ';
-    var suffix = opt_suffix ? opt_suffix : '';
-    var x = Math.round(coordinates[0]);
-    x = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
-    var y = Math.round(coordinates[1]);
-    y = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
-    return prefix + x + separator + y + suffix;
-  };
-  return filterFn;
-};
-
-ngeo.module.filter('ngeoSwissCoordinates', ngeo.SwissCoordinates);
-
-
-/**
- * Format a couple of numbers as a East North coordinates.
- *
- * Example without parameters:
- *
- *      <p>{{[7.1234, 46.9876] | ngeoEastNorthCoordinates}}</p>
- *      <!-- will Become 7 E 47 N -->
- *
- * Example with defined fractionDigits, prefix, separator and suffix (you can
- *     not use the colon symbole).
- *
- *      <p>{{[7.1234, 46.9876] | ngeoEastNorthCoordinates:2:[:; :]}}</p>
- *      <!-- will Become [7.12 E; 46.99 N] -->
- *
- * @return {function(Array.<number>, number, string, string, string): string} A
- *     function to format numbers into an East North coordinates string.
- * @ngInject
- * @ngdoc filter
- * @ngname ngeoEastNorthCoordinates
- */
-ngeo.EastNorthCoordinates = function() {
-  /**
-   * @param {Array.<number>} coordinates Array of two numbers.
+   * @param {ol.Coordinate} coordinates Array of two numbers.
    * @param {number=} opt_fractionDigits number of digit, Same as
    *     {@link ol.coordinate.format} opt_fractionDigits parameters.
-   * @param {string=} opt_prefix Optional prefix.
-   * @param {string=} opt_separator Optional separatator. default to ' '.
-   * @param {string=} opt_suffix Optional suffix.
+   * @param {string=} opt_template Optional template. Default to '{x} {y}'.
+   *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
+   *     second one. Note: Use a html entitiy to use the semicolon symbole
+   *     into a template.
+   * @param {boolean=} opt_localize Optional boolean to format number on
+   *     the current local {@link Angular.filter.number}. By default numbers use
+   *     "." as the decimal separator and include "'" group separators after
+   *     each third digit).
    * @return {string} East north formated coordinates.
    */
-  var filterFn = function(coordinates, opt_fractionDigits, opt_prefix,
-      opt_separator, opt_suffix) {
-    var prefix = opt_prefix ? opt_prefix : '';
-    var separator = opt_separator ? opt_separator : ' ';
-    var suffix = opt_suffix ? opt_suffix : '';
-    var template = prefix + '{x} E' + separator + '{y} N' + suffix;
-    return ol.coordinate.format(coordinates, template, opt_fractionDigits);
+  var filterFn = function(coordinates, opt_fractionDigits, opt_template,
+      opt_localize) {
+    var template = opt_template ? opt_template : '{x} {y}';
+    var x = coordinates[0];
+    var y = coordinates[1];
+    if (opt_localize) {
+      x = $filter('number')(x, opt_fractionDigits);
+      y = $filter('number')(y, opt_fractionDigits);
+    } else {
+      x = x.toFixed(opt_fractionDigits);
+      y = y.toFixed(opt_fractionDigits);
+      x = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+      y = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+    }
+    return template.replace('{x}', x).replace('{y}', y);
   };
   return filterFn;
 };
 
-ngeo.module.filter('ngeoEastNorthCoordinates', ngeo.EastNorthCoordinates);
+ngeo.module.filter('ngeoNumberCoordinates', ngeo.NumberCoordinates);
 
 
 /**
@@ -124661,13 +124814,12 @@ ngeo.module.filter('ngeoEastNorthCoordinates', ngeo.EastNorthCoordinates);
  *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates}}</p>
  *      <!-- will Become 46° 59' 15'' N 7° 07' 24'' E-->
  *
- * Example with defined fractionDigits, prefix, separator and suffix (you can
- *     not use the colon symbole).
+ * Example with defined fractionDigits and a template.
  *
- *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates:2:[:; :]}}</p>
+ *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates:2:[{x}; {y}]}}</p>
  *      <!-- will Become [46° 59' 15.36'' N; 7° 07' 24.24'' E] -->
  *
- * @return {function(Array.<number>, number, string, string, string): string} A
+ * @return {function(ol.Coordinate, number=, string=): string} A
  *     function to format numbers into a DMS coordinates string.
  * @ngInject
  * @ngdoc filter
@@ -124687,25 +124839,24 @@ ngeo.DMSCoordinates = function() {
   };
 
   /**
-   * @param {Array.<number>} coordinates Array of two numbers.
+   * @param {ol.Coordinate} coordinates Array of two numbers.
    * @param {number=} opt_fractionDigits number of digit, Same as
    *     {@link ol.coordinate.format} opt_fractionDigits parameters.
-   * @param {string=} opt_prefix Optional prefix.
-   * @param {string=} opt_separator Optional separatator. default to ' '.
-   * @param {string=} opt_suffix Optional suffix.
+   * @param {string=} opt_template Optional template. Default to
+   *     '{x} {y}'. Where "{x}" will be replaced by the first
+   *     coordinate, {y} by the second one. Note: Use a html entitiy to use the
+   *     semicolon symbole into a template.
    * @return {string} DMS formated coordinates.
    */
-  var filterFn = function(coordinates, opt_fractionDigits, opt_prefix,
-      opt_separator, opt_suffix) {
+  var filterFn = function(coordinates, opt_fractionDigits, opt_template) {
     var digits = opt_fractionDigits ? opt_fractionDigits : 0;
-    var prefix = opt_prefix ? opt_prefix : '';
-    var separator = opt_separator ? opt_separator : ' ';
-    var suffix = opt_suffix ? opt_suffix : '';
+
+    var template = opt_template ? opt_template : '{x} {y}';
 
     var xdms = degreesToStringHDMS(coordinates[1], 'NS', digits);
     var ydms = degreesToStringHDMS(coordinates[0], 'EW', digits);
 
-    return prefix + xdms + separator + ydms + suffix;
+    return template.replace('{x}', xdms).replace('{y}', ydms);
   };
 
   return filterFn;
@@ -126638,8 +126789,7 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize,
         var viewportWidth = frameState.size[0] * frameState.pixelRatio;
         var viewportHeight = frameState.size[1] * frameState.pixelRatio;
 
-        var centerX = viewportWidth / 2;
-        var centerY = viewportHeight / 2;
+        var center = [viewportWidth / 2, viewportHeight / 2];
 
         var size = getSize();
         var scale = getScale(frameState);
@@ -126657,6 +126807,7 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize,
         self.extentHalfVerticalDistance_ =
             (((size[1] / ppi) / ipm) * scale) / 2;
 
+        // Draw a mask on the whole map.
         context.beginPath();
         context.moveTo(0, 0);
         context.lineTo(viewportWidth, 0);
@@ -126665,34 +126816,79 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose = function(getSize,
         context.lineTo(0, 0);
         context.closePath();
 
-        var rotation = (opt_rotation ? ol.math.toRadians(opt_rotation()) : 0);
-        // diagonal = distance p1 to center.
-        var diagonal = Math.sqrt(Math.pow(extentHalfWidth, 2) +
-            Math.pow(extentHalfHeight, 2));
-        // gamma = angle between horizontal and diagonal (with rotation).
-        var gamma = Math.atan(extentHalfHeight / extentHalfWidth) - rotation;
-        // omega = angle between diagonal and vertical (with rotation).
-        var omega = Math.atan(extentHalfWidth / extentHalfHeight) - rotation;
-        // Calculation of each corner.
-        var x1 = centerX - Math.cos(gamma) * diagonal;
-        var y1 = centerY + Math.sin(gamma) * diagonal;
-        var x2 = centerX + Math.sin(omega) * diagonal;
-        var y2 = centerY + Math.cos(omega) * diagonal;
-        var x3 = centerX + Math.cos(gamma) * diagonal;
-        var y3 = centerY - Math.sin(gamma) * diagonal;
-        var x4 = centerX - Math.sin(omega) * diagonal;
-        var y4 = centerY - Math.cos(omega) * diagonal;
+        // Draw the print zone
+        if (!opt_rotation) {
+          self.drawPrintZone_(context, center, extentHalfWidth,
+              extentHalfHeight);
+        } else {
+          var rotation = ol.math.toRadians(opt_rotation());
+          self.drawPrintZoneWithRotation_(context, center, extentHalfWidth,
+              extentHalfHeight, rotation);
+        }
 
-        context.moveTo(x1, y1);
-        context.lineTo(x2, y2);
-        context.lineTo(x3, y3);
-        context.lineTo(x4, y4);
-        context.lineTo(x1, y1);
-        context.closePath();
-
+        // Fill the mask
         context.fillStyle = 'rgba(0, 5, 25, 0.5)';
         context.fill();
       });
+};
+
+
+/**
+ * @param {CanvasRenderingContext2D} context Context of the Postcompose event.
+ * @param {Array.<number>} center Center of the viewport (x; y).
+ * @param {number} extentHalfWidth Extent half width.
+ * @param {number} extentHalfHeight Extent half height.
+ * @private
+ */
+ngeo.PrintUtils.prototype.drawPrintZone_ = function(context, center,
+    extentHalfWidth, extentHalfHeight) {
+  var minx = center[0] - extentHalfWidth;
+  var miny = center[1] - extentHalfHeight;
+  var maxx = center[0] + extentHalfWidth;
+  var maxy = center[1] + extentHalfHeight;
+
+  context.moveTo(minx, miny);
+  context.lineTo(minx, maxy);
+  context.lineTo(maxx, maxy);
+  context.lineTo(maxx, miny);
+  context.lineTo(minx, miny);
+  context.closePath();
+};
+
+
+/**
+ * @param {CanvasRenderingContext2D} context Context of the Postcompose event.
+ * @param {Array.<number>} center Center of the viewport (x; y).
+ * @param {number} extentHalfWidth Extent half width.
+ * @param {number} extentHalfHeight Extent half height.
+ * @param {number} rotation Rotation value in radians.
+ * @private
+ */
+ngeo.PrintUtils.prototype.drawPrintZoneWithRotation_ = function(context, center,
+    extentHalfWidth, extentHalfHeight, rotation) {
+  // diagonal = distance p1 to center.
+  var diagonal = Math.sqrt(Math.pow(extentHalfWidth, 2) +
+      Math.pow(extentHalfHeight, 2));
+  // gamma = angle between horizontal and diagonal (with rotation).
+  var gamma = Math.atan(extentHalfHeight / extentHalfWidth) - rotation;
+  // omega = angle between diagonal and vertical (with rotation).
+  var omega = Math.atan(extentHalfWidth / extentHalfHeight) - rotation;
+  // Calculation of each corner.
+  var x1 = center[0] - Math.cos(gamma) * diagonal;
+  var y1 = center[1] + Math.sin(gamma) * diagonal;
+  var x2 = center[0] + Math.sin(omega) * diagonal;
+  var y2 = center[1] + Math.cos(omega) * diagonal;
+  var x3 = center[0] + Math.cos(gamma) * diagonal;
+  var y3 = center[1] - Math.sin(gamma) * diagonal;
+  var x4 = center[0] - Math.sin(omega) * diagonal;
+  var y4 = center[1] - Math.cos(omega) * diagonal;
+
+  context.moveTo(x1, y1);
+  context.lineTo(x2, y2);
+  context.lineTo(x3, y3);
+  context.lineTo(x4, y4);
+  context.lineTo(x1, y1);
+  context.closePath();
 };
 
 

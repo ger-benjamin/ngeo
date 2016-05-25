@@ -16,7 +16,7 @@ app.module = angular.module('app', ['gmf']);
  */
 app.MainController = function() {
 
-  var epsg2056FilterLabel = 'Coordinates';
+  var epsg2056template = 'Coordinates (m)&#58; {x}, {y}';
 
   /**
    * @type {Array.<gmfx.MousePositionProjection>}
@@ -25,14 +25,14 @@ app.MainController = function() {
   this.projections = [{
     code: 'EPSG:2056',
     label: 'CH1903+ / LV03',
-    filter: 'ngeoSwissCoordinates:' + epsg2056FilterLabel + ' (m) : '
+    filter: 'ngeoNumberCoordinates:0:' + epsg2056template
   }, {
     code: 'EPSG:21781',
     label: 'CH1903 / LV03',
-    filter: 'ngeoEastNorthCoordinates:2:[ :; : ]'
+    filter: 'ngeoNumberCoordinates:2:[{x} E; {y} N]:true'
   }, {
     code: 'EPSG:4326',
-    label: 'WGS84 UTM 31',
+    label: 'WGS84',
     filter: 'ngeoDMSCoordinates'
   }];
 
