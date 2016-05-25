@@ -124776,7 +124776,7 @@ ngeo.NumberCoordinates = function($filter) {
    *     {@link ol.coordinate.format} opt_fractionDigits parameters.
    * @param {string=} opt_template Optional template. Default to '{x} {y}'.
    *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
-   *     second one. Note: Use a html entitiy to use the semicolon symbole
+   *     second one. Note: Use a html entity to use the semicolon symbole
    *     into a template.
    * @param {boolean=} opt_localize Optional boolean to format number on
    *     the current local {@link Angular.filter.number}. By default numbers use
@@ -124844,7 +124844,7 @@ ngeo.DMSCoordinates = function() {
    *     {@link ol.coordinate.format} opt_fractionDigits parameters.
    * @param {string=} opt_template Optional template. Default to
    *     '{x} {y}'. Where "{x}" will be replaced by the first
-   *     coordinate, {y} by the second one. Note: Use a html entitiy to use the
+   *     coordinate, {y} by the second one. Note: Use a html entity to use the
    *     semicolon symbole into a template.
    * @return {string} DMS formated coordinates.
    */
