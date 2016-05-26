@@ -55,11 +55,11 @@
  &lt;!-- will Become 7 47 --></code></pre><p>Example with defined fractionDigits and template (en-US localization):</p>
 <pre class="prettyprint source"><code> &lt;p>{{[7.1234, 46.9876] | ngeoNumberCoordinates:2:co {x} E; {y} N}}&lt;/p>
  &lt;!-- will Become co 7.12 E; 46.99 N --></code></pre><p>Example without fractionDigits but with defined template and localize:</p>
-<pre class="prettyprint source"><code> &lt;!-- With en-US localization -->
+<pre class="prettyprint source"><code> &lt;!-- With en-US localization (opt_localize can be true or undefined) -->
  &lt;p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}&lt;/p>
  &lt;!-- will Become 2,600,000, 1,600,000 -->
  &lt;br/>
- &lt;!-- With fr-CH localization -->
+ &lt;!-- With fr-CH localization (opt_localize can be true or undefined) -->
  &lt;p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}&lt;/p>
  &lt;!-- will Become 2'600'000, 1'600'000 -->
  &lt;br/>
@@ -206,7 +206,7 @@
 
     
 
-    <h4 class="name" id="~filterFn"><span class="type-signature">(inner) </span>filterFn<span class="signature">(coordinates, opt_fractionDigits, [opt_template]<span class="signature-attributes">opt</span>, opt_localize)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~filterFn"><span class="type-signature">(inner) </span>filterFn<span class="signature">(coordinates, [opt_fractionDigits]<span class="signature-attributes">opt</span>, [opt_template]<span class="signature-attributes">opt</span>, [opt_localize]<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -273,7 +273,7 @@
 
         <tr>
             
-                <td class="name"><code>opt_fractionDigits</code></td>
+                <td class="name"><code>[opt_fractionDigits]</code></td>
             
 
             <td class="type">
@@ -282,6 +282,8 @@
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -292,9 +294,8 @@
 
             
 
-            <td class="description last"><p>number of digit, Same as
-    <a href="http://openlayers.org/en/master/apidoc/ol.coordinate.html#.format"><code>ol.coordinate.format</code></a> opt_fractionDigits parameters. Default
-    to 0.</p></td>
+            <td class="description last"><p>Optional number of digit.
+    Default to 0.</p></td>
         </tr>
 
     
@@ -332,7 +333,7 @@
 
         <tr>
             
-                <td class="name"><code>opt_localize</code></td>
+                <td class="name"><code>[opt_localize]</code></td>
             
 
             <td class="type">
@@ -341,6 +342,8 @@
 
             
                 <td class="attributes">
+                
+                    &lt;optional><br>
                 
 
                 
@@ -351,7 +354,7 @@
 
             
 
-            <td class="description last"><p>Optionnal. If true or not defined,
+            <td class="description last"><p>Optional. If true or not defined,
     format number as the current local system (see Angular number filter).
     Set it explicitely to false to use always &quot;.&quot; as the decimal separator
     and include &quot;'&quot; group separators after each third digit.</p></td>
@@ -399,7 +402,7 @@
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/filters.js">src/services/filters.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/filters.js#L84">line 84</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/src/services/filters.js#L83">line 83</a>
     </li></ul></dd>
     
 

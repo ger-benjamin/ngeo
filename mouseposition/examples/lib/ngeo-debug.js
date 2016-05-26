@@ -124763,11 +124763,11 @@ ngeo.module.filter('ngeoScalify', ngeo.Scalify);
  *
  * Example without fractionDigits but with defined template and localize:
  *
- *      <!-- With en-US localization -->
+ *      <!-- With en-US localization (opt_localize can be true or undefined) -->
  *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
  *      <!-- will Become 2,600,000, 1,600,000 -->
  *      <br/>
- *      <!-- With fr-CH localization -->
+ *      <!-- With fr-CH localization (opt_localize can be true or undefined) -->
  *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
  *      <!-- will Become 2'600'000, 1'600'000 -->
  *      <br/>
@@ -124786,14 +124786,13 @@ ngeo.module.filter('ngeoScalify', ngeo.Scalify);
 ngeo.NumberCoordinates = function($filter) {
   /**
    * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {number|string=} opt_fractionDigits number of digit, Same as
-   *     {@link ol.coordinate.format} opt_fractionDigits parameters. Default
-   *     to 0.
+   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
+   *     Default to 0.
    * @param {string=} opt_template Optional template. Default to '{x} {y}'.
    *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
    *     second one. Note: Use a html entity to use the semicolon symbole
    *     into a template.
-   * @param {boolean|string=} opt_localize Optionnal. If true or not defined,
+   * @param {(boolean|string)=} opt_localize Optional. If true or not defined,
    *     format number as the current local system (see Angular number filter).
    *     Set it explicitely to false to use always "." as the decimal separator
    *     and include "'" group separators after each third digit.
@@ -124856,9 +124855,8 @@ ngeo.DMSCoordinates = function() {
 
   /**
    * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {number|string=} opt_fractionDigits number of digit, Same as
-   *     {@link ol.coordinate.format} opt_fractionDigits parameters. Default
-   *     to 0.
+   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
+   *     Default to 0.
    * @param {string=} opt_template Optional template. Default to
    *     '{x} {y}'. Where "{x}" will be replaced by the first
    *     coordinate, {y} by the second one. Note: Use a html entity to use the
