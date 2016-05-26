@@ -78221,6 +78221,7 @@ ol.format.IGC.prototype.readFeatureFromText = function(text, opt_options) {
   var year = 2000;
   var month = 0;
   var day = 1;
+  var lastDateTime = -1;
   var i, ii;
   for (i = 0, ii = lines.length; i < ii; ++i) {
     var line = lines[i];
@@ -78253,7 +78254,12 @@ ol.format.IGC.prototype.readFeatureFromText = function(text, opt_options) {
           flatCoordinates.push(z);
         }
         var dateTime = Date.UTC(year, month, day, hour, minute, second);
+        // Detect UTC midnight wrap around.
+        if (dateTime < lastDateTime) {
+          dateTime = Date.UTC(year, month, day + 1, hour, minute, second);
+        }
         flatCoordinates.push(dateTime / 1000);
+        lastDateTime = dateTime;
       }
     } else if (line.charAt(0) == 'H') {
       m = ol.format.IGC.HFDTE_RECORD_RE_.exec(line);
@@ -104301,31 +104307,38 @@ ol.source.WMTS.optionsFromCapabilities = function(wmtsCap, config) {
       'requestEncoding (%s) is one of "REST", "RESTful", "KVP" or ""',
       requestEncoding);
 
-  if (!wmtsCap.hasOwnProperty('OperationsMetadata') ||
-      !wmtsCap['OperationsMetadata'].hasOwnProperty('GetTile') ||
-      requestEncoding.indexOf('REST') === 0) {
-    // Add REST tile resource url
-    requestEncoding = ol.source.WMTSRequestEncoding.REST;
-    l['ResourceURL'].forEach(function(elt, index, array) {
-      if (elt['resourceType'] == 'tile') {
-        format = elt['format'];
-        urls.push(/** @type {string} */ (elt['template']));
-      }
-    });
-  } else {
+  if ('OperationsMetadata' in wmtsCap && 'GetTile' in wmtsCap['OperationsMetadata']) {
     var gets = wmtsCap['OperationsMetadata']['GetTile']['DCP']['HTTP']['Get'];
+    goog.asserts.assert(gets.length >= 1);
 
     for (var i = 0, ii = gets.length; i < ii; ++i) {
-      var constraint = ol.array.find(gets[i]['Constraint'],
-          function(elt, index, array) {
-            return elt['name'] == 'GetEncoding';
-          });
+      var constraint = ol.array.find(gets[i]['Constraint'], function(element) {
+        return element['name'] == 'GetEncoding';
+      });
       var encodings = constraint['AllowedValues']['Value'];
-      if (encodings.length > 0 && ol.array.includes(encodings, 'KVP')) {
-        requestEncoding = ol.source.WMTSRequestEncoding.KVP;
-        urls.push(/** @type {string} */ (gets[i]['href']));
+      goog.asserts.assert(encodings.length >= 1);
+
+      if (requestEncoding === '') {
+        // requestEncoding not provided, use the first encoding from the list
+        requestEncoding = encodings[0];
+      }
+      if (requestEncoding === ol.source.WMTSRequestEncoding.KVP) {
+        if (ol.array.includes(encodings, ol.source.WMTSRequestEncoding.KVP)) {
+          urls.push(/** @type {string} */ (gets[i]['href']));
+        }
+      } else {
+        break;
       }
     }
+  }
+  if (urls.length === 0) {
+    requestEncoding = ol.source.WMTSRequestEncoding.REST;
+    l['ResourceURL'].forEach(function(element) {
+      if (element['resourceType'] === 'tile') {
+        format = element['format'];
+        urls.push(/** @type {string} */ (element['template']));
+      }
+    });
   }
   goog.asserts.assert(urls.length > 0, 'At least one URL found');
 
@@ -111335,8 +111348,7 @@ ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
  *     no layer else.
  * @export
  */
-ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
-    capabilitiesURL, layerName) {
+ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(capabilitiesURL, layerName) {
   var parser = new ol.format.WMTSCapabilities();
   var layer = new ol.layer.Tile();
   var $q = this.$q_;
@@ -111347,8 +111359,9 @@ ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(
       result = parser.read(response.data);
     }
     if (result !== undefined) {
-      var options = ol.source.WMTS.optionsFromCapabilities(result,
-          {layer: layerName, requestEncoding: 'REST'});
+      var options = ol.source.WMTS.optionsFromCapabilities(result, {
+        layer: layerName
+      });
       layer.setSource(new ol.source.WMTS(options));
 
       // Add styles from capabilities as param of the layer
@@ -124738,12 +124751,12 @@ ngeo.module.filter('ngeoScalify', ngeo.Scalify);
 /**
  * Format a couple of numbers as number coordinates.
  *
- * Example without parameters:
+ * Example without parameters (en-US localization):
  *
  *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates}}</p>
  *      <!-- will Become 7 47 -->
  *
- * Example with defined fractionDigits and template:
+ * Example with defined fractionDigits and template (en-US localization):
  *
  *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates:2:co {x} E; {y} N}}</p>
  *      <!-- will Become co 7.12 E; 46.99 N -->
@@ -124758,13 +124771,14 @@ ngeo.module.filter('ngeoScalify', ngeo.Scalify);
  *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
  *      <!-- will Become 2'600'000, 1'600'000 -->
  *      <br/>
- *      <!-- Without localization (or localize to false) -->
- *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}}}</p>
+ *      <!-- With en-US localization but with localization to false -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:false}}</p>
  *      <!-- will Become 2'600'000, 1'600'000 -->
  *
  * @param {angular.$filter} $filter Angular filter
- * @return {function(ol.Coordinate, number=, string=): string} A
- *     function to format numbers into coordinates string.
+ * @return {function(ol.Coordinate, (number|string)=, string=,
+ *     (boolean|string)=): string} A function to format numbers into
+ *     coordinates string.
  * @ngInject
  * @ngdoc filter
  * @ngname ngeoNumberCoordinates
@@ -124772,31 +124786,33 @@ ngeo.module.filter('ngeoScalify', ngeo.Scalify);
 ngeo.NumberCoordinates = function($filter) {
   /**
    * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {number=} opt_fractionDigits number of digit, Same as
-   *     {@link ol.coordinate.format} opt_fractionDigits parameters.
+   * @param {number|string=} opt_fractionDigits number of digit, Same as
+   *     {@link ol.coordinate.format} opt_fractionDigits parameters. Default
+   *     to 0.
    * @param {string=} opt_template Optional template. Default to '{x} {y}'.
    *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
    *     second one. Note: Use a html entity to use the semicolon symbole
    *     into a template.
-   * @param {boolean=} opt_localize Optional boolean to format number on
-   *     the current local {@link Angular.filter.number}. By default numbers use
-   *     "." as the decimal separator and include "'" group separators after
-   *     each third digit).
-   * @return {string} East north formated coordinates.
+   * @param {boolean|string=} opt_localize Optionnal. If true or not defined,
+   *     format number as the current local system (see Angular number filter).
+   *     Set it explicitely to false to use always "." as the decimal separator
+   *     and include "'" group separators after each third digit.
+   * @return {string} Number formated coordinates.
    */
   var filterFn = function(coordinates, opt_fractionDigits, opt_template,
       opt_localize) {
     var template = opt_template ? opt_template : '{x} {y}';
     var x = coordinates[0];
     var y = coordinates[1];
-    if (opt_localize) {
-      x = $filter('number')(x, opt_fractionDigits);
-      y = $filter('number')(y, opt_fractionDigits);
-    } else {
-      x = x.toFixed(opt_fractionDigits);
-      y = y.toFixed(opt_fractionDigits);
+    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
+    if (opt_localize === 'false' || opt_localize === false) {
+      x = x.toFixed(fractionDigits);
+      y = y.toFixed(fractionDigits);
       x = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
       y = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+    } else {
+      x = $filter('number')(x, fractionDigits);
+      y = $filter('number')(y, fractionDigits);
     }
     return template.replace('{x}', x).replace('{y}', y);
   };
@@ -124819,29 +124835,30 @@ ngeo.module.filter('ngeoNumberCoordinates', ngeo.NumberCoordinates);
  *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates:2:[{x}; {y}]}}</p>
  *      <!-- will Become [46° 59' 15.36'' N; 7° 07' 24.24'' E] -->
  *
- * @return {function(ol.Coordinate, number=, string=): string} A
+ * @return {function(ol.Coordinate, (number|string)=, string=): string} A
  *     function to format numbers into a DMS coordinates string.
  * @ngInject
  * @ngdoc filter
  * @ngname ngeoDMSCoordinates
  */
 ngeo.DMSCoordinates = function() {
-  var degreesToStringHDMS = function(degrees, hemispheres, digits) {
+  var degreesToStringHDMS = function(degrees, hemispheres, fractionDigits) {
     var normalizedDegrees = goog.math.modulo(degrees + 180, 360) - 180;
     var dms = Math.abs(3600 * normalizedDegrees);
     var d = Math.floor(dms / 3600);
     var m = Math.floor((dms / 60) % 60);
-    var s = parseFloat((dms % 60).toFixed(digits));
+    var s = (dms % 60);
     return d + '\u00b0 ' +
         goog.string.padNumber(m, 2) + '\u2032 ' +
-        goog.string.padNumber(s, 2) + '\u2033 ' +
+        goog.string.padNumber(s, 2, fractionDigits) + '\u2033 ' +
         hemispheres.charAt(normalizedDegrees < 0 ? 1 : 0);
   };
 
   /**
    * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {number=} opt_fractionDigits number of digit, Same as
-   *     {@link ol.coordinate.format} opt_fractionDigits parameters.
+   * @param {number|string=} opt_fractionDigits number of digit, Same as
+   *     {@link ol.coordinate.format} opt_fractionDigits parameters. Default
+   *     to 0.
    * @param {string=} opt_template Optional template. Default to
    *     '{x} {y}'. Where "{x}" will be replaced by the first
    *     coordinate, {y} by the second one. Note: Use a html entity to use the
@@ -124849,12 +124866,12 @@ ngeo.DMSCoordinates = function() {
    * @return {string} DMS formated coordinates.
    */
   var filterFn = function(coordinates, opt_fractionDigits, opt_template) {
-    var digits = opt_fractionDigits ? opt_fractionDigits : 0;
+    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
 
     var template = opt_template ? opt_template : '{x} {y}';
 
-    var xdms = degreesToStringHDMS(coordinates[1], 'NS', digits);
-    var ydms = degreesToStringHDMS(coordinates[0], 'EW', digits);
+    var xdms = degreesToStringHDMS(coordinates[1], 'NS', fractionDigits);
+    var ydms = degreesToStringHDMS(coordinates[0], 'EW', fractionDigits);
 
     return template.replace('{x}', xdms).replace('{y}', ydms);
   };
