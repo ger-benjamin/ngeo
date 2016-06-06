@@ -58,6 +58,7 @@ constant of the application.</p>
        gmf-elevation-active=&quot;elvationActive&quot;
        gmf-elevation-elevation=&quot;elevationValue&quot;
        gmf-elevation-layer=&quot;mainCtrl.elevationLayer&quot;
+       gmf-elevation-layers=&quot;::mainCtrl.elevationLayers&quot;
        gmf-elevation-map=&quot;::mainCtrl.map&quot;>
        {{elevationValue | number:2}}m
  &lt;/span></code></pre>
@@ -190,8 +191,9 @@ constant of the application.</p>
 
             
 
-            <td class="description last">The elevation layer to ask to
-    the server If not provided, take the first returned value.</td>
+            <td class="description last">The elevation layer to display.
+* @htmlAttribute {string?} gmf-elevation-layers Optional list of layers to
+    ask to the server. If not provided, get all available layers.</td>
         </tr>
 
     
@@ -265,7 +267,7 @@ constant of the application.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L38">line 38</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L40">line 40</a>
     </li></ul></dd>
     
 
