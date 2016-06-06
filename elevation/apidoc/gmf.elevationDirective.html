@@ -51,16 +51,16 @@
 <div class="description">
     <p>Provide a directive that set a value each 500ms with the elevation under the
 mouse cursor position on the map. The value must come from the elevation
-service of a c2cgeoportal server. The URL of this server must be defined as
+service of a c2cgeoportal server. The server's URL must be defined as
 constant of the application.</p>
 <p>Example:</p>
 <pre class="prettyprint source"><code> &lt;span gmf-elevation
-       gmf-elevation-active=&quot;mainCtrl.active&quot;
-       gmf-elevation-elevation=&quot;elevation&quot;
+       gmf-elevation-active=&quot;elvationActive&quot;
+       gmf-elevation-elevation=&quot;elevationValue&quot;
        gmf-elevation-layer=&quot;mainCtrl.elevationLayer&quot;
-       gmf-elevation-map=&quot;mainCtrl.map&quot;
+       gmf-elevation-map=&quot;mainCtrl.map&quot;>
  &lt;/span>
- &lt;span>{{elevation}}&lt;/span></code></pre>
+ &lt;span>{{elevationValue}}&lt;/span></code></pre>
 </div>
 
 
@@ -190,7 +190,7 @@ constant of the application.</p>
 
             
 
-            <td class="description last">the elevation layer to use as
+            <td class="description last">The elevation layer to use as
     named in the server response object. If not provided, take the first
     returned value.</td>
         </tr>

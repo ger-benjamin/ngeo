@@ -26,15 +26,15 @@
     <gmf-map gmf-map-map="ctrl.map"></gmf-map>
 
     <div class="footer">
-      <div ng-show="elevation">
+      <div ng-show="elevationValue">
 
         <span class="fa fa-arrows-v"></span>
         <span gmf-elevation
-              gmf-elevation-active="ctrl.elevationActive"
-              gmf-elevation-elevation="elevation"
+              gmf-elevation-active="elevationActive"
+              gmf-elevation-elevation="elevationValue"
               gmf-elevation-layer="ctrl.elevationLayer"
               gmf-elevation-map="::ctrl.map"></span>
-        <span>{{elevation | number:2}} m</span>
+        <span>{{elevationValue | number:2}} m</span>
   
         <div class="btn-group dropup">
           <div class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -52,7 +52,7 @@
       </div>
     </div>
 
-    <input type="checkbox" ng-model="ctrl.elevationActive"> Get elevation ?</>
+    <input type="checkbox" ng-model="elevationActive"> Get elevation ?</>
 
     <p id="desc">This example shows how to use the <code>gmf-elevation</code> directive to get elevation under the mouse position.</p>
 

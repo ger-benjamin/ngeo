@@ -22,12 +22,6 @@ app.MainController = function() {
   var projection = ol.proj.get('EPSG:21781');
 
   /**
-   * @type {boolean}
-   * @export
-   */
-  this.elevationActive = true;
-
-  /**
    * @type {Array.<string>}
    * @export
    */
