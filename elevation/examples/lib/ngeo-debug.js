@@ -106958,7 +106958,7 @@ ngeo.Message.prototype.getMessageObjects = function(object, opt_type) {
       msg: object,
       type: opt_type !== undefined ? opt_type : defaultType
     });
-  } else if (goog.isArray(object)) {
+  } else if (Array.isArray(object)) {
     object.forEach(function(msg) {
       if (typeof object === 'string') {
         msgObject = {
@@ -109003,6 +109003,49 @@ ngeo.FeatureHelper.prototype.getType = function(feature) {
   goog.asserts.assert(type, 'Type should be thruthy');
 
   return type;
+};
+
+
+/**
+ * This method first checks if a feature's extent intersects with the map view
+ * extent. If it doesn't, then the view gets recentered with an animation to
+ * the center of the feature.
+ * @param {ol.Feature} feature Feature.
+ * @param {ol.Map} map Map.
+ * @param {number=} opt_panDuration Pan animation duration. Defaults to `250`.
+ * @export
+ */
+ngeo.FeatureHelper.prototype.panMapToFeature = function(feature, map,
+    opt_panDuration) {
+
+  var panDuration = opt_panDuration !== undefined ? opt_panDuration : 250;
+  var size = map.getSize();
+  goog.asserts.assertArray(size);
+  var view = map.getView();
+  var extent = view.calculateExtent(size);
+  var geometry = feature.getGeometry();
+
+  if (!geometry.intersectsExtent(extent)) {
+    var mapCenter = view.getCenter();
+    goog.asserts.assertArray(mapCenter);
+
+    map.beforeRender(ol.animation.pan({
+      source: mapCenter,
+      duration: panDuration
+    }));
+
+    var featureCenter;
+    if (geometry instanceof ol.geom.LineString) {
+      featureCenter = geometry.getCoordinateAt(0.5);
+    } else if (geometry instanceof ol.geom.Polygon) {
+      featureCenter = geometry.getInteriorPoint().getCoordinates();
+    } else if (geometry instanceof ol.geom.Point) {
+      featureCenter = geometry.getCoordinates();
+    } else {
+      featureCenter = ol.extent.getCenter(geometry.getExtent());
+    }
+    map.getView().setCenter(featureCenter);
+  }
 };
 
 
@@ -111386,20 +111429,24 @@ ngeo.LayerHelper.GROUP_KEY = 'groupName';
  * @param {string} sourceURL The source URL.
  * @param {string} sourceLayersName A dot separated names string.
  * @param {string=} opt_serverType Type of the server ("mapserver",
- *     "geoserver", qgisserver, …).
+ *     "geoserver", "qgisserver", …).
  * @return {ol.layer.Image} WMS Layer.
  * @export
  */
 ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
     sourceLayersName, opt_serverType) {
   var params = {'LAYERS': sourceLayersName};
+  var olServerType;
   if (opt_serverType) {
     params['SERVERTYPE'] = opt_serverType;
+    // OpenLayers expects 'qgis' insteads of 'qgisserver'
+    olServerType = opt_serverType.replace('qgisserver', 'qgis');
   }
   var layer = new ol.layer.Image({
     source: new ol.source.ImageWMS({
       url: sourceURL,
-      params: params
+      params: params,
+      serverType: olServerType
     })
   });
   return layer;
@@ -111958,6 +112005,9 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
     for (var i = 0, len = ids.length; i < len; i++) {
       id = ids[i];
       item = this.cache_[id];
+      if (!item) {
+        continue;
+      }
 
       // If `validateLayerParams` is set, then the source config layer in the
       // LAYERS params must be in the current LAYERS params of the layer
@@ -121638,16 +121688,6 @@ goog.require('ol.structs.RBush');
 
 
 /**
- * @typedef {{depth: (Array.<number>|undefined),
- *            feature: ol.Feature,
- *            geometry: ol.geom.SimpleGeometry,
- *            index: (number|undefined),
- *            segment: Array.<ol.Extent>}}
- */
-ol.interaction.SegmentDataType;
-
-
-/**
  * @classdesc
  * Interaction for modifying feature geometries.
  *
@@ -124924,9 +124964,19 @@ ngeo.Disclaimer.prototype.getMessageUid_ = function(message) {
  */
 ngeo.Disclaimer.prototype.closeMessage_ = function(message) {
   var uid = this.getMessageUid_(message);
+
+  // (1) No need to do anything if message doesn't exist
   if (this.messages_[uid] === undefined) {
     return;
   }
+
+  // (2) Check if the message hasn't been closed using the UI, i.e. by
+  //     clicking the close button. If not, then close it.
+  if (this.messages_[uid].hasClass('in')) {
+    this.messages_[uid].alert('close');
+  }
+
+  // (3) Remove message from cache since it's closed now.
   delete this.messages_[uid];
 };
 
