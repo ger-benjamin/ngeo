@@ -111,11 +111,11 @@
           </gmf-backgroundlayerselector>
         </div>
         <gmf-map class="gmf-map" gmf-map-map="mainCtrl.map"></gmf-map>
-        
+
         <!--infobar-->
-        <div class="footer" ng-class="{'active': mainCtrl.info}">
-          <button class="btn btn-sm fa map-info ng-cloak" ng-click="mainCtrl.info = !mainCtrl.info"
-                  ng-class="{'fa-angle-double-up': !mainCtrl.info, 'fa-angle-double-down': mainCtrl.info}"></button>
+        <div class="footer" ng-class="{'active': mainCtrl.showInfobar}">
+          <button class="btn btn-sm fa map-info ng-cloak" ng-click="mainCtrl.showInfobar = !mainCtrl.showInfobar"
+                  ng-class="{'fa-angle-double-up': !mainCtrl.showInfobar, 'fa-angle-double-down': mainCtrl.showInfobar}"></button>
 
           <div ngeo-scaleselector="mainCtrl.scaleSelectorValues"
                ngeo-scaleselector-map="mainCtrl.map"
@@ -126,17 +126,14 @@
                  gmf-mouseposition-map="mainCtrl.map"
                  gmf-mouseposition-projections="::mainCtrl.mousePositionProjections">
             </gmf-mouseposition>
-            <span
-              gmf-elevation
-              gmf-elevation-active="mainCtrl.info"
-              gmf-elevation-elevation="elevationValue"
-              gmf-elevation-layer="mainCtrl.elevationLayer"
-              gmf-elevation-layers="::mainCtrl.elevationLayers"
-              gmf-elevation-map="mainCtrl.map">
-            </span>
-            <div class="elevation form-group form-group-sm pull-right">
+            <div class="elevation form-group form-group-sm pull-right" gmf-elevation
+                    gmf-elevation-active="mainCtrl.showInfobar"
+                    gmf-elevation-elevation="elevationValue"
+                    gmf-elevation-layer="mainCtrl.elevationLayer"
+                    gmf-elevation-layers="::mainCtrl.elevationLayers"
+                    gmf-elevation-map="mainCtrl.map">
               <div class="btn-group btn-block dropup">
-                <button type="button" class="btn btn-default form-control" data-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-default dropdown-toggle form-control" data-toggle="dropdown" aria-expanded="false">
                   <span class="fa fa-arrows-v"></span>
                   <small class="elevation-value">{{elevationValue | number:2}}<span ng-show="elevationValue">m</span></small>
                   <span class="fa fa-fw fa-ellipsis-v"></span>

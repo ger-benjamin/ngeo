@@ -111430,13 +111430,17 @@ ngeo.LayerHelper.GROUP_KEY = 'groupName';
  * @param {string} sourceLayersName A dot separated names string.
  * @param {string=} opt_serverType Type of the server ("mapserver",
  *     "geoserver", "qgisserver", …).
+ * @param {string=} opt_time time parameter for layer queryable by time/periode
  * @return {ol.layer.Image} WMS Layer.
  * @export
  */
 ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
-    sourceLayersName, opt_serverType) {
+    sourceLayersName, opt_serverType, opt_time) {
   var params = {'LAYERS': sourceLayersName};
   var olServerType;
+  if (opt_time) {
+    params['TIME'] = opt_time;
+  }
   if (opt_serverType) {
     params['SERVERTYPE'] = opt_serverType;
     // OpenLayers expects 'qgis' insteads of 'qgisserver'
@@ -112345,9 +112349,6 @@ ngeo.popoverDirective = function() {
       ngeoPopoverCtrl.anchorElm.on('inserted.bs.popover', function() {
         ngeoPopoverCtrl.bodyElm.show();
         ngeoPopoverCtrl.shown = true;
-        ngeoPopoverCtrl.bodyElm.parent().on('mousedown', function(e) {
-          e.stopPropagation();
-        });
       });
 
       ngeoPopoverCtrl.anchorElm.popover({
@@ -112435,7 +112436,9 @@ ngeo.PopoverController = function($scope) {
   this.bodyElm = undefined;
 
   function onMouseDown(clickEvent) {
-    if (this.anchorElm[0] !== clickEvent.target && this.shown) {
+    if (this.anchorElm[0] !== clickEvent.target &&
+      this.bodyElm.parent()[0] !== clickEvent.target &
+      this.bodyElm.parent().find(clickEvent.target).length === 0 && this.shown) {
       this.dismissPopover();
     }
   }
@@ -128604,7 +128607,7 @@ goog.require('ngeo');
    */
   var runner = function($templateCache) {
     $templateCache.put('ngeo/popup.html', '<h4 class="popover-title ngeo-popup-title"> <span>{{title}}</span> <button type=button class=close ng-click="open = false"> &times;</button> </h4> <div class=popover-content ng-bind-html=content></div> ');
-    $templateCache.put('ngeo/scaleselector.html', '<div class="form-group form-group-sm dropdown" ng-class="::{\'dropup\': scaleselectorCtrl.options.dropup}"> <div class="btn-group btn-block"> <button type=button class="btn btn-default form-control" data-toggle=dropdown aria-expanded=false> <span ng-bind-html=scaleselectorCtrl.currentScale></span>&nbsp;<i class=caret></i> </button> <ul class="dropdown-menu btn-block" role=menu> <li ng-repeat="zoomLevel in ::scaleselectorCtrl.zoomLevels"> <a href ng-click=scaleselectorCtrl.changeZoom(zoomLevel) ng-bind-html=scaleselectorCtrl.getScale(zoomLevel)> </a> </li> </ul> </div> </div> ');
+    $templateCache.put('ngeo/scaleselector.html', '<div class="form-group form-group-sm dropdown" ng-class="::{\'dropup\': scaleselectorCtrl.options.dropup}"> <div class="btn-group btn-block"> <button type=button class="btn btn-default dropdown-toggle form-control" data-toggle=dropdown aria-expanded=false> <span ng-bind-html=scaleselectorCtrl.currentScale></span>&nbsp;<i class=caret></i> </button> <ul class="dropdown-menu btn-block" role=menu> <li ng-repeat="zoomLevel in ::scaleselectorCtrl.zoomLevels"> <a href ng-click=scaleselectorCtrl.changeZoom(zoomLevel) ng-bind-html=scaleselectorCtrl.getScale(zoomLevel)> </a> </li> </ul> </div> </div> ');
     $templateCache.put('ngeo/layertree.html', '<span ng-if=::!layertreeCtrl.isRoot>{{::layertreeCtrl.node.name}}</span> <input type=checkbox ng-if="::layertreeCtrl.node && !layertreeCtrl.node.children" ng-model=layertreeCtrl.getSetActive ng-model-options="{getterSetter: true}"> <ul ng-if=::layertreeCtrl.node.children> <li ng-repeat="node in ::layertreeCtrl.node.children" ngeo-layertree=::node ngeo-layertree-notroot ngeo-layertree-map=layertreeCtrl.map ngeo-layertree-nodelayerexpr=layertreeCtrl.nodelayerExpr ngeo-layertree-listenersexpr=layertreeCtrl.listenersExpr> </li> </ul> ');
     $templateCache.put('ngeo/colorpicker.html', '<table class=palette> <tr ng-repeat="colors in ::ctrl.colors"> <td ng-repeat="color in ::colors" ng-click=ctrl.setColor(color) ng-class="{\'selected\': color == ctrl.color}"> <div ng-style="::{\'background-color\': color}"></div> </td> </tr> </table> ');
   };
