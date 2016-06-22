@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: btngroupDirective <small>directive:ngeoBtnGroup</small></title>
+    <title>JSDoc: Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: btngroupDirective <small>directive:ngeoBtnGroup</small></h1>
+    <h1 class="page-title">Class: displayqueriesDirective <small>directive:gmfDisplayqueries</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="btngroupDirective">
-            <span class="ancestors">ngeo.</span>btngroupDirective
+        <h2 id="displayqueriesDirective">
+            <span class="ancestors">gmf.</span>displayqueriesDirective
         </h2>
         
     
@@ -42,26 +42,24 @@
 
     
 
-    <h4 class="name" id="btngroupDirective"><span class="type-signature"></span>new btngroupDirective<span class="signature">($parse)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="displayqueriesDirective"><span class="type-signature"></span>new displayqueriesDirective<span class="signature">(gmfDisplayqueriesTemplateUrl)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Provides two directives: ngeo-btn-group and ngeo-btn.</p>
-<p>The ngeo-btn-group directive allows creating &quot;toggle&quot; groups. It works with
-the ngeo-btn directive.</p>
+    <p>Provide a directive to display results of the <code>ngeo.queryResult</code>
+and shows related features on the map using the <a href="ngeo.FeatureOverlayMgr.html"><code>ngeo.FeatureOverlayMgr</code></a>.</p>
+<p>You can override the default directive's template by setting the
+value <code>gmfDisplayqueriesTemplateUrl</code>.</p>
+<p>Features displayed on the map use a default style but you can override these
+styles by passing ol.style.Style objects as attributes of this directive.</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code>&lt;div ngeo-btn-group>
-  &lt;button ngeo-btn class=&quot;btn&quot; ng-model=&quot;ctrl.drawPoint.active&quot;>&lt;/button>
-  &lt;button ngeo-btn class=&quot;btn&quot; ng-model=&quot;ctrl.drawLine.active&quot;>&lt;/button>
-&lt;/div></code></pre><p>In that example the ngeo-btn are combined together in a &quot;toggle group&quot;,
-where activating a button will deactivate the others.</p>
-<p>One can use <code>ng-model</code> directive at the group level in order to know if
-a button is active.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code>&lt;div ngeo-btn-group ngeo-btn-group-active=&quot;ctrl.drawToolActive&quot;></code></pre><p>See our live example: <code>../examples/interactionbtngroup.html</code></p>
+<pre class="prettyprint source"><code> &lt;gmf-displayqueries
+   gmf-displayqueries-featuresstyle=&quot;ctrl.styleForAllFeatures&quot;
+   gmf-displayqueries-selectedfeaturestyle=&quot;ctrl.styleForTheCurrentFeature&quot;>
+ &lt;/gmf-displayqueries></code></pre>
 </div>
 
 
@@ -99,13 +97,13 @@ a button is active.</p>
 
         <tr>
             
-                <td class="name"><code>ngeo-btn-group-active</code></td>
+                <td class="name"><code>gmf-displayqueries-featuresstyle</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">*</span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
 
 
             
@@ -115,8 +113,80 @@ a button is active.</p>
 
             
 
-            <td class="description last">Any property of the scope.
-Tells whether at least one button of the group is active.</td>
+            <td class="description last">A style
+    object for all features from the result of the query.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selectedfeaturestyle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A style
+    object for the current displayed feature.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>desktop</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If the directive is used in the desktop
+    application.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>showunqueriedlayers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If also layers, that have not
+    been queried for the last query, should be shown in the filter.</td>
         </tr>
 
     
@@ -158,8 +228,8 @@ Tells whether at least one button of the group is active.</td>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/btngroup.js">src/directives/btngroup.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/btngroup.js#L41">line 41</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L58">line 58</a>
     </li></ul></dd>
     
 

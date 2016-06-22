@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: LayertreeController <small>controller:NgeoLayertreeController</small></title>
+    <title>JSDoc: Class: DisplayqueriesController <small>Controller:GmfDisplayqueriesController</small></title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: LayertreeController <small>controller:NgeoLayertreeController</small></h1>
+    <h1 class="page-title">Class: DisplayqueriesController <small>Controller:GmfDisplayqueriesController</small></h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="LayertreeController">
-            <span class="ancestors">ngeo.</span>LayertreeController
+        <h2 id="DisplayqueriesController">
+            <span class="ancestors">gmf.</span>DisplayqueriesController
         </h2>
         
     
@@ -42,15 +42,11 @@
 
     
 
-    <h4 class="name" id="LayertreeController"><span class="type-signature"></span>new LayertreeController<span class="signature">($scope, $element, $attrs, ngeoDecorateLayer, ngeoDecorateLayerLoading)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="DisplayqueriesController"><span class="type-signature"></span>new DisplayqueriesController<span class="signature">($scope, ngeoQueryResult, ngeoFeatureOverlayMgr)</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>The controller for the &quot;tree node&quot; directive.</p>
-</div>
 
 
 
@@ -96,14 +92,14 @@
 
             
 
-            <td class="description last"><p>Scope.</p></td>
+            <td class="description last"><p>Angular scope.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>$element</code></td>
+                <td class="name"><code>ngeoQueryResult</code></td>
             
 
             <td class="type">
@@ -114,14 +110,14 @@
 
             
 
-            <td class="description last"><p>Element.</p></td>
+            <td class="description last"><p>ngeo query result.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>$attrs</code></td>
+                <td class="name"><code>ngeoFeatureOverlayMgr</code></td>
             
 
             <td class="type">
@@ -132,43 +128,8 @@
 
             
 
-            <td class="description last"><p>Attributes.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ngeoDecorateLayer</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>layer decorator service.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ngeoDecorateLayerLoading</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Decorate Layer service.</p></td>
+            <td class="description last"><p>The ngeo feature
+    overlay manager service.</p></td>
         </tr>
 
     
@@ -212,8 +173,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L135">line 135</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L91">line 91</a>
     </li></ul></dd>
     
 
@@ -257,7 +218,7 @@
 
         
             
-<h4 class="name" id="depth"><span class="type-signature"></span>depth<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+<h4 class="name" id="animate"><span class="type-signature"></span>animate<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
 
 
 
@@ -308,8 +269,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L182">line 182</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L209">line 209</a>
     </li></ul></dd>
     
 
@@ -327,7 +288,152 @@
 
         
             
-<h4 class="name" id="isRoot"><span class="type-signature"></span>isRoot<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
+<h4 class="name" id="collapsed"><span class="type-signature"></span>collapsed<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Is the window currently collapsed?
+When used for Desktop, it is shown non-collapsed.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L112">line 112</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="currentResult"><span class="type-signature"></span>currentResult<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L197">line 197</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="desktop"><span class="type-signature"></span>desktop<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
@@ -378,8 +484,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L143">line 143</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L104">line 104</a>
     </li></ul></dd>
     
 
@@ -397,7 +503,7 @@
 
         
             
-<h4 class="name" id="layer"><span class="type-signature"></span>layer<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.layer.Layer.html">ol.layer.Layer</a></span></h4>
+<h4 class="name" id="feature"><span class="type-signature"></span>feature<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span></h4>
 
 
 
@@ -408,7 +514,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.layer.Layer.html">ol.layer.Layer</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Feature.html">ol.Feature</a></span>
 
 
         </li>
@@ -448,8 +554,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L213">line 213</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L191">line 191</a>
     </li></ul></dd>
     
 
@@ -467,7 +573,7 @@
 
         
             
-<h4 class="name" id="listenersExpr"><span class="type-signature"></span>listenersExpr<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></h4>
+<h4 class="name" id="isNext"><span class="type-signature"></span>isNext<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
@@ -478,7 +584,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
 
 
         </li>
@@ -518,8 +624,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L232">line 232</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L203">line 203</a>
     </li></ul></dd>
     
 
@@ -537,7 +643,7 @@
 
         
             
-<h4 class="name" id="map"><span class="type-signature"></span>map<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span></h4>
+<h4 class="name" id="ngeoQueryResult"><span class="type-signature"></span>ngeoQueryResult<span class="type-signature"> :<a href="ngeox.html#QueryResult">ngeox.QueryResult</a></span></h4>
 
 
 
@@ -548,7 +654,7 @@
     <ul>
         <li>
             
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
+<span class="param-type"><a href="ngeox.html#QueryResult">ngeox.QueryResult</a></span>
 
 
         </li>
@@ -588,8 +694,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L194">line 194</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L132">line 132</a>
     </li></ul></dd>
     
 
@@ -607,10 +713,224 @@
 
         
             
-<h4 class="name" id="node"><span class="type-signature"></span>node<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>|<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></span></h4>
+<h4 class="name" id="open"><span class="type-signature"></span>open<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L215">line 215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="selectedSource"><span class="type-signature">(nullable) </span>selectedSource<span class="type-signature"> :<a href="ngeox.html#QueryResultSource">ngeox.QueryResultSource</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="ngeox.html#QueryResultSource">ngeox.QueryResultSource</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="source"><span class="type-signature">(nullable) </span>source<span class="type-signature"> :<a href="ngeox.html#QueryResultSource">ngeox.QueryResultSource</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="ngeox.html#QueryResultSource">ngeox.QueryResultSource</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L185">line 185</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="sourcesFilter"><span class="type-signature"></span>sourcesFilter<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span></h4>
+
+
+
+
+<div class="description">
+    <p>Object that is used to filter the source list in the template.</p>
+</div>
 
 
 
@@ -619,9 +939,6 @@
         <li>
             
 <span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a></span>
-|
-
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></span>
 
 
         </li>
@@ -661,218 +978,8 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L151">line 151</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="nodelayerExpr"><span class="type-signature"></span>nodelayerExpr<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L207">line 207</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="parent"><span class="type-signature"></span>parent<span class="type-signature"> :<a href="ngeo.LayertreeController.html">ngeo.LayertreeController</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="ngeo.LayertreeController.html">ngeo.LayertreeController</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L170">line 170</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="uid"><span class="type-signature"></span>uid<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-    
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L176">line 176</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L126">line 126</a>
     </li></ul></dd>
     
 
@@ -899,7 +1006,693 @@
 
     
 
-    <h4 class="name" id="getSetActive"><span class="type-signature"></span>getSetActive<span class="signature">(val)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="clear"><span class="type-signature"></span>clear<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Remove the current selected feature and source and remove all features
+from the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L452">line 452</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Remove the current selected feature and source and remove all features
+from the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L441">line 441</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getFeatureValues"><span class="type-signature"></span>getFeatureValues<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Delete the unwanted ol3 properties from the current feature then return the
+properties.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L370">line 370</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getResultLength"><span class="type-signature"></span>getResultLength<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Get the total count of features in the result of the query. If a source
+has been select, only the number of features of that source are returned.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L337">line 337</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isFirst"><span class="type-signature"></span>isFirst<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L350">line 350</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="isLast"><span class="type-signature"></span>isLast<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L359">line 359</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="next"><span class="type-signature"></span>next<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Select the logical next source and feature then highlight this feature on
+the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L318">line 318</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="previous"><span class="type-signature"></span>previous<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Select the logical previous source and feature then highlight this feature on
+the map.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L301">line 301</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setSelectedSource"><span class="type-signature"></span>setSelectedSource<span class="signature">(source)</span><span class="type-signature"></span></h4>
 
     
 
@@ -938,7 +1731,7 @@
 
         <tr>
             
-                <td class="name"><code>val</code></td>
+                <td class="name"><code>source</code></td>
             
 
             <td class="type">
@@ -949,7 +1742,7 @@
 
             
 
-            <td class="description last"><p>Value.</p></td>
+            <td class="description last"><p>The source to select.</p></td>
         </tr>
 
     
@@ -993,8 +1786,96 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js">src/directives/layertree.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/layertree.js#L248">line 248</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L466">line 466</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="show"><span class="type-signature"></span>show<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Remove current displayed results then get new results from the
+ngeoQueryResult sevice. Display all results on the map and display,
+highlight the first feature.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js">contribs/gmf/src/directives/displayqueries.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/displayqueries.js#L237">line 237</a>
     </li></ul></dd>
     
 

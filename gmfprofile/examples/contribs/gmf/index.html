@@ -36,7 +36,10 @@
       <hr>
       <div>
         <a href="profile.html">GMF profile example</a>
-        <p>This example shows how to use the <code>... TODO</code></p>
+        <p>This example shows how to use the <code>gmf-profile</code>.
+    The draw tool and hover feedback on the map are completely independant of
+    the gmf-profile components. This profile relies on the ngeo.profile (d3) and
+    ngeo.ProfileDirective.</p>
       </div>
       <hr>
       <div>
@@ -44,6 +47,21 @@
         <p>This example shows how to use the
     <code>gmf-backgroundlayerselector</code>
     directive to select the map background layer.</p>
+      </div>
+      <hr>
+      <div>
+        <a href="mapquery.html">GeoMapFish Map Query example</a>
+        <p>
+      This example shows how to use the <code>ngeo-map-query</code>
+      directive in combination with the <code>gmf.QueryManager</code>.
+      The QueryManager fetches the themes returned by the theme service and
+      adds one source to the query service per layer definition found. In this
+      example, the layer tree is responsible of creating the layer. You can
+      switch theme and turn on/off layers to see the impact it has on results
+      returned by the query service.
+      To display results, this example use the <code>gmf-displayqueries
+      </code> componant. Here, this last directive uses a custom style to
+      display all selected features.</p>
       </div>
       <hr>
       <div>
@@ -58,21 +76,6 @@
       directive to create, modify and delete vector features on a map and
       style them as we please.
     </p>
-      </div>
-      <hr>
-      <div>
-        <a href="mobilequery.html">GeoMapFish Mobile Query example</a>
-        <p>
-      This example shows how to use the <code>ngeo-mobile-query</code>
-      directive in combination with the <code>gmf.QueryManager</code>.
-      The QueryManager fetches the themes returned by the theme service and
-      adds one source to the query service per layer definition found. In this
-      example, the layer tree is responsible of creating the layer. You can
-      switch theme and turn on/off layers to see the impact it has on results
-      returned by the query service.
-      To display results, this example use the <code>gmf-mobiledisplayqueries
-      </code> componant. Here, this last directive uses a custom style to
-      display all selected features.</p>
       </div>
       <hr>
       <div>

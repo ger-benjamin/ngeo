@@ -46,14 +46,14 @@ app.module.directive('appQueryresult', app.queryresultDirective);
 
 /**
  * Demo, NOT USED.
- * @param {ngeo.QueryResult} ngeoQueryResult Query service.
+ * @param {ngeox.QueryResult} ngeoQueryResult Query service.
  * @constructor
  * @ngInject
  */
 app.QueryresultController = function(ngeoQueryResult) {
 
   /**
-   * @type {ngeo.QueryResult}
+   * @type {ngeox.QueryResult}
    * @export
    */
   this.result = ngeoQueryResult;
@@ -83,7 +83,7 @@ app.MainController = function(gmfThemes, gmfQueryManager,
   var stroke = new ol.style.Stroke({color: [255, 170, 0, 1], width: 2});
 
   /**
-   * FeatureStyle used by the mobiledisplayqueries directive
+   * FeatureStyle used by the displayqueries directive
    * @type {ol.style.Style}
    * @export
    */

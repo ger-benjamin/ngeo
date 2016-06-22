@@ -49,7 +49,7 @@ app.MainController = function() {
   var stroke = new ol.style.Stroke({color: [255, 170, 0, 1], width: 2});
 
   /**
-   * FeatureStyle used by the mobiledisplayqueries directive
+   * FeatureStyle used by the displayqueries directive
    * @type {ol.style.Style}
    * @export
    */

@@ -157,7 +157,7 @@ app.MainController = function($http, $scope) {
   var distanceExtractor = typedFunctionsFactory(types.number, 'dist');
 
 
-  var linesConfigurations = {
+  var linesConfiguration = {
     'line1': {
       style: {},
       zExtractor: typedFunctionsFactory(types.number, 'mnt', 'values')
@@ -207,7 +207,7 @@ app.MainController = function($http, $scope) {
    */
   this.profileOptions = {
     distanceExtractor: distanceExtractor,
-    linesConfigurations: linesConfigurations,
+    linesConfiguration: linesConfiguration,
     poiExtractor: poiExtractor,
     hoverCallback: hoverCallback,
     outCallback: outCallback
