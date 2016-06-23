@@ -11,11 +11,11 @@ app.module = angular.module('app', ['gmf']);
 
 app.module.constant(
     'gmfProfileJsonUrl',
-    'https://geomapfish-demo.camptocamp.net/2.0/wsgi/profile.json');
+    'https://geomapfish-demo.camptocamp.net/2.1/wsgi/profile.json');
 
 app.module.constant(
     'gmfProfileCsvUrl',
-    'https://geomapfish-demo.camptocamp.net/2.0/wsgi/profile.csv');
+    'https://geomapfish-demo.camptocamp.net/2.1/wsgi/profile.csv');
 
 /**
  * @param {angular.Scope} $scope Angular scope.

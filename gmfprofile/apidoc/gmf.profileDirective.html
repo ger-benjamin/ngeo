@@ -51,9 +51,9 @@
 <div class="description">
     <p>Provide a directive that display a profile panel. This profile use the given
 LineString geometry to request the c2cgeoportal profile.json service. The
-raster to ask to the service are the keys of the 'linesconfiguration' object.
+raster used in the request are the keys of the 'linesconfiguration' object.
 The 'profileActive', 'informationscallback' and 'map' attributes are
-optional and are only used to retrieve and display on the map the
+optionals and are only used to retrieve and display on the map the
 informations that concerne the hovered point (in the profile or on the
 map) of the line.
 This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
@@ -104,13 +104,13 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-profile-map</code></td>
+                <td class="name"><code>gmf-profile-active</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
 
 
             
@@ -121,36 +121,7 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
                 
 
                 
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The map.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-profile-linesconfiguration</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="gmfx.html#ProfileLineConfiguration">gmfx.ProfileLineConfiguration</a>></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
+                    &lt;nullable><br>
                 
 
                 
@@ -159,8 +130,8 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
             
 
-            <td class="description last">The configuration of the lines. Each keys
-    will be used as requested elevation layers names.</td>
+            <td class="description last">Optional to active the hover
+    functions.</td>
         </tr>
 
     
@@ -199,6 +170,71 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
         <tr>
             
+                <td class="name"><code>gmf-profile-map</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An optional map.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gmf-profile-linesconfiguration</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="gmfx.html#ProfileLineConfiguration">gmfx.ProfileLineConfiguration</a>></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">The configuration of the lines. Each keys
+    will be used to request elevation layers.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>gmf-profile-informationscallback</code></td>
             
 
@@ -226,7 +262,8 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
             
 
             <td class="description last">Optional callback function that will be
-    called at each changes on profile and line hover (component must be active).</td>
+    called at each changes on profile and line hover (component must be
+    active and must have a map).</td>
         </tr>
 
     
@@ -269,7 +306,7 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js">contribs/gmf/src/directives/profile.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L59">line 59</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L62">line 62</a>
     </li></ul></dd>
     
 
