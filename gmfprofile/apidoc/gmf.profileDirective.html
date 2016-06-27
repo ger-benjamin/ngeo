@@ -52,20 +52,16 @@
     <p>Provide a directive that display a profile panel. This profile use the given
 LineString geometry to request the c2cgeoportal profile.json service. The
 raster used in the request are the keys of the 'linesconfiguration' object.
-The 'profileActive', 'informationscallback' and 'map' attributes are
-optionals and are only used to retrieve and display on the map the
-informations that concerne the hovered point (in the profile or on the
-map) of the line.
+The 'profileActive' and 'map' attributes are optionals and are only used to
+display on the map the informations that concerne the hovered
+point (in the profile and on the map) of the line.
 This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 <p>Example:</p>
 <pre class="prettyprint source"><code> &lt;gmf-profile
    gmf-profile-active=&quot;ctrl.profileActive&quot;
    gmf-profile-line=&quot;ctrl.profileLine&quot;
    gmf-profile-map=&quot;::ctrl.map&quot;
-   gmf-profile-linesconfiguration=&quot;::ctrl.profileLinesconfiguration&quot;
-   gmf-profile-informationscallback=&quot;::ctrl.profileInformationsCallback&quot;
-   gmf-profile-numberofpoints=&quot;::ctrl.profileNumberOfPoints&quot;
-   gmf-profile-css=&quot;::ctrl.profileCss&quot;>
+   gmf-profile-linesconfiguration=&quot;::ctrl.profileLinesconfiguration&quot;>
  &lt;/gmf-profile></code></pre>
 </div>
 
@@ -237,13 +233,13 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-profile-informationscallback</code></td>
+                <td class="name"><code>gmf-profile-hoverpointstyle</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span>
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
 
 
             
@@ -254,8 +250,6 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
                 
 
                 
-                    &lt;nullable><br>
-                
 
                 
                 </td>
@@ -263,9 +257,8 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
             
 
-            <td class="description last">Optional callback function that will be
-    called at each changes on profile and line hover (component must be
-    active and must have a map).</td>
+            <td class="description last">Optional style
+    for the 'on Hover' point on the line.</td>
         </tr>
 
     
@@ -376,7 +369,7 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js">contribs/gmf/src/directives/profile.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L68">line 68</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L69">line 69</a>
     </li></ul></dd>
     
 
