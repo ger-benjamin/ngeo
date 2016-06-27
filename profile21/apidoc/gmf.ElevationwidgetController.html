@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: resizemapDirective <small>directive:ngeoResizemap</small></title>
+    <title>JSDoc: Class: ElevationwidgetController</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: resizemapDirective <small>directive:ngeoResizemap</small></h1>
+    <h1 class="page-title">Class: ElevationwidgetController</h1>
 
     
 
@@ -28,8 +28,8 @@
 
 <header>
     
-        <h2 id="resizemapDirective">
-            <span class="ancestors">ngeo.</span>resizemapDirective
+        <h2 id="ElevationwidgetController">
+            <span class="ancestors">gmf.</span>ElevationwidgetController
         </h2>
         
     
@@ -42,23 +42,11 @@
 
     
 
-    <h4 class="name" id="resizemapDirective"><span class="type-signature"></span>new resizemapDirective<span class="signature">($window, $animate)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="ElevationwidgetController"><span class="type-signature"></span>new ElevationwidgetController<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
 
-
-<div class="description">
-    <p>Provides a directive that resizes the map in an animation loop
-during 1 second when the value of &quot;state&quot; changes. This is especially useful
-when changing the size of other elements with a transition leads to a change
-of the map size.</p>
-<p>Example:</p>
-<pre class="prettyprint source"><code> &lt;div ng-class=&quot;ctrl.open ? 'open' : 'close' ngeo-resizemap=&quot;ctrl.map&quot;
-   ngeo-resizemap-state=&quot;open&quot;>
- &lt;div>
- &lt;input type=&quot;checkbox&quot; ng-model=&quot;ctrl.open&quot; /></code></pre><p>See our live example: <code>../examples/animation.html</code></p>
-</div>
 
 
 
@@ -104,8 +92,8 @@ of the map size.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/resizemap.js">src/directives/resizemap.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/resizemap.js#L31">line 31</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L275">line 275</a>
     </li></ul></dd>
     
 
@@ -149,7 +137,7 @@ of the map size.</p>
 
         
             
-<h4 class="name" id="~duration"><span class="type-signature">(inner) </span>duration<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+<h4 class="name" id="active"><span class="type-signature"></span>active<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></h4>
 
 
 
@@ -160,7 +148,7 @@ of the map size.</p>
     <ul>
         <li>
             
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
 
 
         </li>
@@ -200,8 +188,218 @@ of the map size.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/resizemap.js">src/directives/resizemap.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/src/directives/resizemap.js#L32">line 32</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L292">line 292</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="layers"><span class="type-signature"></span>layers<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L286">line 286</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="map"><span class="type-signature"></span>map<span class="type-signature"> :<a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L280">line 280</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="selectedElevationLayer"><span class="type-signature"></span>selectedElevationLayer<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js">contribs/gmf/src/directives/elevation.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/elevation.js#L298">line 298</a>
     </li></ul></dd>
     
 
