@@ -52,10 +52,10 @@
     <p>Provide a directive to do a point (coordinate and elevation) measure on the
 mobile devices.</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code> &lt;div gmf-mobile-measure-point=&quot;&quot;
-   gmf-mobile-measure-point-active=&quot;ctrl.measurePointActive&quot;
-   gmf-mobile-measure-point-layers=&quot;::ctrl.measurePointLayers&quot;
-   gmf-mobile-measure-point-map=&quot;::ctrl.map&quot;>
+<pre class="prettyprint source"><code> &lt;div gmf-mobile-measurepoint=&quot;&quot;
+   gmf-mobile-measurepoint-active=&quot;ctrl.measurePointActive&quot;
+   gmf-mobile-measurepoint-layers=&quot;::ctrl.measurePointLayers&quot;
+   gmf-mobile-measurepoint-map=&quot;::ctrl.map&quot;>
  &lt;/div></code></pre>
 </div>
 
@@ -96,7 +96,7 @@ mobile devices.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-active</code></td>
+                <td class="name"><code>gmf-mobile-measurepoint-active</code></td>
             
 
             <td class="type">
@@ -128,7 +128,7 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-decimals</code></td>
+                <td class="name"><code>gmf-mobile-measurepoint-decimals</code></td>
             
 
             <td class="type">
@@ -162,7 +162,7 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-layers</code></td>
+                <td class="name"><code>gmf-mobile-measurepoint-layers</code></td>
             
 
             <td class="type">
@@ -194,7 +194,7 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-map</code></td>
+                <td class="name"><code>gmf-mobile-measurepoint-map</code></td>
             
 
             <td class="type">
@@ -225,13 +225,19 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-sketch-style</code></td>
+                <td class="name"><code>gmf-mobile-measurepoint-sketchstyle</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
+|
+
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a>></span>
+|
+
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.html#.StyleFunction">ol.StyleFunction</a></span>
 
 
             
@@ -239,8 +245,6 @@ or deactivate the component.</td>
 
             
                 <td class="attributes">
-                
-                    &lt;optional><br>
                 
 
                 
@@ -251,8 +255,7 @@ or deactivate the component.</td>
 
             
 
-            <td class="description last">A
-    style for the measure point.</td>
+            <td class="description last">A style for the measure point.</td>
         </tr>
 
     

@@ -51,9 +51,9 @@
 <div class="description">
     <p>Provide a directive to do a length measure on the mobile devices.</p>
 <p>Example:</p>
-<pre class="prettyprint source"><code> &lt;div gmf-mobile-measure-length=&quot;&quot;
-   gmf-mobile-measure-length-active=&quot;ctrl.measureLengthActive&quot;
-   gmf-mobile-measure-length-map=&quot;::ctrl.map&quot;>
+<pre class="prettyprint source"><code> &lt;div gmf-mobile-measurelength=&quot;&quot;
+   gmf-mobile-measurelength-active=&quot;ctrl.measureLengthActive&quot;
+   gmf-mobile-measurelength-map=&quot;::ctrl.map&quot;>
  &lt;/div></code></pre>
 </div>
 
@@ -94,7 +94,7 @@
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-active</code></td>
+                <td class="name"><code>gmf-mobile-measurelength-active</code></td>
             
 
             <td class="type">
@@ -126,7 +126,7 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-decimals</code></td>
+                <td class="name"><code>gmf-mobile-measurelength-decimals</code></td>
             
 
             <td class="type">
@@ -153,14 +153,14 @@ or deactivate the component.</td>
             
 
             <td class="description last">number of decimal
-    to display</td>
+    to display.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-map</code></td>
+                <td class="name"><code>gmf-mobile-measurelength-map</code></td>
             
 
             <td class="type">
@@ -191,13 +191,19 @@ or deactivate the component.</td>
 
         <tr>
             
-                <td class="name"><code>gmf-mobile-measure-point-sketch-style</code></td>
+                <td class="name"><code>gmf-mobile-measurelength-sketchstyle</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a></span>
+|
+
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a>></span>
+|
+
+<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.html#.StyleFunction">ol.StyleFunction</a></span>
 
 
             
@@ -205,8 +211,6 @@ or deactivate the component.</td>
 
             
                 <td class="attributes">
-                
-                    &lt;optional><br>
                 
 
                 
@@ -217,8 +221,7 @@ or deactivate the component.</td>
 
             
 
-            <td class="description last">A
-    style for the measure point.</td>
+            <td class="description last">A style for the measure length.</td>
         </tr>
 
     
