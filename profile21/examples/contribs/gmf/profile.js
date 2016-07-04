@@ -47,6 +47,10 @@ app.MainController = function($scope, ngeoFeatureOverlayMgr) {
     }
   };
 
+  this.profileOptions = {
+    styleDefs: 'svg {background-color: #D3E5D7};'
+  };
+
   /**
    * @type {ol.Map}
    * @export

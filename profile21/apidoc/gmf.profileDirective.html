@@ -299,13 +299,13 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-profile-css</code></td>
+                <td class="name"><code>gmf-profile-options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, *></span>
 
 
             
@@ -325,8 +325,11 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
 
             
 
-            <td class="description last">Inline Optional CSS style definition
-    to inject in the SVG.</td>
+            <td class="description last">Optional options
+    object like <a href="ngeox.profile.html#ProfileOptions"><code>ngeox.profile.ProfileOptions</code></a> but without any
+    mandatory value. Will be passed to the ngeo profile directive. Providing
+    'linesConfiguration', 'distanceExtractor', hoverCallback, outCallback
+    or i18n will override native gmf profile values.</td>
         </tr>
 
     
@@ -369,7 +372,7 @@ This profile relies on the ngeo.profile (d3) and ngeo.ProfileDirective.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js">contribs/gmf/src/directives/profile.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L69">line 69</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/profile.js#L72">line 72</a>
     </li></ul></dd>
     
 
