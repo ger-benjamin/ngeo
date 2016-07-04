@@ -17,7 +17,7 @@
       <div class="data-panel">
         <div class="header">
           <div class="dropdown">
-            <a href class="btn btn-default btn-block"
+            <a href class="btn btn-default btn-block btn-primary"
               data-toggle="dropdown">
               <span class="fa fa-grid"></span>
               <span translate>Themes</span>
@@ -53,11 +53,8 @@
             data-toggle="tooltip" data-placement="left" data-original-title="{{'Draw & Measure'|translate}}">
             <span class="fa fa-pencil"></span>
           </button>
-          <button class="btn btn-default"
-            ng-click="mainCtrl.profileActive = !mainCtrl.profileActive"
-            gmf-drawprofileline
-            gmf-drawprofileline-map="::mainCtrl.map"
-            gmf-drawprofileline-line="mainCtrl.profileLine">
+          <button ngeo-btn class="btn btn-default" ng-model="profileActive"
+            data-toggle="tooltip" data-placement="left" data-original-title="{{'Profile'|translate}}">
             <span class="fa fa-area-chart"></span>
           </button>
         </div>
@@ -97,9 +94,35 @@
               </gmf-drawfeature>
             </div>
           </div>
+          <div ng-show="profileActive" class="row">
+            <div class="col-sm-12">
+              <div class="tools-content-heading">
+                {{'Profile'|translate}}
+                <a class="btn close" ng-click="profileActive = false">&times;</a>
+              </div>
+              <div gmf-drawprofileline
+                   gmf-drawprofileline-active="profileActive"
+                   gmf-drawprofileline-map="::mainCtrl.map"
+                   gmf-drawprofileline-line="mainCtrl.profileLine">
+                 <p>
+                  <button class="btn btn-default"
+                    ngeo-btn ng-model="ctrl.interaction.active"
+                    translate>
+                    Draw profile line
+                  </button>
+                </p>
+                <p>
+                  <em translate ng-if="ctrl.interaction.active" class="text-muted small">
+                    Draw a line on the map to display the corresponding elevation profile.
+                    Use double-click to finish the drawing.
+                  </em>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="map-container" ng-class="{'infobar-active': mainCtrl.showInfobar}">
+      <div class="map-container" ng-class="{'infobar-active': mainCtrl.showInfobar, 'profile-chart-active': !!profileChartActive}">
         <gmf-search gmf-search-map="mainCtrl.map"
           class="search"
           gmf-search-datasources="mainCtrl.searchDatasources"
@@ -124,16 +147,10 @@
           </gmf-disclaimer>
         </div>
         <gmf-map class="gmf-map" gmf-map-map="mainCtrl.map"></gmf-map>
-        <gmf-profile
-          gmf-profile-active="mainCtrl.profileActive"
-          gmf-profile-line="mainCtrl.profileLine"
-          gmf-profile-map="::mainCtrl.map"
-          gmf-profile-linesconfiguration="::mainCtrl.profileLinesconfiguration">
-        </gmf-profile>
 
         <!--infobar-->
         <div class="footer" ng-class="{'active': mainCtrl.showInfobar}">
-          <button class="btn btn-sm fa map-info ng-cloak" ng-click="mainCtrl.showInfobar = !mainCtrl.showInfobar"
+          <button class="btn fa map-info ng-cloak" ng-click="mainCtrl.showInfobar = !mainCtrl.showInfobar"
                   ng-class="{'fa-angle-double-up': !mainCtrl.showInfobar, 'fa-angle-double-down': mainCtrl.showInfobar}"></button>
 
           <div ngeo-scaleselector="mainCtrl.scaleSelectorValues"
@@ -155,15 +172,24 @@
           </div>
         </div>
       </div>
+      <gmf-profile
+        gmf-profile-active="profileChartActive"
+        gmf-profile-line="mainCtrl.profileLine"
+        gmf-profile-map="::mainCtrl.map"
+        gmf-profile-linesconfiguration="::mainCtrl.profileLinesconfiguration"
+        ngeo-resizemap="mainCtrl.map"
+        ngeo-resizemap-state="profileChartActive">
+      </gmf-profile>
     </main>
     <script src="../../build/desktop_alt.js"></script>
     <script src="../../../../lib/watchwatchers.js"></script>
     <script>
       (function() {
+        var cacheVersion = 'ef64ccacd43cc3c2e760415b9c72d185ece0729c';
         var urlElements = window.location.pathname.split('/');
 
         var angularLocaleScriptUrlElements = urlElements.slice(0, urlElements.length - 3);
-        angularLocaleScriptUrlElements.push('build', 'angular-locale_{{locale}}.js');
+        angularLocaleScriptUrlElements.push('build', 'angular-locale_{{locale}}.js?cache_version=' + cacheVersion);
 
         var gmfModule = angular.module('gmf');
         gmfModule.constant('angularLocaleScript', angularLocaleScriptUrlElements.join('/'));
@@ -171,13 +197,14 @@
         var langUrls = {};
         ['en', 'fr', 'de'].forEach(function(lang) {
             var langUrlElements = urlElements.slice(0, urlElements.length - 3);
-            langUrlElements.push('build', 'gmf-' + lang + '.json')
+            langUrlElements.push('build', 'gmf-' + lang + '.json?cache_version=' + cacheVersion)
             langUrls[lang] = langUrlElements.join('/')
         });
 
         var module = angular.module('app');
         module.constant('defaultLang', 'en');
         module.constant('langUrls', langUrls);
+        module.constant('cacheVersion', cacheVersion);
         module.constant('authenticationBaseUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi');
         module.constant('fulltextsearchUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi/fulltextsearch?limit=30&partitionlimit=5');
         module.constant('gmfRasterUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi/raster');

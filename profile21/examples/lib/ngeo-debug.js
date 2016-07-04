@@ -94078,6 +94078,21 @@ ngeo.profile = function(options) {
       options.poiLabelAngle : -60;
 
   /**
+   * @type {Object.<string, string>}
+   */
+  var i18n = options.i18n || {};
+
+  /**
+   * @type {string}
+   */
+  var xAxisLabel = (i18n.xAxis || 'Distance');
+
+  /**
+   * @type {string}
+   */
+  var yAxisLabel = (i18n.yAxis || 'Elevation');
+
+  /**
    * @type {ngeox.profile.ProfileFormatter}
    */
   var formatter = {
@@ -94248,7 +94263,7 @@ ngeo.profile = function(options) {
           .attr('dy', '.75em')
           .attr('transform', 'rotate(-90)')
           .style('fill', 'grey')
-          .text('elevation (m)');
+          .text(yAxisLabel + ' (m)');
 
         gEnter.append('g')
           .attr('class', 'metas')
@@ -94371,7 +94386,7 @@ ngeo.profile = function(options) {
           .call(xAxis);
 
         g.select('.x.label')
-          .text('distance (' + xUnits + ')')
+          .text(xAxisLabel + ' (' + xUnits + ')')
           .style('fill', 'grey')
           .style('shape-rendering', 'crispEdges');
 
@@ -94690,6 +94705,263 @@ ngeo.GeometryType = {
    */
   TEXT: 'Text'
 };
+
+goog.provide('ngeo.EventHelper');
+
+goog.require('ngeo');
+
+
+/**
+ * Provides methods to manage the listening/unlistening of all sorts of
+ * events:
+ * - events from OpenLayers
+ * - events from Closure Library
+ *
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoEventHelper
+ * @ngInject
+ */
+ngeo.EventHelper = function() {
+
+  /**
+   * @type {Object.<number, ngeo.EventHelper.ListenerKeys>}
+   * @private
+   */
+  this.listenerKeys_ = {};
+
+};
+
+
+/**
+ * Utility method to add a listener key bound to a unique id. The key can
+ * come from an `ol.events` (default) or `goog.events`.
+ * @param {number} uid Unique id.
+ * @param {ol.EventsKey|goog.events.Key} key Key.
+ * @param {boolean=} opt_isol Whether it's an OpenLayers event or not. Defaults
+ *     to true.
+ * @export
+ */
+ngeo.EventHelper.prototype.addListenerKey = function(uid, key, opt_isol) {
+  if (!this.listenerKeys_[uid]) {
+    this.initListenerKey_(uid);
+  }
+
+  var isol = opt_isol !== undefined ? opt_isol : true;
+  if (isol) {
+    this.listenerKeys_[uid].ol.push(/** @type {ol.EventsKey} */ (key));
+  } else {
+    this.listenerKeys_[uid].goog.push(/** @type {goog.events.Key} */ (key));
+  }
+};
+
+
+/**
+ * Clear all listener keys from the given unique id.
+ * @param {number} uid Unique id.
+ * @export
+ */
+ngeo.EventHelper.prototype.clearListenerKey = function(uid) {
+  this.initListenerKey_(uid);
+};
+
+
+/**
+ * Utility method that does 2 things:
+ * - initialize the listener keys of a given uid with an array (if that key
+ *   has not array set yet)
+ * - unlisten any events if the array already exists for the given uid and
+ *   empty the array.
+ * @param {number} uid Unique id.
+ * @private
+ */
+ngeo.EventHelper.prototype.initListenerKey_ = function(uid) {
+  if (!this.listenerKeys_[uid]) {
+    this.listenerKeys_[uid] = {
+      goog: [],
+      ol: []
+    };
+  } else {
+    if (this.listenerKeys_[uid].goog.length) {
+      this.listenerKeys_[uid].goog.forEach(function(key) {
+        goog.events.unlistenByKey(key);
+      }, this);
+      this.listenerKeys_[uid].goog.length = 0;
+    }
+    if (this.listenerKeys_[uid].ol.length) {
+      this.listenerKeys_[uid].ol.forEach(function(key) {
+        ol.events.unlistenByKey(key);
+      }, this);
+      this.listenerKeys_[uid].ol.length = 0;
+    }
+  }
+};
+
+
+/**
+ * @typedef {{
+ *     goog: (Array.<goog.events.Key>),
+ *     ol: (Array.<ol.EventsKey>)
+ * }}
+ */
+ngeo.EventHelper.ListenerKeys;
+
+
+ngeo.module.service('ngeoEventHelper', ngeo.EventHelper);
+
+goog.provide('ngeo.AttributesController');
+goog.provide('ngeo.attributesDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.EventHelper');
+
+
+/**
+ * Directive used to render the attributes of a feature into a form.
+ * Example:
+ *
+ *     <ngeo-attributes
+ *       ngeo-attributes-attributes="::ctrl.attributes"
+ *       ngeo-attributes-feature="::ctrl.feature">
+ *     </ngeo-attributes>
+ *
+ * @htmlAttribute {Array.<ngeox.Attribute>} ngeo-attributes-attributes The
+ *     list of attributes to use.
+ * @htmlAttribute {ol.Feature} ngeo-attributes-feature The feature.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoAttributes
+ */
+ngeo.attributesDirective = function() {
+  return {
+    controller: 'ngeoAttributesController',
+    scope: true,
+    bindToController: {
+      'attributes': '=ngeoAttributesAttributes',
+      'feature': '=ngeoAttributesFeature'
+    },
+    controllerAs: 'attrCtrl',
+    templateUrl: ngeo.baseTemplateUrl + '/attributes.html'
+  };
+};
+
+ngeo.module.directive('ngeoAttributes', ngeo.attributesDirective);
+
+
+/**
+ * @param {!angular.Scope} $scope Angular scope.
+ * @param {ngeo.EventHelper} ngeoEventHelper Ngeo event helper service
+ * @constructor
+ * @ngInject
+ * @ngdoc controller
+ * @ngname ngeoAttributesController
+ */
+ngeo.AttributesController = function($scope, ngeoEventHelper) {
+
+  /**
+   * The list of attributes to create the form with.
+   * @type {Array.<ngeox.Attribute>}
+   * @export
+   */
+  this.attributes;
+
+  /**
+   * The feature containing the values.
+   * @type {ol.Feature}
+   * @export
+   */
+  this.feature;
+
+  /**
+   * The properties bound to the form, initialized with the inner properties
+   * of the feature.
+   * @type {Object.<string, *>}
+   * @export
+   */
+  this.properties = this.feature.getProperties();
+
+  /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.scope_ = $scope;
+
+  /**
+   * @type {ngeo.EventHelper}
+   * @private
+   */
+  this.ngeoEventHelper_ = ngeoEventHelper;
+
+  // Listen to the feature inner properties change and apply them to the form
+  var uid = goog.getUid(this);
+  this.ngeoEventHelper_.addListenerKey(
+    uid,
+    ol.events.listen(
+      this.feature,
+      ol.ObjectEventType.PROPERTYCHANGE,
+      this.handleFeaturePropertyChange_,
+      this
+    ),
+    true
+  );
+
+  /**
+   * While changes happen from the form (from the template), they are applied
+   * to the feature inner properties. The 'propertychange' event registered
+   * above does the opposite, i.e. it listens to the feature inner properties
+   * changes and apply them to the form. To prevent circular issues, while
+   * applying changes coming from the form, this flag is set. While set, changes
+   * from the feature inner properties are ignored.
+   * @type {boolean}
+   * @private
+   */
+  this.updating_ = false;
+
+  $scope.$on('$destroy', this.handleDestroy_.bind(this));
+
+};
+
+
+/**
+ * Called when an input node value changes
+ * @param {string} name Attribute name
+ * @export
+ */
+ngeo.AttributesController.prototype.handleInputChange = function(name) {
+  this.updating_ = true;
+  var value = this.properties[name];
+  this.feature.set(name, value);
+  this.updating_ = false;
+};
+
+
+/**
+ * Cleanup event listeners.
+ * @private
+ */
+ngeo.AttributesController.prototype.handleDestroy_ = function() {
+  var uid = goog.getUid(this);
+  this.ngeoEventHelper_.clearListenerKey(uid);
+};
+
+
+/**
+ * @param {ol.ObjectEvent} evt Event.
+ * @private
+ */
+ngeo.AttributesController.prototype.handleFeaturePropertyChange_ = function(
+  evt
+) {
+  if (this.updating_) {
+    return;
+  }
+  this.properties[evt.key] = evt.target.get(evt.key);
+  this.scope_.$apply();
+};
+
+
+ngeo.module.controller('ngeoAttributesController', ngeo.AttributesController);
 
 goog.provide('ngeo.BtnGroupController');
 goog.provide('ngeo.btnDirective');
@@ -95033,955 +95305,312 @@ ngeo.controlDirective = function() {
 
 ngeo.module.directive('ngeoControl', ngeo.controlDirective);
 
-goog.provide('ngeo.DecorateGeolocation');
+goog.provide('ngeo.filters');
 
-goog.require('goog.asserts');
 goog.require('ngeo');
 
-
 /**
- * Provides a function that adds a "tracking" property (using
- * `Object.defineProperty`) to the `ol.Geolocation` instance, making it
- * possible to activate/deactivate the tracking mode.
+ * Format a number as a localized scale.
+ * For instance:
+ *  - For 'fr-CH' the value 25000 will become '1 : 25 000'.
+ *  - For 'en-US' the value 25000 will become '1 : 25,000'.
  *
  * Example:
  *
- *      <input type="checkbox" ngModel="geolocation.tracking" />
+ *      <p>{{25000 | ngeoScalify}}</p>
  *
- * See our live example: {@link ../examples/geolocation.html}
  *
- * @typedef {function(ol.Geolocation)}
- * @ngdoc service
- * @ngname ngeoDecorateGeolocation
- */
-ngeo.DecorateGeolocation;
-
-
-/**
- * @param {ol.Geolocation} geolocation Geolocation to decorate.
+ * @param {angular.$filter} $filter Angular filter
+ * @return {function(number): string} A function to format number into a 'scale'
+ *     string.
  * @ngInject
+ * @ngdoc filter
+ * @ngname ngeoScalify
  */
-ngeo.decorateGeolocation = function(geolocation) {
-  goog.asserts.assertInstanceof(geolocation, ol.Geolocation);
-
-  Object.defineProperty(geolocation, 'tracking', {
-    get: function() {
-      return geolocation.getTracking();
-    },
-    set: function(val) {
-      geolocation.setTracking(val);
-    }
-  });
-};
-
-
-ngeo.module.value('ngeoDecorateGeolocation', ngeo.decorateGeolocation);
-
-goog.provide('ngeo.FeatureOverlay');
-goog.provide('ngeo.FeatureOverlayMgr');
-
-goog.require('goog.object');
-goog.require('ngeo');
-goog.require('ol.Collection');
-goog.require('ol.CollectionEvent');
-goog.require('ol.CollectionEventType');
-goog.require('ol.Feature');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.Vector');
-goog.require('ol.style.Style');
-
-
-/**
- * @typedef {{
- *  styleFunction: ol.StyleFunction,
- *  features: Object.<string, ol.Feature>
- * }}
- */
-ngeo.FeatureOverlayGroup;
-
-
-/**
- * Provides a service that wraps an "unmanaged" vector layer,
- * used as a shared vector layer accross the application.
- *
- * Example:
- *
- * The application's main component/controller initializes the feature
- * overlay manager with the map:
- *
- *     ngeoFeatureOverlayMgr.init(map);
- *
- * Once initialized, components of the application can use the manager to
- * create a feature overlay, configuring it with specific styles:
- *
- *     var featureOverlay = ngeoFeatureOverlayMgr.getFeatureOverlay();
- *     featureOverlay.setStyle(myStyle);
- *     featureOverlay.addFeature(myFeature);
- *
- * @constructor
- * @ngdoc service
- * @ngname ngeoFeatureOverlayMgr
- */
-ngeo.FeatureOverlayMgr = function() {
-
-  /**
-   * @type {Object.<string, number>}
-   * @private
-   */
-  this.featureUidToGroupIndex_ = {};
-
-  /**
-   * @type {Array.<ngeo.FeatureOverlayGroup>}
-   * @private
-   */
-  this.groups_ = [];
-
-  /**
-   * @type {ol.source.Vector}
-   * @private
-   */
-  this.source_ = new ol.source.Vector({
-    useSpatialIndex: false
-  });
-
-  /**
-   * @type {ol.layer.Vector}
-   * @private
-   */
-  this.layer_ = new ol.layer.Vector({
-    source: this.source_,
-    style: this.styleFunction_.bind(this),
-    updateWhileAnimating: true,
-    updateWhileInteracting: true
-  });
-
-};
-
-
-/**
- * @param {ol.Feature} feature The feature to add.
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.addFeature = function(feature, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var featureUid = goog.getUid(feature).toString();
-  this.featureUidToGroupIndex_[featureUid] = groupIndex;
-  this.groups_[groupIndex].features[featureUid] = feature;
-  this.source_.addFeature(feature);
-};
-
-
-/**
- * @param {ol.Feature} feature The feature to add.
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.removeFeature = function(feature, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var featureUid = goog.getUid(feature).toString();
-  delete this.featureUidToGroupIndex_[featureUid];
-  delete this.groups_[groupIndex].features[featureUid];
-  this.source_.removeFeature(feature);
-};
-
-
-/**
- * @param {number} groupIndex The group groupIndex.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.clear = function(groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  var group = this.groups_[groupIndex];
-  for (var featureUid in group.features) {
-    this.removeFeature(group.features[featureUid], groupIndex);
-  }
-  goog.asserts.assert(goog.object.isEmpty(group.features));
-};
-
-
-/**
- * @return {ol.layer.Vector} The vector layer used internally.
- * @export
- */
-ngeo.FeatureOverlayMgr.prototype.getLayer = function() {
-  return this.layer_;
-};
-
-
-/**
- * @return {ngeo.FeatureOverlay} Feature overlay.
- * @export
- */
-ngeo.FeatureOverlayMgr.prototype.getFeatureOverlay = function() {
-  var groupIndex = this.groups_.length;
-  this.groups_.push({
-    styleFunction: ol.style.defaultStyleFunction,
-    features: {}
-  });
-  return new ngeo.FeatureOverlay(this, groupIndex);
-};
-
-
-/**
- * @param {ol.Map} map Map.
- * @export
- */
-ngeo.FeatureOverlayMgr.prototype.init = function(map) {
-  this.layer_.setMap(map);
-};
-
-
-/**
- * @param {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} style
- * Style.
- * @param {number} groupIndex Group index.
- * @protected
- */
-ngeo.FeatureOverlayMgr.prototype.setStyle = function(style, groupIndex) {
-  goog.asserts.assert(groupIndex >= 0);
-  goog.asserts.assert(groupIndex < this.groups_.length);
-  this.groups_[groupIndex].styleFunction = style === null ?
-      ol.style.defaultStyleFunction : ol.style.createStyleFunction(style);
-};
-
-
-/**
- * @param {ol.Feature|ol.render.Feature} feature Feature.
- * @param {number} resolution Resolution.
- * @return {Array.<ol.style.Style>|ol.style.Style} Styles.
- * @private
- */
-ngeo.FeatureOverlayMgr.prototype.styleFunction_ = function(feature, resolution) {
-  var featureUid = goog.getUid(feature).toString();
-  goog.asserts.assert(featureUid in this.featureUidToGroupIndex_);
-  var groupIndex = this.featureUidToGroupIndex_[featureUid];
-  var group = this.groups_[groupIndex];
-  return group.styleFunction(feature, resolution);
-};
-
-
-/**
- * @constructor
- * @param {ngeo.FeatureOverlayMgr} manager The feature overlay manager.
- * @param {number} index This feature overlay's index.
- */
-ngeo.FeatureOverlay = function(manager, index) {
-
-  /**
-   * @type {ngeo.FeatureOverlayMgr}
-   * @private
-   */
-  this.manager_ = manager;
-
-  /**
-   * @type {ol.Collection.<ol.Feature>}
-   * @private
-   */
-  this.features_ = null;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.index_ = index;
-};
-
-
-/**
- * Add a feature to the feature overlay.
- * @param {ol.Feature} feature The feature to add.
- * @export
- */
-ngeo.FeatureOverlay.prototype.addFeature = function(feature) {
-  this.manager_.addFeature(feature, this.index_);
-};
-
-
-/**
- * Remove a feature from the feature overlay.
- * @param {ol.Feature} feature The feature to remove.
- * @export
- */
-ngeo.FeatureOverlay.prototype.removeFeature = function(feature) {
-  this.manager_.removeFeature(feature, this.index_);
-};
-
-
-/**
- * Remove all the features from the feature overlay.
- * @export
- */
-ngeo.FeatureOverlay.prototype.clear = function() {
-  this.manager_.clear(this.index_);
-};
-
-
-/**
- * Configure this feature overlay with a feature collection. Features added
- * to the collection are also added to the overlay. Same for removal. If you
- * configure the feature overlay with a feature collection you will use the
- * collection to add and remove features instead of using the overlay's
- * `addFeature`, `removeFeature` and `clear` functions.
- * @param {ol.Collection.<ol.Feature>} features Feature collection.
- * @export
- */
-ngeo.FeatureOverlay.prototype.setFeatures = function(features) {
-  if (this.features_ !== null) {
-    this.features_.clear();
-    ol.events.unlisten(this.features_, ol.CollectionEventType.ADD,
-        this.handleFeatureAdd_, this);
-    ol.events.unlisten(this.features_, ol.CollectionEventType.REMOVE,
-        this.handleFeatureRemove_, this);
-  }
-  if (features !== null) {
-    features.forEach(function(feature) {
-      this.addFeature(feature);
-    }, this);
-    ol.events.listen(features, ol.CollectionEventType.ADD,
-        this.handleFeatureAdd_, this);
-    ol.events.listen(features, ol.CollectionEventType.REMOVE,
-        this.handleFeatureRemove_, this);
-  }
-  this.features_ = features;
-};
-
-
-/**
- * Set a style for the feature overlay.
- * @param {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} style
- * Style.
- * @export
- */
-ngeo.FeatureOverlay.prototype.setStyle = function(style) {
-  this.manager_.setStyle(style, this.index_);
-};
-
-
-/**
- * @param {ol.CollectionEvent} evt Feature collection event.
- * @private
- */
-ngeo.FeatureOverlay.prototype.handleFeatureAdd_ = function(evt) {
-  var feature = /** @type {ol.Feature} */ (evt.element);
-  this.addFeature(feature);
-};
-
-
-/**
- * @param {ol.CollectionEvent} evt Feature collection event.
- * @private
- */
-ngeo.FeatureOverlay.prototype.handleFeatureRemove_ = function(evt) {
-  var feature = /** @type {ol.Feature} */ (evt.element);
-  this.removeFeature(feature);
-};
-
-
-ngeo.module.service('ngeoFeatureOverlayMgr', ngeo.FeatureOverlayMgr);
-
-goog.provide('ngeo.Message');
-
-
-/**
- * @enum {string}
- * @export
- */
-ngeo.MessageType = {
-  /**
-   * @type {string}
-   * @export
-   */
-  ERROR: 'error',
-  /**
-   * @type {string}
-   * @export
-   */
-  INFORMATION: 'information',
-  /**
-   * @type {string}
-   * @export
-   */
-  SUCCESS: 'success',
-  /**
-   * @type {string}
-   * @export
-   */
-  WARNING: 'warning'
-};
-
-
-/**
- * Abstract class for services that display messages.
- *
- * @constructor
- */
-ngeo.Message = function() {};
-
-
-/**
- * Show the message.
- * @param {ngeox.Message} message Message.
- * @protected
- */
-ngeo.Message.prototype.showMessage = goog.abstractMethod;
-
-
-/**
- * Show disclaimer message string or object or list of disclame message
- * strings or objects.
- * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
- *     object A message or list of messages as text or configuration objects.
- * @export
- */
-ngeo.Message.prototype.show = function(object) {
-  var msgObjects = this.getMessageObjects(object);
-  msgObjects.forEach(this.showMessage, this);
-};
-
-
-/**
- * Display the given error message or list of error messages.
- * @param {string|Array.<string>} message Message or list of messages.
- * @export
- */
-ngeo.Message.prototype.error = function(message) {
-  this.show(this.getMessageObjects(message, ngeo.MessageType.ERROR));
-};
-
-
-/**
- * Display the given info message or list of info messages.
- * @param {string|Array.<string>} message Message or list of messages.
- * @export
- */
-ngeo.Message.prototype.info = function(message) {
-  this.show(this.getMessageObjects(message, ngeo.MessageType.INFORMATION));
-};
-
-
-/**
- * Display the given success message or list of success messages.
- * @param {string|Array.<string>} message Message or list of messages.
- * @export
- */
-ngeo.Message.prototype.success = function(message) {
-  this.show(this.getMessageObjects(message, ngeo.MessageType.SUCCESS));
-};
-
-
-/**
- * Display the given warning message or list of warning messages.
- * @param {string|Array.<string>} message Message or list of messages.
- * @export
- */
-ngeo.Message.prototype.warn = function(message) {
-  this.show(this.getMessageObjects(message, ngeo.MessageType.WARNING));
-};
-
-
-/**
- * Returns an array of message object from any given message string, list of
- * message strings, message object or list message objects. The type can be
- * overriden here as well OR defined (if the message(s) is/are string(s),
- * defaults to 'information').
- * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
- *     object A message or list of messages as text or configuration objects.
- * @param {string=} opt_type The type of message to override the messages with.
- * @return {Array.<ngeox.Message>} List of message objects.
- * @protected
- */
-ngeo.Message.prototype.getMessageObjects = function(object, opt_type) {
-  var msgObjects = [];
-  var msgObject = null;
-  var defaultType = ngeo.MessageType.INFORMATION;
-
-  if (typeof object === 'string') {
-    msgObjects.push({
-      msg: object,
-      type: opt_type !== undefined ? opt_type : defaultType
-    });
-  } else if (Array.isArray(object)) {
-    object.forEach(function(msg) {
-      if (typeof object === 'string') {
-        msgObject = {
-          msg: msg,
-          type: opt_type !== undefined ? opt_type : defaultType
-        };
-      } else {
-        msgObject = msg;
-        if (opt_type !== undefined) {
-          msgObject.type = opt_type;
-        }
-      }
-      msgObjects.push(msgObject);
-    }, this);
-  } else {
-    msgObject = object;
-    if (opt_type !== undefined) {
-      msgObject.type = opt_type;
-    }
-    if (msgObject.type === undefined) {
-      msgObject.type = defaultType;
-    }
-    msgObjects.push(msgObject);
-  }
-
-  return msgObjects;
-};
-
-goog.provide('ngeo.Notification');
-
-goog.require('goog.asserts');
-goog.require('ngeo');
-goog.require('ngeo.Message');
-
-
-/**
- * Provides methods to display any sort of messages, notifications, errors,
- * etc. Requires Bootstrap library (both CSS and JS) to display the alerts
- * properly.
- *
- * @constructor
- * @extends {ngeo.Message}
- * @param {angular.$timeout} $timeout Angular timeout service.
- * @ngdoc service
- * @ngname ngeoNotification
- * @ngInject
- */
-ngeo.Notification = function($timeout) {
-
-  goog.base(this);
-
-  /**
-   * @type {angular.$timeout}
-   * @private
-   */
-  this.timeout_ = $timeout;
-
-  var container = angular.element('<div class="ngeo-notification"></div>');
-  angular.element(document.body).append(container);
-
-  /**
-   * @type {angular.JQLite}
-   * @private
-   */
-  this.container_ = container;
-
-  /**
-   * @type {Object.<number, ngeo.Notification.CacheItem>}
-   * @private
-   */
-  this.cache_ = {};
-
-};
-goog.inherits(ngeo.Notification, ngeo.Message);
-
-
-/**
- * Default delay (in milliseconds) a message should be displayed.
- * @type {number}
- * @private
- */
-ngeo.Notification.DEFAULT_DELAY_ = 7000;
-
-
-// MAIN API METHODS
-
-
-/**
- * Display the given message string or object or list of message strings or
- * objects.
- * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
- *     object A message or list of messages as text or configuration objects.
- * @export
- */
-ngeo.Notification.prototype.notify = function(object) {
-  this.show(object);
-};
-
-
-/**
- * Clears all messages that are currently being shown.
- * @export
- */
-ngeo.Notification.prototype.clear = function() {
-  for (var uid in this.cache_) {
-    this.clearMessageByCacheItem_(this.cache_[parseInt(uid, 10)]);
-  }
-};
-
-
-/**
- * Show the message.
- * @param {ngeox.Message} message Message.
- * @protected
- */
-ngeo.Notification.prototype.showMessage = function(message) {
-  var type = message.type;
-  goog.asserts.assertString(type, 'Type should be set.');
-
-  var classNames = ['alert', 'fade'];
-  switch (type) {
-    case ngeo.MessageType.ERROR:
-      classNames.push('alert-danger');
-      break;
-    case ngeo.MessageType.INFORMATION:
-      classNames.push('alert-info');
-      break;
-    case ngeo.MessageType.SUCCESS:
-      classNames.push('alert-success');
-      break;
-    case ngeo.MessageType.WARNING:
-      classNames.push('alert-warning');
-      break;
-    default:
-      break;
-  }
-
-  var el = angular.element('<div class="' + classNames.join(' ') + '"></div>');
-  var container;
-
-  if (message.target) {
-    container = angular.element(message.target);
-  } else {
-    container = this.container_;
-  }
-
-  container.append(el);
-  el.html(message.msg).addClass('in');
-
-  var delay = message.delay !== undefined ? message.delay :
-      ngeo.Notification.DEFAULT_DELAY_;
-
-  var item = /** @type {ngeo.Notification.CacheItem} */ ({
-    el: el
-  });
-
-  // Keep a reference to the promise, in case we want to manually cancel it
-  // before the delay
-  var uid = goog.getUid(el);
-  item.promise = this.timeout_(function() {
-    el.alert('close');
-    delete this.cache_[uid];
-  }.bind(this), delay);
-
-  this.cache_[uid] = item;
-};
-
-
-/**
- * Clear a message using its cache item.
- * @param {ngeo.Notification.CacheItem} item Cache item.
- * @private
- */
-ngeo.Notification.prototype.clearMessageByCacheItem_ = function(item) {
-  var el = item.el;
-  var promise = item.promise;
-  var uid = goog.getUid(el);
-
-  // Close the message
-  el.alert('close');
-
-  // Cancel timeout in case we want to stop before delay. If called by the
-  // timeout itself, then this has no consequence.
-  this.timeout_.cancel(promise);
-
-  // Delete the cache item
-  delete this.cache_[uid];
-};
-
-
-/**
- * @typedef {{
- *     el: angular.JQLite,
- *     promise: angular.$q.Promise
- * }}
- */
-ngeo.Notification.CacheItem;
-
-
-ngeo.module.service('ngeoNotification', ngeo.Notification);
-
-goog.provide('ngeo.DesktopGeolocationController');
-goog.provide('ngeo.desktopGeolocationDirective');
-
-goog.require('ngeo');
-goog.require('ngeo.DecorateGeolocation');
-goog.require('ngeo.FeatureOverlay');
-goog.require('ngeo.FeatureOverlayMgr');
-goog.require('ngeo.Notification');
-goog.require('ol.Feature');
-goog.require('ol.Geolocation');
-goog.require('ol.Map');
-goog.require('ol.geom.Point');
-
-
-/**
- * @enum {string}
- * @export
- */
-ngeo.DesktopGeolocationEventType = {
-  /**
-   * Triggered when an error occures.
-   */
-  ERROR: 'desktop-geolocation-error'
-};
-
-
-/**
- * Provide a "desktop geolocation" directive.
- *
- * Example:
- *
- *      <button ngeo-desktop-geolocation=""
- *        ngeo-desktop-geolocation-map="ctrl.map"
- *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
- *      </button>
- *
- * See our live example: {@link ../examples/desktopgeolocation.html}
- *
- * @htmlAttribute {ol.Map} gmf-geolocation-map The map.
- * @htmlAttribute {ngeox.DesktopGeolocationDirectiveOptions} gmf-geolocation-options The options.
- * @return {angular.Directive} The Directive Definition Object.
- * @ngInject
- * @ngdoc directive
- * @ngname ngeoDesktopGeolocation
- */
-ngeo.desktopGeolocationDirective = function() {
-  return {
-    restrict: 'A',
-    scope: {
-      'getDesktopMapFn': '&ngeoDesktopGeolocationMap',
-      'getDesktopGeolocationOptionsFn': '&ngeoDesktopGeolocationOptions'
-    },
-    controller: 'NgeoDesktopGeolocationController',
-    controllerAs: 'ctrl'
+ngeo.Scalify = function($filter) {
+  var numberFilter = $filter('number');
+  return function(scale) {
+    var text = numberFilter(scale, 0);
+    return text ? '1\u00a0:\u00a0' + text : '';
   };
 };
 
-
-ngeo.module.directive('ngeoDesktopGeolocation',
-    ngeo.desktopGeolocationDirective);
-
+ngeo.module.filter('ngeoScalify', ngeo.Scalify);
 
 /**
- * @constructor
- * @param {angular.Scope} $scope The directive's scope.
- * @param {angular.JQLite} $element Element.
- * @param {ngeo.DecorateGeolocation} ngeoDecorateGeolocation Decorate
- *     Geolocation service.
- * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
- *     overlay manager service.
- * @param {ngeo.Notification} ngeoNotification Ngeo notification service.
- * @export
+ * A filter used to format a number with a precision, using the locale.
+ *
+ * Arguments:
+ * - opt_precision: The used precision, default is 3.
+ *
+ * Examples:
+ *
+ *      {{0.1234 | ngeoNumber}} => 0.123
+ *      {{1.234 | ngeoNumber}} => 1.23
+ *      {{12.34 | ngeoNumber}} => 12.3
+ *      {{123.4 | ngeoNumber}} => 123
+ *      {{1234 | ngeoNumber}} => 1230
+ *
+ * @param {angular.$locale} $locale Angular locale
+ * @return {ngeox.number} Function used to format number into a string.
  * @ngInject
- * @ngdoc controller
- * @ngname NgeoDesktopGeolocationController
+ * @ngdoc filter
+ * @ngname ngeoNumber
  */
-ngeo.DesktopGeolocationController = function($scope, $element,
-    ngeoDecorateGeolocation, ngeoFeatureOverlayMgr, ngeoNotification) {
-
-  $element.on('click', this.toggle.bind(this));
-
-  var map = $scope['getDesktopMapFn']();
-  goog.asserts.assertInstanceof(map, ol.Map);
+ngeo.Number = function($locale) {
+  var formats = $locale.NUMBER_FORMATS;
+  var groupSep = formats.GROUP_SEP;
+  var decimalSep = formats.DECIMAL_SEP;
 
   /**
-   * @type {!ol.Map}
-   * @private
+   * @param {number} number The number to format.
+   * @param {number=} opt_precision The used precision, default is 3.
+   * @return {string} The formatted string.
    */
-  this.map_ = map;
-
-  var options = $scope['getDesktopGeolocationOptionsFn']() || {};
-  goog.asserts.assertObject(options);
-
-  /**
-   * @type {!angular.Scope}
-   * @private
-   */
-  this.$scope_ = $scope;
-
-  /**
-   * @type {ngeo.Notification}
-   * @private
-   */
-  this.notification_ = ngeoNotification;
-
-  /**
-   * @type {ngeo.FeatureOverlay}
-   * @private
-   */
-  this.featureOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
-
-  /**
-   * @type {ol.Geolocation}
-   * @private
-   */
-  this.geolocation_ = new ol.Geolocation({
-    projection: map.getView().getProjection()
-  });
-
-  // handle geolocation error.
-  this.geolocation_.on('error', function(error) {
-    this.deactivate_();
-    this.notification_.error(error.message);
-    $scope.$emit(ngeo.DesktopGeolocationEventType.ERROR, error);
-  }, this);
-
-  /**
-   * @type {ol.Feature}
-   * @private
-   */
-  this.positionFeature_ = new ol.Feature();
-
-  if (options.positionFeatureStyle) {
-    this.positionFeature_.setStyle(options.positionFeatureStyle);
-  }
-
-  /**
-   * @type {ol.Feature}
-   * @private
-   */
-  this.accuracyFeature_ = new ol.Feature();
-
-  if (options.accuracyFeatureStyle) {
-    this.accuracyFeature_.setStyle(options.accuracyFeatureStyle);
-  }
-
-  /**
-   * @type {number|undefined}
-   * @private
-   */
-  this.zoom_ = options.zoom;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.active_ = false;
-
-  ol.events.listen(
-      this.geolocation_,
-      ol.Object.getChangeEventType(ol.GeolocationProperty.ACCURACY_GEOMETRY),
-      function() {
-        this.accuracyFeature_.setGeometry(
-            this.geolocation_.getAccuracyGeometry());
-      },
-      this);
-
-  ol.events.listen(
-      this.geolocation_,
-      ol.Object.getChangeEventType(ol.GeolocationProperty.POSITION),
-      function(e) {
-        this.setPosition_(e);
-      },
-      this);
-
-  ngeoDecorateGeolocation(this.geolocation_);
-};
-
-
-/**
- * @export
- */
-ngeo.DesktopGeolocationController.prototype.toggle = function() {
-  if (this.active_) {
-    this.deactivate_();
-  } else {
-    this.activate_();
-  }
-};
-
-
-/**
- * @private
- */
-ngeo.DesktopGeolocationController.prototype.activate_ = function() {
-  this.featureOverlay_.addFeature(this.positionFeature_);
-  this.featureOverlay_.addFeature(this.accuracyFeature_);
-  this.geolocation_.setTracking(true);
-  this.active_ = true;
-};
-
-
-/**
- * @private
- */
-ngeo.DesktopGeolocationController.prototype.deactivate_ = function() {
-  this.featureOverlay_.clear();
-  this.active_ = false;
-  this.notification_.clear();
-};
-
-
-/**
- * @param {ol.ObjectEvent} event Event.
- * @private
- */
-ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
-  var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
-  var point = new ol.geom.Point(position);
-
-  this.positionFeature_.setGeometry(point);
-  this.map_.getView().setCenter(position);
-
-  if (this.zoom_ !== undefined) {
-    this.map_.getView().setZoom(this.zoom_);
-  }
-
-  this.geolocation_.setTracking(false);
-};
-
-
-ngeo.module.controller('NgeoDesktopGeolocationController',
-    ngeo.DesktopGeolocationController);
-
-goog.provide('ngeo.DecorateInteraction');
-
-goog.require('goog.asserts');
-goog.require('ngeo');
-
-
-/**
- * Provides a function that adds an "active" property (using
- * `Object.defineProperty`) to an interaction, making it possible to use ngModel
- * to activate/deactivate interactions.
- *
- * Example:
- *
- *      <input type="checkbox" ngModel="interaction.active" />
- *
- * See our live example: {@link ../examples/interactiontoggle.html}
- *
- * @typedef {function(ol.interaction.Interaction)}
- * @ngdoc service
- * @ngname ngeoDecorateInteraction
- */
-ngeo.DecorateInteraction;
-
-
-/**
- * @param {ol.interaction.Interaction} interaction Interaction to decorate.
- */
-ngeo.decorateInteraction = function(interaction) {
-  goog.asserts.assertInstanceof(interaction, ol.interaction.Interaction);
-
-  Object.defineProperty(interaction, 'active', {
-    get: function() {
-      return interaction.getActive();
-    },
-    set: function(val) {
-      interaction.setActive(val);
+  var result = function(number, opt_precision) {
+    if (opt_precision === undefined) {
+      opt_precision = 3;
     }
-  });
+
+    if (number === Infinity) {
+      return '\u221e';
+    } else if (number === -Infinity) {
+      return '-\u221e';
+    } else if (number === 0) {
+      // 0 will creates infinity values
+      return '0';
+    }
+    var sign = number < 0;
+    number = Math.abs(number);
+
+    var nb_decimal = opt_precision - Math.floor(Math.log(number) / Math.log(10)) - 1;
+    var factor = Math.pow(10, nb_decimal);
+    number = Math.round(number * factor);
+    var decimal = '';
+    var unit = Math.floor(number / factor);
+
+    if (nb_decimal > 0) {
+      var str_number = number + '';
+      // 0 padding
+      while (str_number.length < nb_decimal) {
+        str_number = '0' + str_number;
+      }
+      decimal = str_number.substring(str_number.length - nb_decimal);
+      while (decimal[decimal.length - 1] === '0') {
+        decimal = decimal.substring(0, decimal.length - 1);
+      }
+    }
+
+    var groups = [];
+    var str_unit = unit + '';
+    while (str_unit.length > 3) {
+      var index = str_unit.length - 3;
+      groups.unshift(str_unit.substring(index));
+      str_unit = str_unit.substring(0, index);
+    }
+    groups.unshift(str_unit);
+
+    return (sign ? '-' : '') + groups.join(groupSep) + (
+      decimal.length === 0 ? '' : decimalSep + decimal
+    );
+  };
+  return result;
 };
 
+ngeo.module.filter('ngeoNumber', ngeo.Number);
 
-ngeo.module.value('ngeoDecorateInteraction', ngeo.decorateInteraction);
+/**
+ * A filter used to format a number with the prefix and unit
+ *
+ * Arguments:
+ * - opt_unit: The unit to used, default is ''.
+ * - opt_type: (unit|square|binary) the type of units, default is 'unit'.
+ * - opt_precision: The used precision, default is 3.
+ *
+ * Examples:
+ *
+ *      {{25000 | ngeoUnitPrefix}} => 25 k
+ *      {{25000 | ngeoUnitPrefix:m}} => 25 km
+ *      {{25000000 | ngeoUnitPrefix:m²:square}} => 25 km²
+ *      {{2048 | ngeoUnitPrefix:o:binary}} => 2 Kio
+ *
+ *
+ * @param {angular.$filter} $filter Angular filter
+ * @return {ngeox.unitPrefix} Function used to format number into a string.
+ * @ngInject
+ * @ngdoc filter
+ * @ngname ngeoUnitPrefix
+ */
+ngeo.UnitPrefix = function($filter) {
+  var numberFilter = $filter('ngeoNumber');
+  var standardPrefix = ['', 'k', 'M', 'G', 'T', 'P'];
+  var binaryPrefix = ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi'];
+  /**
+   * @param {number} number The number to format.
+   * @param {string=} opt_unit The unit to used, default is ''.
+   * @param {string=} opt_type (unit|square|binary) the type of units, default is 'unit'.
+   * @param {number=} opt_precision The used precision, default is 3.
+   * @return {string} The formated string.
+   */
+  var result = function(number, opt_unit, opt_type, opt_precision) {
+    if (opt_unit === undefined) {
+      opt_unit = '';
+    }
+    var divisor = 1000;
+    var prefix = standardPrefix;
+    if (opt_type === 'square') {
+      divisor = 1000000;
+    } else if (opt_type === 'binary') {
+      divisor = 1024;
+      prefix = binaryPrefix;
+    }
+
+    var index = 0;
+    var index_max = prefix.length - 1;
+    while (number >= divisor && index < index_max) {
+      number = number / divisor;
+      index++;
+    }
+
+    var postfix = prefix[index] + opt_unit;
+    var space = postfix.length == 0 ? '' : '\u00a0';
+    return numberFilter(number, opt_precision) + space + postfix;
+  };
+  return result;
+};
+
+ngeo.module.filter('ngeoUnitPrefix', ngeo.UnitPrefix);
+
+/**
+ * Format a couple of numbers as number coordinates.
+ *
+ * Example without parameters (en-US localization):
+ *
+ *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates}}</p>
+ *      <!-- will Become 7 47 -->
+ *
+ * Example with defined fractionDigits and template (en-US localization):
+ *
+ *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates:2:co {x} E; {y} N}}</p>
+ *      <!-- will Become co 7.12 E; 46.99 N -->
+ *
+ * Example without fractionDigits but with defined template and localize:
+ *
+ *      <!-- With en-US localization (opt_localize can be true or undefined) -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
+ *      <!-- will Become 2,600,000, 1,600,000 -->
+ *      <br/>
+ *      <!-- With fr-CH localization (opt_localize can be true or undefined) -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
+ *      <!-- will Become 2'600'000, 1'600'000 -->
+ *      <br/>
+ *      <!-- With en-US localization but with localization to false -->
+ *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:false}}</p>
+ *      <!-- will Become 2'600'000, 1'600'000 -->
+ *
+ * @param {angular.$filter} $filter Angular filter
+ * @return {function(ol.Coordinate, (number|string)=, string=,
+ *     (boolean|string)=): string} A function to format numbers into
+ *     coordinates string.
+ * @ngInject
+ * @ngdoc filter
+ * @ngname ngeoNumberCoordinates
+ */
+ngeo.NumberCoordinates = function($filter) {
+  /**
+   * @param {ol.Coordinate} coordinates Array of two numbers.
+   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
+   *     Default to 0.
+   * @param {string=} opt_template Optional template. Default to '{x} {y}'.
+   *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
+   *     second one. Note: Use a html entity to use the semicolon symbole
+   *     into a template.
+   * @param {(boolean|string)=} opt_localize Optional. If true or not defined,
+   *     format number as the current local system (see Angular number filter).
+   *     Set it explicitely to false to use always "." as the decimal separator
+   *     and include "'" group separators after each third digit.
+   * @return {string} Number formated coordinates.
+   */
+  var filterFn = function(coordinates, opt_fractionDigits, opt_template,
+      opt_localize) {
+    var template = opt_template ? opt_template : '{x} {y}';
+    var x = coordinates[0];
+    var y = coordinates[1];
+    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
+    if (opt_localize === 'false' || opt_localize === false) {
+      x = x.toFixed(fractionDigits);
+      y = y.toFixed(fractionDigits);
+      x = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+      y = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+    } else {
+      x = $filter('number')(x, fractionDigits);
+      y = $filter('number')(y, fractionDigits);
+    }
+    return template.replace('{x}', x).replace('{y}', y);
+  };
+  return filterFn;
+};
+
+ngeo.module.filter('ngeoNumberCoordinates', ngeo.NumberCoordinates);
+
+
+/**
+ * Format a couple of numbers as DMS coordinates.
+ *
+ * Example without parameters:
+ *
+ *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates}}</p>
+ *      <!-- will Become 46° 59' 15'' N 7° 07' 24'' E-->
+ *
+ * Example with defined fractionDigits and a template.
+ *
+ *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates:2:[{x}; {y}]}}</p>
+ *      <!-- will Become [46° 59' 15.36'' N; 7° 07' 24.24'' E] -->
+ *
+ * @return {function(ol.Coordinate, (number|string)=, string=): string} A
+ *     function to format numbers into a DMS coordinates string.
+ * @ngInject
+ * @ngdoc filter
+ * @ngname ngeoDMSCoordinates
+ */
+ngeo.DMSCoordinates = function() {
+  var degreesToStringHDMS = function(degrees, hemispheres, fractionDigits) {
+    var normalizedDegrees = goog.math.modulo(degrees + 180, 360) - 180;
+    var dms = Math.abs(3600 * normalizedDegrees);
+    var d = Math.floor(dms / 3600);
+    var m = Math.floor((dms / 60) % 60);
+    var s = (dms % 60);
+    return d + '\u00b0 ' +
+        goog.string.padNumber(m, 2) + '\u2032 ' +
+        goog.string.padNumber(s, 2, fractionDigits) + '\u2033 ' +
+        hemispheres.charAt(normalizedDegrees < 0 ? 1 : 0);
+  };
+
+  /**
+   * @param {ol.Coordinate} coordinates Array of two numbers.
+   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
+   *     Default to 0.
+   * @param {string=} opt_template Optional template. Default to
+   *     '{x} {y}'. Where "{x}" will be replaced by the first
+   *     coordinate, {y} by the second one. Note: Use a html entity to use the
+   *     semicolon symbole into a template.
+   * @return {string} DMS formated coordinates.
+   */
+  var filterFn = function(coordinates, opt_fractionDigits, opt_template) {
+    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
+
+    var template = opt_template ? opt_template : '{x} {y}';
+
+    var xdms = degreesToStringHDMS(coordinates[1], 'NS', fractionDigits);
+    var ydms = degreesToStringHDMS(coordinates[0], 'EW', fractionDigits);
+
+    return template.replace('{x}', xdms).replace('{y}', ydms);
+  };
+
+  return filterFn;
+};
+
+ngeo.module.filter('ngeoDMSCoordinates', ngeo.DMSCoordinates);
 
 // Copyright 2010 The Closure Library Authors. All Rights Reserved.
 //
@@ -104493,39 +104122,24 @@ ngeo.interaction.Measure = function(opt_options) {
 };
 goog.inherits(ngeo.interaction.Measure, ol.interaction.Interaction);
 
-
 /**
  * Calculate the area of the passed polygon and return a formatted string
  * of the area.
  * @param {ol.geom.Polygon} polygon Polygon.
  * @param {ol.proj.Projection} projection Projection of the polygon coords.
  * @param {?number} decimals Decimals.
+ * @param {ngeox.unitPrefix} format The format function.
  * @return {string} Formatted string of the area.
  * @export
+ * @this {ngeo.interaction.Measure}
  */
 ngeo.interaction.Measure.getFormattedArea = function(
-    polygon, projection, decimals) {
+    polygon, projection, decimals, format) {
   var geom = /** @type {ol.geom.Polygon} */ (
       polygon.clone().transform(projection, 'EPSG:4326'));
   var coordinates = geom.getLinearRing(0).getCoordinates();
   var area = Math.abs(ol.sphere.WGS84.geodesicArea(coordinates));
-  var output;
-  if (area > 1000000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area / 1000000, 0, decimals);
-    } else {
-      output = parseFloat((area / 1000000).toPrecision(3));
-    }
-    output += ' ' + 'km²';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area, 0, decimals);
-    } else {
-      output = parseFloat(area.toPrecision(3));
-    }
-    output += ' ' + 'm²';
-  }
-  return output;
+  return format(area, 'm²', 'square');
 };
 
 
@@ -104535,28 +104149,13 @@ ngeo.interaction.Measure.getFormattedArea = function(
  * @param {ol.geom.Circle} circle Circle
  * @param {?number} decimals Decimals.
  * @return {string} Formatted string of the area.
+ * @param {ngeox.unitPrefix} format The format function.
  * @export
  */
 ngeo.interaction.Measure.getFormattedCircleArea = function(
-    circle, decimals) {
+    circle, decimals, format) {
   var area = Math.PI * Math.pow(circle.getRadius(), 2);
-  var output;
-  if (area > 1000000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area / 1000000, 0, decimals);
-    } else {
-      output = parseFloat((area / 1000000).toPrecision(3));
-    }
-    output += ' ' + 'km²';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(area, 0, decimals);
-    } else {
-      output = parseFloat(area.toPrecision(3));
-    }
-    output += ' ' + 'm²';
-  }
-  return output;
+  return format(area, 'm²', 'square');
 };
 
 
@@ -104566,11 +104165,12 @@ ngeo.interaction.Measure.getFormattedCircleArea = function(
  * @param {ol.geom.LineString} lineString Line string.
  * @param {ol.proj.Projection} projection Projection of the line string coords.
  * @param {?number} decimals Decimals.
+ * @param {ngeox.unitPrefix} format The format function.
  * @return {string} Formatted string of length.
  * @export
  */
 ngeo.interaction.Measure.getFormattedLength = function(lineString, projection,
-    decimals) {
+    decimals, format) {
   var length = 0;
   var coordinates = lineString.getCoordinates();
   for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
@@ -104578,23 +104178,7 @@ ngeo.interaction.Measure.getFormattedLength = function(lineString, projection,
     var c2 = ol.proj.transform(coordinates[i + 1], projection, 'EPSG:4326');
     length += ol.sphere.WGS84.haversineDistance(c1, c2);
   }
-  var output;
-  if (length > 1000) {
-    if (decimals !== null) {
-      output = goog.string.padNumber(length / 1000, 0, decimals);
-    } else {
-      output = parseFloat((length / 1000).toPrecision(3));
-    }
-    output += ' ' + 'km';
-  } else {
-    if (decimals !== null) {
-      output = goog.string.padNumber(length, 0, decimals);
-    } else {
-      output = parseFloat(length.toPrecision(3));
-    }
-    output += ' ' + 'm';
-  }
-  return output;
+  return format(length, 'm');
 };
 
 
@@ -104853,9 +104437,1350 @@ ngeo.interaction.Measure.prototype.handleDrawInteractionActiveChange_ =
       }
     };
 
+goog.provide('ngeo.interaction.MeasureArea');
+
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.geom.Polygon');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length.
+ *
+ * See our live example: {@link ../examples/measure.html}
+ *
+ * @constructor
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.unitPrefix} format The format function
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureArea = function(format, opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, options);
+
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {Element}
+   */
+  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {},
+          'Click to continue drawing the polygon.',
+          goog.dom.createDom(goog.dom.TagName.BR),
+          'Double-click or click starting point to finish.');
+
+  /**
+   * The format function
+   * @type {ngeox.unitPrefix}
+   */
+  this.format = format;
+
+};
+goog.inherits(ngeo.interaction.MeasureArea, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureArea.prototype.createDrawInteraction = function(style,
+    source) {
+
+  return new ol.interaction.Draw(
+      /** @type {olx.interaction.DrawOptions} */ ({
+        type: 'Polygon',
+        source: source,
+        style: style
+      }));
+
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureArea.prototype.handleMeasure = function(callback) {
+  var geom = /** @type {ol.geom.Polygon} */
+      (this.sketchFeature.getGeometry());
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj, dec, this.format);
+  var verticesCount = geom.getCoordinates()[0].length;
+  var coord = null;
+  if (verticesCount > 2) {
+    coord = geom.getInteriorPoint().getCoordinates();
+  }
+  callback(output, coord);
+};
+
+goog.provide('ngeo.interaction.MeasureLength');
+
+goog.require('ngeo.interaction.Measure');
+goog.require('ol.geom.LineString');
+goog.require('ol.interaction.Draw');
+
+
+/**
+ * @classdesc
+ * Interaction dedicated to measure length.
+ *
+ * See our live example: {@link ../examples/measure.html}
+ *
+ * @constructor
+ * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.unitPrefix} format The format function
+ * @param {ngeox.interaction.MeasureOptions=} opt_options Options
+ * @export
+ */
+ngeo.interaction.MeasureLength = function(format, opt_options) {
+
+  var options = opt_options !== undefined ? opt_options : {};
+
+  goog.base(this, options);
+
+
+  /**
+   * Message to show after the first point is clicked.
+   * @type {Element}
+   */
+  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
+      goog.dom.createDom(goog.dom.TagName.SPAN, {},
+          'Click to continue drawing the line.',
+          goog.dom.createDom(goog.dom.TagName.BR),
+          'Double-click or click last point to finish.');
+
+  /**
+   * The format function
+   * @type {ngeox.unitPrefix}
+   */
+  this.format = format;
+
+};
+goog.inherits(ngeo.interaction.MeasureLength, ngeo.interaction.Measure);
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureLength.prototype.createDrawInteraction = function(style,
+    source) {
+
+  return new ol.interaction.Draw(
+      /** @type {olx.interaction.DrawOptions} */ ({
+        type: 'LineString',
+        source: source,
+        style: style
+      }));
+
+};
+
+
+/**
+ * @inheritDoc
+ */
+ngeo.interaction.MeasureLength.prototype.handleMeasure = function(callback) {
+  var geom = /** @type {ol.geom.LineString} */
+      (this.sketchFeature.getGeometry());
+  var proj = this.getMap().getView().getProjection();
+  var dec = this.decimals;
+  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj, dec, this.format);
+  var coord = geom.getLastCoordinate();
+  callback(output, coord);
+};
+
+goog.provide('ngeo.CreatefeatureController');
+goog.provide('ngeo.createfeatureDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.EventHelper');
+/** @suppress {extraRequire} */
+goog.require('ngeo.filters');
+goog.require('ngeo.interaction.MeasureArea');
+goog.require('ngeo.interaction.MeasureLength');
+goog.require('ol.Feature');
+goog.require('ol.geom.GeometryType');
+goog.require('ol.interaction.Draw');
+goog.require('ol.style.Style');
+
+
+/**
+ * A directive used to draw vector features of a single geometry type using
+ * either a 'draw' or 'measure' interaction. Once a feature is finished being
+ * drawn, it is added to a collection of features.
+ *
+ * The geometry types supported are:
+ *  - Point
+ *  - LineString
+ *  - Polygon
+ *
+ * Example:
+ *
+ *     <a
+ *       href
+ *       translate
+ *       ngeo-btn
+ *       ngeo-createfeature
+ *       ngeo-createfeature-active="ctrl.createPointActive"
+ *       ngeo-createfeature-features="ctrl.features"
+ *       ngeo-createfeature-geom-type="ctrl.pointGeomType"
+ *       ngeo-createfeature-map="::ctrl.map"
+ *       class="btn btn-default ngeo-createfeature-point"
+ *       ng-class="{active: ctrl.createPointActive}"
+ *       ng-model="ctrl.createPointActive">
+ *     </a>
+ *
+ * @htmlAttribute {boolean} ngeo-createfeature-active Whether the directive is
+ *     active or not.
+ * @htmlAttribute {ol.Collection} ngeo-createfeature-features The collection of
+ *     features where to add those created by this directive.
+ * @htmlAttribute {string} ngeo-createfeature-geom-type Determines the type
+ *     of geometry this directive should draw.
+ * @htmlAttribute {ol.Map} ngeo-createfeature-map The map.
+ * @return {angular.Directive} The directive specs.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoCreatefeature
+ */
+ngeo.createfeatureDirective = function() {
+  return {
+    controller: 'ngeoCreatefeatureController',
+    bindToController: true,
+    scope: {
+      'active': '=ngeoCreatefeatureActive',
+      'features': '=ngeoCreatefeatureFeatures',
+      'geomType': '=ngeoCreatefeatureGeomType',
+      'map': '=ngeoCreatefeatureMap'
+    },
+    controllerAs: 'cfCtrl'
+  };
+};
+
+ngeo.module.directive('ngeoCreatefeature', ngeo.createfeatureDirective);
+
+
+/**
+ * @param {gettext} gettext Gettext service.
+ * @param {angular.$compile} $compile Angular compile service.
+ * @param {angular.$filter} $filter Angular filter
+ * @param {!angular.Scope} $scope Scope.
+ * @param {ngeo.EventHelper} ngeoEventHelper Ngeo event helper service
+ * @constructor
+ * @ngInject
+ * @ngdoc controller
+ * @ngname ngeoCreatefeatureController
+ */
+ngeo.CreatefeatureController = function(gettext, $compile, $filter, $scope,
+    ngeoEventHelper) {
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.active = this.active === true;
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @export
+   */
+  this.features;
+
+  /**
+   * @type {string}
+   * @export
+   */
+  this.geomType;
+
+  /**
+   * @type {ol.Map}
+   * @export
+   */
+  this.map;
+
+  /**
+   * @type {ngeo.EventHelper}
+   * @private
+   */
+  this.ngeoEventHelper_ = ngeoEventHelper;
+
+  // Create the draw or measure interaction depending on the geometry type
+  var interaction;
+  var helpMsg;
+  var contMsg;
+  if (this.geomType === ngeo.GeometryType.POINT) {
+    interaction = new ol.interaction.Draw({
+      type: ol.geom.GeometryType.POINT
+    });
+  } else if (this.geomType === ngeo.GeometryType.LINE_STRING) {
+    helpMsg = gettext('Click to start drawing length');
+    contMsg = gettext(
+      'Click to continue drawing<br/>' +
+      'Double-click or click last point to finish'
+    );
+
+    interaction = new ngeo.interaction.MeasureLength(
+      $filter('ngeoUnitPrefix'),
+      {
+        style: new ol.style.Style(),
+        startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
+        continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
+      }
+    );
+  } else if (this.geomType === ngeo.GeometryType.POLYGON) {
+    helpMsg = gettext('Click to start drawing area');
+    contMsg = gettext(
+      'Click to continue drawing<br/>' +
+      'Double-click or click last starting point to finish'
+    );
+
+    interaction = new ngeo.interaction.MeasureArea(
+      $filter('ngeoUnitPrefix'),
+      {
+        style: new ol.style.Style(),
+        startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
+        continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
+      }
+    );
+  }
+
+  goog.asserts.assert(interaction);
+
+  interaction.setActive(this.active);
+  this.map.addInteraction(interaction);
+
+  /**
+   * The draw or measure interaction responsible of drawing the vector feature.
+   * The actual type depends on the geometry type.
+   * @type {ol.interaction.Interaction}
+   * @private
+   */
+  this.interaction_ = interaction;
+
+
+  // == Event listeners ==
+  $scope.$watch(
+    function() {
+      return this.active;
+    }.bind(this),
+    function(newVal) {
+      this.interaction_.setActive(newVal);
+    }.bind(this)
+  );
+
+  var uid = goog.getUid(this);
+  if (interaction instanceof ol.interaction.Draw) {
+    this.ngeoEventHelper_.addListenerKey(
+      uid,
+      ol.events.listen(
+        interaction,
+        ol.interaction.DrawEventType.DRAWEND,
+        this.handleDrawEnd_,
+        this
+      ),
+      true
+    );
+  } else if (interaction instanceof ngeo.interaction.MeasureLength ||
+     interaction instanceof ngeo.interaction.MeasureArea) {
+    this.ngeoEventHelper_.addListenerKey(
+      uid,
+      ol.events.listen(
+        interaction,
+        ngeo.MeasureEventType.MEASUREEND,
+        this.handleDrawEnd_,
+        this
+      ),
+      true
+    );
+  }
+
+  $scope.$on('$destroy', this.handleDestroy_.bind(this));
+
+};
+
+
+/**
+ * Called when a feature is finished being drawn. Add the feature to the
+ * collection.
+ * @param {ol.interaction.DrawEvent|ngeo.MeasureEvent} event Event.
+ * @export
+ */
+ngeo.CreatefeatureController.prototype.handleDrawEnd_ = function(event) {
+  var feature = new ol.Feature(event.feature.getGeometry());
+  this.features.push(feature);
+};
+
+
+/**
+ * Cleanup event listeners and remove the interaction from the map.
+ * @private
+ */
+ngeo.CreatefeatureController.prototype.handleDestroy_ = function() {
+  var uid = goog.getUid(this);
+  this.ngeoEventHelper_.clearListenerKey(uid);
+  this.map.removeInteraction(this.interaction_);
+};
+
+
+ngeo.module.controller(
+  'ngeoCreatefeatureController', ngeo.CreatefeatureController);
+
+goog.provide('ngeo.DecorateGeolocation');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+
+
+/**
+ * Provides a function that adds a "tracking" property (using
+ * `Object.defineProperty`) to the `ol.Geolocation` instance, making it
+ * possible to activate/deactivate the tracking mode.
+ *
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="geolocation.tracking" />
+ *
+ * See our live example: {@link ../examples/geolocation.html}
+ *
+ * @typedef {function(ol.Geolocation)}
+ * @ngdoc service
+ * @ngname ngeoDecorateGeolocation
+ */
+ngeo.DecorateGeolocation;
+
+
+/**
+ * @param {ol.Geolocation} geolocation Geolocation to decorate.
+ * @ngInject
+ */
+ngeo.decorateGeolocation = function(geolocation) {
+  goog.asserts.assertInstanceof(geolocation, ol.Geolocation);
+
+  Object.defineProperty(geolocation, 'tracking', {
+    get: function() {
+      return geolocation.getTracking();
+    },
+    set: function(val) {
+      geolocation.setTracking(val);
+    }
+  });
+};
+
+
+ngeo.module.value('ngeoDecorateGeolocation', ngeo.decorateGeolocation);
+
+goog.provide('ngeo.FeatureOverlay');
+goog.provide('ngeo.FeatureOverlayMgr');
+
+goog.require('goog.object');
+goog.require('ngeo');
+goog.require('ol.Collection');
+goog.require('ol.CollectionEvent');
+goog.require('ol.CollectionEventType');
+goog.require('ol.Feature');
+goog.require('ol.layer.Vector');
+goog.require('ol.source.Vector');
+goog.require('ol.style.Style');
+
+
+/**
+ * @typedef {{
+ *  styleFunction: ol.StyleFunction,
+ *  features: Object.<string, ol.Feature>
+ * }}
+ */
+ngeo.FeatureOverlayGroup;
+
+
+/**
+ * Provides a service that wraps an "unmanaged" vector layer,
+ * used as a shared vector layer accross the application.
+ *
+ * Example:
+ *
+ * The application's main component/controller initializes the feature
+ * overlay manager with the map:
+ *
+ *     ngeoFeatureOverlayMgr.init(map);
+ *
+ * Once initialized, components of the application can use the manager to
+ * create a feature overlay, configuring it with specific styles:
+ *
+ *     var featureOverlay = ngeoFeatureOverlayMgr.getFeatureOverlay();
+ *     featureOverlay.setStyle(myStyle);
+ *     featureOverlay.addFeature(myFeature);
+ *
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoFeatureOverlayMgr
+ */
+ngeo.FeatureOverlayMgr = function() {
+
+  /**
+   * @type {Object.<string, number>}
+   * @private
+   */
+  this.featureUidToGroupIndex_ = {};
+
+  /**
+   * @type {Array.<ngeo.FeatureOverlayGroup>}
+   * @private
+   */
+  this.groups_ = [];
+
+  /**
+   * @type {ol.source.Vector}
+   * @private
+   */
+  this.source_ = new ol.source.Vector({
+    useSpatialIndex: false
+  });
+
+  /**
+   * @type {ol.layer.Vector}
+   * @private
+   */
+  this.layer_ = new ol.layer.Vector({
+    source: this.source_,
+    style: this.styleFunction_.bind(this),
+    updateWhileAnimating: true,
+    updateWhileInteracting: true
+  });
+
+};
+
+
+/**
+ * @param {ol.Feature} feature The feature to add.
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.addFeature = function(feature, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var featureUid = goog.getUid(feature).toString();
+  this.featureUidToGroupIndex_[featureUid] = groupIndex;
+  this.groups_[groupIndex].features[featureUid] = feature;
+  this.source_.addFeature(feature);
+};
+
+
+/**
+ * @param {ol.Feature} feature The feature to add.
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.removeFeature = function(feature, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var featureUid = goog.getUid(feature).toString();
+  delete this.featureUidToGroupIndex_[featureUid];
+  delete this.groups_[groupIndex].features[featureUid];
+  this.source_.removeFeature(feature);
+};
+
+
+/**
+ * @param {number} groupIndex The group groupIndex.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.clear = function(groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  var group = this.groups_[groupIndex];
+  for (var featureUid in group.features) {
+    this.removeFeature(group.features[featureUid], groupIndex);
+  }
+  goog.asserts.assert(goog.object.isEmpty(group.features));
+};
+
+
+/**
+ * @return {ol.layer.Vector} The vector layer used internally.
+ * @export
+ */
+ngeo.FeatureOverlayMgr.prototype.getLayer = function() {
+  return this.layer_;
+};
+
+
+/**
+ * @return {ngeo.FeatureOverlay} Feature overlay.
+ * @export
+ */
+ngeo.FeatureOverlayMgr.prototype.getFeatureOverlay = function() {
+  var groupIndex = this.groups_.length;
+  this.groups_.push({
+    styleFunction: ol.style.defaultStyleFunction,
+    features: {}
+  });
+  return new ngeo.FeatureOverlay(this, groupIndex);
+};
+
+
+/**
+ * @param {ol.Map} map Map.
+ * @export
+ */
+ngeo.FeatureOverlayMgr.prototype.init = function(map) {
+  this.layer_.setMap(map);
+};
+
+
+/**
+ * @param {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} style
+ * Style.
+ * @param {number} groupIndex Group index.
+ * @protected
+ */
+ngeo.FeatureOverlayMgr.prototype.setStyle = function(style, groupIndex) {
+  goog.asserts.assert(groupIndex >= 0);
+  goog.asserts.assert(groupIndex < this.groups_.length);
+  this.groups_[groupIndex].styleFunction = style === null ?
+      ol.style.defaultStyleFunction : ol.style.createStyleFunction(style);
+};
+
+
+/**
+ * @param {ol.Feature|ol.render.Feature} feature Feature.
+ * @param {number} resolution Resolution.
+ * @return {Array.<ol.style.Style>|ol.style.Style} Styles.
+ * @private
+ */
+ngeo.FeatureOverlayMgr.prototype.styleFunction_ = function(feature, resolution) {
+  var featureUid = goog.getUid(feature).toString();
+  goog.asserts.assert(featureUid in this.featureUidToGroupIndex_);
+  var groupIndex = this.featureUidToGroupIndex_[featureUid];
+  var group = this.groups_[groupIndex];
+  return group.styleFunction(feature, resolution);
+};
+
+
+/**
+ * @constructor
+ * @param {ngeo.FeatureOverlayMgr} manager The feature overlay manager.
+ * @param {number} index This feature overlay's index.
+ */
+ngeo.FeatureOverlay = function(manager, index) {
+
+  /**
+   * @type {ngeo.FeatureOverlayMgr}
+   * @private
+   */
+  this.manager_ = manager;
+
+  /**
+   * @type {ol.Collection.<ol.Feature>}
+   * @private
+   */
+  this.features_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.index_ = index;
+};
+
+
+/**
+ * Add a feature to the feature overlay.
+ * @param {ol.Feature} feature The feature to add.
+ * @export
+ */
+ngeo.FeatureOverlay.prototype.addFeature = function(feature) {
+  this.manager_.addFeature(feature, this.index_);
+};
+
+
+/**
+ * Remove a feature from the feature overlay.
+ * @param {ol.Feature} feature The feature to remove.
+ * @export
+ */
+ngeo.FeatureOverlay.prototype.removeFeature = function(feature) {
+  this.manager_.removeFeature(feature, this.index_);
+};
+
+
+/**
+ * Remove all the features from the feature overlay.
+ * @export
+ */
+ngeo.FeatureOverlay.prototype.clear = function() {
+  this.manager_.clear(this.index_);
+};
+
+
+/**
+ * Configure this feature overlay with a feature collection. Features added
+ * to the collection are also added to the overlay. Same for removal. If you
+ * configure the feature overlay with a feature collection you will use the
+ * collection to add and remove features instead of using the overlay's
+ * `addFeature`, `removeFeature` and `clear` functions.
+ * @param {ol.Collection.<ol.Feature>} features Feature collection.
+ * @export
+ */
+ngeo.FeatureOverlay.prototype.setFeatures = function(features) {
+  if (this.features_ !== null) {
+    this.features_.clear();
+    ol.events.unlisten(this.features_, ol.CollectionEventType.ADD,
+        this.handleFeatureAdd_, this);
+    ol.events.unlisten(this.features_, ol.CollectionEventType.REMOVE,
+        this.handleFeatureRemove_, this);
+  }
+  if (features !== null) {
+    features.forEach(function(feature) {
+      this.addFeature(feature);
+    }, this);
+    ol.events.listen(features, ol.CollectionEventType.ADD,
+        this.handleFeatureAdd_, this);
+    ol.events.listen(features, ol.CollectionEventType.REMOVE,
+        this.handleFeatureRemove_, this);
+  }
+  this.features_ = features;
+};
+
+
+/**
+ * Set a style for the feature overlay.
+ * @param {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction} style
+ * Style.
+ * @export
+ */
+ngeo.FeatureOverlay.prototype.setStyle = function(style) {
+  this.manager_.setStyle(style, this.index_);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Feature collection event.
+ * @private
+ */
+ngeo.FeatureOverlay.prototype.handleFeatureAdd_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.addFeature(feature);
+};
+
+
+/**
+ * @param {ol.CollectionEvent} evt Feature collection event.
+ * @private
+ */
+ngeo.FeatureOverlay.prototype.handleFeatureRemove_ = function(evt) {
+  var feature = /** @type {ol.Feature} */ (evt.element);
+  this.removeFeature(feature);
+};
+
+
+ngeo.module.service('ngeoFeatureOverlayMgr', ngeo.FeatureOverlayMgr);
+
+goog.provide('ngeo.Message');
+
+
+/**
+ * @enum {string}
+ * @export
+ */
+ngeo.MessageType = {
+  /**
+   * @type {string}
+   * @export
+   */
+  ERROR: 'error',
+  /**
+   * @type {string}
+   * @export
+   */
+  INFORMATION: 'information',
+  /**
+   * @type {string}
+   * @export
+   */
+  SUCCESS: 'success',
+  /**
+   * @type {string}
+   * @export
+   */
+  WARNING: 'warning'
+};
+
+
+/**
+ * Abstract class for services that display messages.
+ *
+ * @constructor
+ */
+ngeo.Message = function() {};
+
+
+/**
+ * Show the message.
+ * @param {ngeox.Message} message Message.
+ * @protected
+ */
+ngeo.Message.prototype.showMessage = goog.abstractMethod;
+
+
+/**
+ * Show disclaimer message string or object or list of disclame message
+ * strings or objects.
+ * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
+ *     object A message or list of messages as text or configuration objects.
+ * @export
+ */
+ngeo.Message.prototype.show = function(object) {
+  var msgObjects = this.getMessageObjects(object);
+  msgObjects.forEach(this.showMessage, this);
+};
+
+
+/**
+ * Display the given error message or list of error messages.
+ * @param {string|Array.<string>} message Message or list of messages.
+ * @export
+ */
+ngeo.Message.prototype.error = function(message) {
+  this.show(this.getMessageObjects(message, ngeo.MessageType.ERROR));
+};
+
+
+/**
+ * Display the given info message or list of info messages.
+ * @param {string|Array.<string>} message Message or list of messages.
+ * @export
+ */
+ngeo.Message.prototype.info = function(message) {
+  this.show(this.getMessageObjects(message, ngeo.MessageType.INFORMATION));
+};
+
+
+/**
+ * Display the given success message or list of success messages.
+ * @param {string|Array.<string>} message Message or list of messages.
+ * @export
+ */
+ngeo.Message.prototype.success = function(message) {
+  this.show(this.getMessageObjects(message, ngeo.MessageType.SUCCESS));
+};
+
+
+/**
+ * Display the given warning message or list of warning messages.
+ * @param {string|Array.<string>} message Message or list of messages.
+ * @export
+ */
+ngeo.Message.prototype.warn = function(message) {
+  this.show(this.getMessageObjects(message, ngeo.MessageType.WARNING));
+};
+
+
+/**
+ * Returns an array of message object from any given message string, list of
+ * message strings, message object or list message objects. The type can be
+ * overriden here as well OR defined (if the message(s) is/are string(s),
+ * defaults to 'information').
+ * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
+ *     object A message or list of messages as text or configuration objects.
+ * @param {string=} opt_type The type of message to override the messages with.
+ * @return {Array.<ngeox.Message>} List of message objects.
+ * @protected
+ */
+ngeo.Message.prototype.getMessageObjects = function(object, opt_type) {
+  var msgObjects = [];
+  var msgObject = null;
+  var defaultType = ngeo.MessageType.INFORMATION;
+
+  if (typeof object === 'string') {
+    msgObjects.push({
+      msg: object,
+      type: opt_type !== undefined ? opt_type : defaultType
+    });
+  } else if (Array.isArray(object)) {
+    object.forEach(function(msg) {
+      if (typeof object === 'string') {
+        msgObject = {
+          msg: msg,
+          type: opt_type !== undefined ? opt_type : defaultType
+        };
+      } else {
+        msgObject = msg;
+        if (opt_type !== undefined) {
+          msgObject.type = opt_type;
+        }
+      }
+      msgObjects.push(msgObject);
+    }, this);
+  } else {
+    msgObject = object;
+    if (opt_type !== undefined) {
+      msgObject.type = opt_type;
+    }
+    if (msgObject.type === undefined) {
+      msgObject.type = defaultType;
+    }
+    msgObjects.push(msgObject);
+  }
+
+  return msgObjects;
+};
+
+goog.provide('ngeo.Notification');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+goog.require('ngeo.Message');
+
+
+/**
+ * Provides methods to display any sort of messages, notifications, errors,
+ * etc. Requires Bootstrap library (both CSS and JS) to display the alerts
+ * properly.
+ *
+ * @constructor
+ * @extends {ngeo.Message}
+ * @param {angular.$timeout} $timeout Angular timeout service.
+ * @ngdoc service
+ * @ngname ngeoNotification
+ * @ngInject
+ */
+ngeo.Notification = function($timeout) {
+
+  goog.base(this);
+
+  /**
+   * @type {angular.$timeout}
+   * @private
+   */
+  this.timeout_ = $timeout;
+
+  var container = angular.element('<div class="ngeo-notification"></div>');
+  angular.element(document.body).append(container);
+
+  /**
+   * @type {angular.JQLite}
+   * @private
+   */
+  this.container_ = container;
+
+  /**
+   * @type {Object.<number, ngeo.Notification.CacheItem>}
+   * @private
+   */
+  this.cache_ = {};
+
+};
+goog.inherits(ngeo.Notification, ngeo.Message);
+
+
+/**
+ * Default delay (in milliseconds) a message should be displayed.
+ * @type {number}
+ * @private
+ */
+ngeo.Notification.DEFAULT_DELAY_ = 7000;
+
+
+// MAIN API METHODS
+
+
+/**
+ * Display the given message string or object or list of message strings or
+ * objects.
+ * @param {string|Array.<string>|ngeox.Message|Array.<ngeox.Message>}
+ *     object A message or list of messages as text or configuration objects.
+ * @export
+ */
+ngeo.Notification.prototype.notify = function(object) {
+  this.show(object);
+};
+
+
+/**
+ * Clears all messages that are currently being shown.
+ * @export
+ */
+ngeo.Notification.prototype.clear = function() {
+  for (var uid in this.cache_) {
+    this.clearMessageByCacheItem_(this.cache_[parseInt(uid, 10)]);
+  }
+};
+
+
+/**
+ * Show the message.
+ * @param {ngeox.Message} message Message.
+ * @protected
+ */
+ngeo.Notification.prototype.showMessage = function(message) {
+  var type = message.type;
+  goog.asserts.assertString(type, 'Type should be set.');
+
+  var classNames = ['alert', 'fade'];
+  switch (type) {
+    case ngeo.MessageType.ERROR:
+      classNames.push('alert-danger');
+      break;
+    case ngeo.MessageType.INFORMATION:
+      classNames.push('alert-info');
+      break;
+    case ngeo.MessageType.SUCCESS:
+      classNames.push('alert-success');
+      break;
+    case ngeo.MessageType.WARNING:
+      classNames.push('alert-warning');
+      break;
+    default:
+      break;
+  }
+
+  var el = angular.element('<div class="' + classNames.join(' ') + '"></div>');
+  var container;
+
+  if (message.target) {
+    container = angular.element(message.target);
+  } else {
+    container = this.container_;
+  }
+
+  container.append(el);
+  el.html(message.msg).addClass('in');
+
+  var delay = message.delay !== undefined ? message.delay :
+      ngeo.Notification.DEFAULT_DELAY_;
+
+  var item = /** @type {ngeo.Notification.CacheItem} */ ({
+    el: el
+  });
+
+  // Keep a reference to the promise, in case we want to manually cancel it
+  // before the delay
+  var uid = goog.getUid(el);
+  item.promise = this.timeout_(function() {
+    el.alert('close');
+    delete this.cache_[uid];
+  }.bind(this), delay);
+
+  this.cache_[uid] = item;
+};
+
+
+/**
+ * Clear a message using its cache item.
+ * @param {ngeo.Notification.CacheItem} item Cache item.
+ * @private
+ */
+ngeo.Notification.prototype.clearMessageByCacheItem_ = function(item) {
+  var el = item.el;
+  var promise = item.promise;
+  var uid = goog.getUid(el);
+
+  // Close the message
+  el.alert('close');
+
+  // Cancel timeout in case we want to stop before delay. If called by the
+  // timeout itself, then this has no consequence.
+  this.timeout_.cancel(promise);
+
+  // Delete the cache item
+  delete this.cache_[uid];
+};
+
+
+/**
+ * @typedef {{
+ *     el: angular.JQLite,
+ *     promise: angular.$q.Promise
+ * }}
+ */
+ngeo.Notification.CacheItem;
+
+
+ngeo.module.service('ngeoNotification', ngeo.Notification);
+
+goog.provide('ngeo.DesktopGeolocationController');
+goog.provide('ngeo.desktopGeolocationDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.DecorateGeolocation');
+goog.require('ngeo.FeatureOverlay');
+goog.require('ngeo.FeatureOverlayMgr');
+goog.require('ngeo.Notification');
+goog.require('ol.Feature');
+goog.require('ol.Geolocation');
+goog.require('ol.Map');
+goog.require('ol.geom.Point');
+
+
+/**
+ * @enum {string}
+ * @export
+ */
+ngeo.DesktopGeolocationEventType = {
+  /**
+   * Triggered when an error occures.
+   */
+  ERROR: 'desktop-geolocation-error'
+};
+
+
+/**
+ * Provide a "desktop geolocation" directive.
+ *
+ * Example:
+ *
+ *      <button ngeo-desktop-geolocation=""
+ *        ngeo-desktop-geolocation-map="ctrl.map"
+ *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
+ *      </button>
+ *
+ * See our live example: {@link ../examples/desktopgeolocation.html}
+ *
+ * @htmlAttribute {ol.Map} gmf-geolocation-map The map.
+ * @htmlAttribute {ngeox.DesktopGeolocationDirectiveOptions} gmf-geolocation-options The options.
+ * @return {angular.Directive} The Directive Definition Object.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoDesktopGeolocation
+ */
+ngeo.desktopGeolocationDirective = function() {
+  return {
+    restrict: 'A',
+    scope: {
+      'getDesktopMapFn': '&ngeoDesktopGeolocationMap',
+      'getDesktopGeolocationOptionsFn': '&ngeoDesktopGeolocationOptions'
+    },
+    controller: 'NgeoDesktopGeolocationController',
+    controllerAs: 'ctrl'
+  };
+};
+
+
+ngeo.module.directive('ngeoDesktopGeolocation',
+    ngeo.desktopGeolocationDirective);
+
+
+/**
+ * @constructor
+ * @param {angular.Scope} $scope The directive's scope.
+ * @param {angular.JQLite} $element Element.
+ * @param {ngeo.DecorateGeolocation} ngeoDecorateGeolocation Decorate
+ *     Geolocation service.
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
+ *     overlay manager service.
+ * @param {ngeo.Notification} ngeoNotification Ngeo notification service.
+ * @export
+ * @ngInject
+ * @ngdoc controller
+ * @ngname NgeoDesktopGeolocationController
+ */
+ngeo.DesktopGeolocationController = function($scope, $element,
+    ngeoDecorateGeolocation, ngeoFeatureOverlayMgr, ngeoNotification) {
+
+  $element.on('click', this.toggle.bind(this));
+
+  var map = $scope['getDesktopMapFn']();
+  goog.asserts.assertInstanceof(map, ol.Map);
+
+  /**
+   * @type {!ol.Map}
+   * @private
+   */
+  this.map_ = map;
+
+  var options = $scope['getDesktopGeolocationOptionsFn']() || {};
+  goog.asserts.assertObject(options);
+
+  /**
+   * @type {!angular.Scope}
+   * @private
+   */
+  this.$scope_ = $scope;
+
+  /**
+   * @type {ngeo.Notification}
+   * @private
+   */
+  this.notification_ = ngeoNotification;
+
+  /**
+   * @type {ngeo.FeatureOverlay}
+   * @private
+   */
+  this.featureOverlay_ = ngeoFeatureOverlayMgr.getFeatureOverlay();
+
+  /**
+   * @type {ol.Geolocation}
+   * @private
+   */
+  this.geolocation_ = new ol.Geolocation({
+    projection: map.getView().getProjection()
+  });
+
+  // handle geolocation error.
+  this.geolocation_.on('error', function(error) {
+    this.deactivate_();
+    this.notification_.error(error.message);
+    $scope.$emit(ngeo.DesktopGeolocationEventType.ERROR, error);
+  }, this);
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.positionFeature_ = new ol.Feature();
+
+  if (options.positionFeatureStyle) {
+    this.positionFeature_.setStyle(options.positionFeatureStyle);
+  }
+
+  /**
+   * @type {ol.Feature}
+   * @private
+   */
+  this.accuracyFeature_ = new ol.Feature();
+
+  if (options.accuracyFeatureStyle) {
+    this.accuracyFeature_.setStyle(options.accuracyFeatureStyle);
+  }
+
+  /**
+   * @type {number|undefined}
+   * @private
+   */
+  this.zoom_ = options.zoom;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.active_ = false;
+
+  ol.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.ACCURACY_GEOMETRY),
+      function() {
+        this.accuracyFeature_.setGeometry(
+            this.geolocation_.getAccuracyGeometry());
+      },
+      this);
+
+  ol.events.listen(
+      this.geolocation_,
+      ol.Object.getChangeEventType(ol.GeolocationProperty.POSITION),
+      function(e) {
+        this.setPosition_(e);
+      },
+      this);
+
+  ngeoDecorateGeolocation(this.geolocation_);
+};
+
+
+/**
+ * @export
+ */
+ngeo.DesktopGeolocationController.prototype.toggle = function() {
+  if (this.active_) {
+    this.deactivate_();
+  } else {
+    this.activate_();
+  }
+};
+
+
+/**
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.activate_ = function() {
+  this.featureOverlay_.addFeature(this.positionFeature_);
+  this.featureOverlay_.addFeature(this.accuracyFeature_);
+  this.geolocation_.setTracking(true);
+  this.active_ = true;
+};
+
+
+/**
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.deactivate_ = function() {
+  this.featureOverlay_.clear();
+  this.active_ = false;
+  this.notification_.clear();
+};
+
+
+/**
+ * @param {ol.ObjectEvent} event Event.
+ * @private
+ */
+ngeo.DesktopGeolocationController.prototype.setPosition_ = function(event) {
+  var position = /** @type {ol.Coordinate} */ (this.geolocation_.getPosition());
+  var point = new ol.geom.Point(position);
+
+  this.positionFeature_.setGeometry(point);
+  this.map_.getView().setCenter(position);
+
+  if (this.zoom_ !== undefined) {
+    this.map_.getView().setZoom(this.zoom_);
+  }
+
+  this.geolocation_.setTracking(false);
+};
+
+
+ngeo.module.controller('NgeoDesktopGeolocationController',
+    ngeo.DesktopGeolocationController);
+
+goog.provide('ngeo.DecorateInteraction');
+
+goog.require('goog.asserts');
+goog.require('ngeo');
+
+
+/**
+ * Provides a function that adds an "active" property (using
+ * `Object.defineProperty`) to an interaction, making it possible to use ngModel
+ * to activate/deactivate interactions.
+ *
+ * Example:
+ *
+ *      <input type="checkbox" ngModel="interaction.active" />
+ *
+ * See our live example: {@link ../examples/interactiontoggle.html}
+ *
+ * @typedef {function(ol.interaction.Interaction)}
+ * @ngdoc service
+ * @ngname ngeoDecorateInteraction
+ */
+ngeo.DecorateInteraction;
+
+
+/**
+ * @param {ol.interaction.Interaction} interaction Interaction to decorate.
+ */
+ngeo.decorateInteraction = function(interaction) {
+  goog.asserts.assertInstanceof(interaction, ol.interaction.Interaction);
+
+  Object.defineProperty(interaction, 'active', {
+    get: function() {
+      return interaction.getActive();
+    },
+    set: function(val) {
+      interaction.setActive(val);
+    }
+  });
+};
+
+
+ngeo.module.value('ngeoDecorateInteraction', ngeo.decorateInteraction);
+
 goog.provide('ngeo.FeatureHelper');
 
 goog.require('ngeo');
+/** @suppress {extraRequire} */
+goog.require('ngeo.filters');
 goog.require('ngeo.interaction.Measure');
 goog.require('ol.Feature');
 goog.require('ol.geom.LineString');
@@ -104901,6 +105826,11 @@ ngeo.FeatureHelper = function($injector, $filter) {
   if ($injector.has('ngeoMeasureDecimals')) {
     this.decimals_ = $injector.get('ngeoMeasureDecimals');
   }
+
+  /**
+   * @type {ngeox.unitPrefix}
+   */
+  this.format_ = $injector.get('$filter')('ngeoUnitPrefix');
 
   /**
    * Filter function to display point coordinates or null to don't use any
@@ -105507,10 +106437,10 @@ ngeo.FeatureHelper.prototype.getMeasure = function(feature) {
 
   if (geometry instanceof ol.geom.Polygon) {
     measure = ngeo.interaction.Measure.getFormattedArea(
-      geometry, this.projection_, this.decimals_);
+      geometry, this.projection_, this.decimals_, this.format_);
   } else if (geometry instanceof ol.geom.LineString) {
     measure = ngeo.interaction.Measure.getFormattedLength(
-      geometry, this.projection_, this.decimals_);
+      geometry, this.projection_, this.decimals_, this.format_);
   } else if (geometry instanceof ol.geom.Point) {
     if (this.pointFilterFn_ === null) {
       measure = ngeo.interaction.Measure.getFormattedPoint(
@@ -105802,81 +106732,11 @@ ngeo.drawtextDirective = function() {
 
 ngeo.module.directive('ngeoDrawtext', ngeo.drawtextDirective);
 
-goog.provide('ngeo.interaction.MeasureArea');
-
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.geom.Polygon');
-goog.require('ol.interaction.Draw');
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure length.
- *
- * See our live example: {@link ../examples/measure.html}
- *
- * @constructor
- * @extends {ngeo.interaction.Measure}
- * @param {ngeox.interaction.MeasureOptions=} opt_options Options
- * @export
- */
-ngeo.interaction.MeasureArea = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, options);
-
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {Element}
-   */
-  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {},
-          'Click to continue drawing the polygon.',
-          goog.dom.createDom(goog.dom.TagName.BR),
-          'Double-click or click starting point to finish.');
-
-};
-goog.inherits(ngeo.interaction.MeasureArea, ngeo.interaction.Measure);
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureArea.prototype.createDrawInteraction = function(style,
-    source) {
-
-  return new ol.interaction.Draw(
-      /** @type {olx.interaction.DrawOptions} */ ({
-        type: 'Polygon',
-        source: source,
-        style: style
-      }));
-
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureArea.prototype.handleMeasure = function(callback) {
-  var geom = /** @type {ol.geom.Polygon} */
-      (this.sketchFeature.getGeometry());
-  var proj = this.getMap().getView().getProjection();
-  var dec = this.decimals;
-  var output = ngeo.interaction.Measure.getFormattedArea(geom, proj, dec);
-  var verticesCount = geom.getCoordinates()[0].length;
-  var coord = null;
-  if (verticesCount > 2) {
-    coord = geom.getInteriorPoint().getCoordinates();
-  }
-  callback(output, coord);
-};
-
 goog.provide('ngeo.measureareaDirective');
 
 goog.require('ngeo');
+/** @suppress {extraRequire} */
+goog.require('ngeo.filters');
 goog.require('ngeo.interaction.MeasureArea');
 goog.require('ol.style.Style');
 
@@ -105884,12 +106744,13 @@ goog.require('ol.style.Style');
 /**
  * @param {angular.$compile} $compile Angular compile service.
  * @param {gettext} gettext Gettext service.
+ * @param {angular.$filter} $filter Angular filter
  * @return {angular.Directive} The directive specs.
  * @ngInject
  * @ngdoc directive
  * @ngname ngeoDrawpoint
  */
-ngeo.measureareaDirective = function($compile, gettext) {
+ngeo.measureareaDirective = function($compile, gettext, $filter) {
   return {
     restrict: 'A',
     require: '^^ngeoDrawfeature',
@@ -105905,7 +106766,7 @@ ngeo.measureareaDirective = function($compile, gettext) {
       var contMsg = gettext('Click to continue drawing<br/>' +
           'Double-click or click last starting point to finish');
 
-      var measureArea = new ngeo.interaction.MeasureArea({
+      var measureArea = new ngeo.interaction.MeasureArea($filter('ngeoUnitPrefix'), {
         style: new ol.style.Style(),
         startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
         continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
@@ -105965,10 +106826,11 @@ goog.require('ol.source.Vector');
  * @constructor
  * @fires ol.interaction.DrawEvent
  * @extends {ngeo.interaction.Measure}
+ * @param {ngeox.unitPrefix} format The format function
  * @param {ngeox.interaction.MeasureOptions=} opt_options Options
  * @export
  */
-ngeo.interaction.MeasureAzimut = function(opt_options) {
+ngeo.interaction.MeasureAzimut = function(format, opt_options) {
 
   var options = opt_options !== undefined ? opt_options : {};
 
@@ -105981,6 +106843,12 @@ ngeo.interaction.MeasureAzimut = function(opt_options) {
    */
   this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
       goog.dom.createDom(goog.dom.TagName.SPAN, {}, 'Click to finish.');
+
+  /**
+   * The format function
+   * @type {ngeox.unitPrefix}
+   */
+  this.format = format;
 
 };
 goog.inherits(ngeo.interaction.MeasureAzimut, ngeo.interaction.Measure);
@@ -106030,7 +106898,7 @@ ngeo.interaction.MeasureAzimut.prototype.formatMeasure_ = function(line) {
   var proj = this.getMap().getView().getProjection();
   var dec = this.decimals;
   output += '<br/>' + ngeo.interaction.Measure.getFormattedLength(
-      line, proj, dec);
+      line, proj, dec, this.format);
   return output;
 };
 
@@ -106336,6 +107204,8 @@ ngeo.interaction.DrawAzimut.prototype.setMap = function(map) {
 goog.provide('ngeo.measureazimutDirective');
 
 goog.require('ngeo');
+/** @suppress {extraRequire} */
+goog.require('ngeo.filters');
 goog.require('ngeo.interaction.MeasureAzimut');
 goog.require('ol.Feature');
 goog.require('ol.geom.Polygon');
@@ -106345,12 +107215,13 @@ goog.require('ol.style.Style');
 /**
  * @param {angular.$compile} $compile Angular compile service.
  * @param {gettext} gettext Gettext service.
+ * @param {angular.$filter} $filter Angular filter
  * @return {angular.Directive} The directive specs.
  * @ngInject
  * @ngdoc directive
  * @ngname ngeoDrawpoint
  */
-ngeo.measureazimutDirective = function($compile, gettext) {
+ngeo.measureazimutDirective = function($compile, gettext, $filter) {
   return {
     restrict: 'A',
     require: '^^ngeoDrawfeature',
@@ -106365,7 +107236,7 @@ ngeo.measureazimutDirective = function($compile, gettext) {
       var helpMsg = gettext('Click to start drawing azimut');
       var contMsg = gettext('Click to finish');
 
-      var measureAzimut = new ngeo.interaction.MeasureAzimut({
+      var measureAzimut = new ngeo.interaction.MeasureAzimut($filter('ngeoUnitPrefix'), {
         style: new ol.style.Style(),
         startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
         continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
@@ -106410,77 +107281,11 @@ ngeo.measureazimutDirective = function($compile, gettext) {
 
 ngeo.module.directive('ngeoMeasureazimut', ngeo.measureazimutDirective);
 
-goog.provide('ngeo.interaction.MeasureLength');
-
-goog.require('ngeo.interaction.Measure');
-goog.require('ol.geom.LineString');
-goog.require('ol.interaction.Draw');
-
-
-/**
- * @classdesc
- * Interaction dedicated to measure length.
- *
- * See our live example: {@link ../examples/measure.html}
- *
- * @constructor
- * @extends {ngeo.interaction.Measure}
- * @param {ngeox.interaction.MeasureOptions=} opt_options Options
- * @export
- */
-ngeo.interaction.MeasureLength = function(opt_options) {
-
-  var options = opt_options !== undefined ? opt_options : {};
-
-  goog.base(this, options);
-
-
-  /**
-   * Message to show after the first point is clicked.
-   * @type {Element}
-   */
-  this.continueMsg = options.continueMsg !== undefined ? options.continueMsg :
-      goog.dom.createDom(goog.dom.TagName.SPAN, {},
-          'Click to continue drawing the line.',
-          goog.dom.createDom(goog.dom.TagName.BR),
-          'Double-click or click last point to finish.');
-
-};
-goog.inherits(ngeo.interaction.MeasureLength, ngeo.interaction.Measure);
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureLength.prototype.createDrawInteraction = function(style,
-    source) {
-
-  return new ol.interaction.Draw(
-      /** @type {olx.interaction.DrawOptions} */ ({
-        type: 'LineString',
-        source: source,
-        style: style
-      }));
-
-};
-
-
-/**
- * @inheritDoc
- */
-ngeo.interaction.MeasureLength.prototype.handleMeasure = function(callback) {
-  var geom = /** @type {ol.geom.LineString} */
-      (this.sketchFeature.getGeometry());
-  var proj = this.getMap().getView().getProjection();
-  var dec = this.decimals;
-  var output = ngeo.interaction.Measure.getFormattedLength(geom, proj, dec);
-  var coord = geom.getLastCoordinate();
-  callback(output, coord);
-};
-
 goog.provide('ngeo.measurelengthDirective');
 
 goog.require('ngeo');
+/** @suppress {extraRequire} */
+goog.require('ngeo.filters');
 goog.require('ngeo.interaction.MeasureLength');
 goog.require('ol.style.Style');
 
@@ -106488,12 +107293,13 @@ goog.require('ol.style.Style');
 /**
  * @param {angular.$compile} $compile Angular compile service.
  * @param {gettext} gettext Gettext service.
+ * @param {angular.$filter} $filter Angular filter
  * @return {angular.Directive} The directive specs.
  * @ngInject
  * @ngdoc directive
  * @ngname ngeoDrawpoint
  */
-ngeo.measurelengthDirective = function($compile, gettext) {
+ngeo.measurelengthDirective = function($compile, gettext, $filter) {
   return {
     restrict: 'A',
     require: '^^ngeoDrawfeature',
@@ -106509,7 +107315,7 @@ ngeo.measurelengthDirective = function($compile, gettext) {
       var contMsg = gettext('Click to continue drawing<br/>' +
                             'Double-click or click last point to finish');
 
-      var measureLength = new ngeo.interaction.MeasureLength({
+      var measureLength = new ngeo.interaction.MeasureLength($filter('ngeoUnitPrefix'), {
         style: new ol.style.Style(),
         startMsg: $compile('<div translate>' + helpMsg + '</div>')($scope)[0],
         continueMsg: $compile('<div translate>' + contMsg + '</div>')($scope)[0]
@@ -107932,6 +108738,7 @@ goog.require('ngeo.LayerHelper');
 goog.require('ol.format.WMSGetFeatureInfo');
 goog.require('ol.source.ImageWMS');
 goog.require('ol.source.TileWMS');
+goog.require('goog.uri.utils');
 
 
 /**
@@ -107995,13 +108802,6 @@ ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions,
    * @type {string}
    * @private
    */
-  this.sourceIdProperty_ = options.sourceIdProperty !== undefined ?
-      options.sourceIdProperty : ngeo.Query.DEFAULT_SOURCE_ID_PROPERTY_;
-
-  /**
-   * @type {string}
-   * @private
-   */
   this.sourceIdsProperty_ = options.sourceIdsProperty !== undefined ?
       options.sourceIdsProperty : ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_;
 
@@ -108035,13 +108835,6 @@ ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions,
    */
   this.cache_ = {};
 };
-
-
-/**
- * @const
- * @private
- */
-ngeo.Query.DEFAULT_SOURCE_ID_PROPERTY_ = 'querySourceId';
 
 
 /**
@@ -108243,14 +109036,9 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
     }
 
     // Skip layers that don't have one or more sources configured
-    id = this.getLayerSourceId_(layer);
     ids = this.getLayerSourceIds_(layer);
-    if ((!id || !this.cache_[id]) && !ids.length) {
+    if (ids.length === 0) {
       return;
-    }
-
-    if (id) {
-      ids.push(id);
     }
 
     for (var i = 0, len = ids.length; i < len; i++) {
@@ -108279,6 +109067,8 @@ ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
         );
         var layerLayers = layerSource.getParams()['LAYERS'].split(',');
         var cfgLayer = item.source.wmsSource.getParams()['LAYERS'];
+        goog.asserts.assert(cfgLayer.indexOf(',') === -1,
+            'The LAYERS param contains more than one item');
         if (layerLayers.indexOf(cfgLayer) === -1) {
           continue;
         }
@@ -108355,19 +109145,6 @@ ngeo.Query.prototype.clearResult_ = function() {
     source.pending = false;
     source.queried = false;
   }, this);
-};
-
-
-/**
- * Returns the source id from an ol3 layer object.
- * @param {ol.layer.Base} layer The ol3 layer object.
- * @return {number|string} id The id of the source bound to that layer.
- * @private
- */
-ngeo.Query.prototype.getLayerSourceId_ = function(layer) {
-  var id = layer.get(this.sourceIdProperty_);
-  id = goog.isNumber(id) || goog.isString(id) ? id : '';
-  return id;
 };
 
 
@@ -121709,16 +122486,17 @@ goog.require('ngeo.interaction.MobileDraw');
  *
  * @constructor
  * @extends {ngeo.interaction.MeasureLength}
+ * @param {ngeox.unitPrefix} format The format function
  * @param {ngeox.interaction.MeasureOptions=} opt_options Options
  * @export
  */
-ngeo.interaction.MeasureLengthMobile = function(opt_options) {
+ngeo.interaction.MeasureLengthMobile = function(format, opt_options) {
 
   var options = opt_options !== undefined ? opt_options : {};
 
   goog.object.extend(options, {displayHelpTooltip: false});
 
-  goog.base(this, options);
+  goog.base(this, format, options);
 
 };
 goog.inherits(ngeo.interaction.MeasureLengthMobile,
@@ -125441,109 +126219,6 @@ ngeo.Disclaimer.prototype.closeMessage_ = function(message) {
 
 ngeo.module.service('ngeoDisclaimer', ngeo.Disclaimer);
 
-goog.provide('ngeo.EventHelper');
-
-goog.require('ngeo');
-
-
-/**
- * Provides methods to manage the listening/unlistening of all sorts of
- * events:
- * - events from OpenLayers
- * - events from Closure Library
- *
- * @constructor
- * @ngdoc service
- * @ngname ngeoEventHelper
- * @ngInject
- */
-ngeo.EventHelper = function() {
-
-  /**
-   * @type {Object.<number, ngeo.EventHelper.ListenerKeys>}
-   * @private
-   */
-  this.listenerKeys_ = {};
-
-};
-
-
-/**
- * Utility method to add a listener key bound to a unique id. The key can
- * come from an `ol.events` (default) or `goog.events`.
- * @param {number} uid Unique id.
- * @param {ol.EventsKey|goog.events.Key} key Key.
- * @param {boolean=} opt_isol Whether it's an OpenLayers event or not. Defaults
- *     to true.
- * @export
- */
-ngeo.EventHelper.prototype.addListenerKey = function(uid, key, opt_isol) {
-  if (!this.listenerKeys_[uid]) {
-    this.initListenerKey_(uid);
-  }
-
-  var isol = opt_isol !== undefined ? opt_isol : true;
-  if (isol) {
-    this.listenerKeys_[uid].ol.push(/** @type {ol.EventsKey} */ (key));
-  } else {
-    this.listenerKeys_[uid].goog.push(/** @type {goog.events.Key} */ (key));
-  }
-};
-
-
-/**
- * Clear all listener keys from the given unique id.
- * @param {number} uid Unique id.
- * @export
- */
-ngeo.EventHelper.prototype.clearListenerKey = function(uid) {
-  this.initListenerKey_(uid);
-};
-
-
-/**
- * Utility method that does 2 things:
- * - initialize the listener keys of a given uid with an array (if that key
- *   has not array set yet)
- * - unlisten any events if the array already exists for the given uid and
- *   empty the array.
- * @param {number} uid Unique id.
- * @private
- */
-ngeo.EventHelper.prototype.initListenerKey_ = function(uid) {
-  if (!this.listenerKeys_[uid]) {
-    this.listenerKeys_[uid] = {
-      goog: [],
-      ol: []
-    };
-  } else {
-    if (this.listenerKeys_[uid].goog.length) {
-      this.listenerKeys_[uid].goog.forEach(function(key) {
-        goog.events.unlistenByKey(key);
-      }, this);
-      this.listenerKeys_[uid].goog.length = 0;
-    }
-    if (this.listenerKeys_[uid].ol.length) {
-      this.listenerKeys_[uid].ol.forEach(function(key) {
-        ol.events.unlistenByKey(key);
-      }, this);
-      this.listenerKeys_[uid].ol.length = 0;
-    }
-  }
-};
-
-
-/**
- * @typedef {{
- *     goog: (Array.<goog.events.Key>),
- *     ol: (Array.<ol.EventsKey>)
- * }}
- */
-ngeo.EventHelper.ListenerKeys;
-
-
-ngeo.module.service('ngeoEventHelper', ngeo.EventHelper);
-
 goog.provide('ngeo.Features');
 goog.require('ngeo');
 
@@ -125551,169 +126226,6 @@ goog.require('ol.Collection');
 
 
 ngeo.module.value('ngeoFeatures', new ol.Collection());
-
-goog.provide('ngeo.filters');
-
-goog.require('ngeo');
-
-/**
- * Format a number as a localized scale.
- * For instance:
- *  - For 'fr-CH' the value 25000 will become '1 : 25 000'.
- *  - For 'en-US' the value 25000 will become '1 : 25,000'.
- *
- * Example:
- *
- *      <p>{{25000 | ngeoScalify}}</p>
- *
- *
- * @param {angular.$filter} $filter Angular filter
- * @return {function(number): string} A function to format number into a 'scale'
- *     string.
- * @ngInject
- * @ngdoc filter
- * @ngname ngeoScalify
- */
-ngeo.Scalify = function($filter) {
-  var numberFilter = $filter('number');
-  return function(scale) {
-    var text = numberFilter(scale, 0);
-    return text ? '1\u00a0:\u00a0' + text : '';
-  };
-};
-
-ngeo.module.filter('ngeoScalify', ngeo.Scalify);
-
-/**
- * Format a couple of numbers as number coordinates.
- *
- * Example without parameters (en-US localization):
- *
- *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates}}</p>
- *      <!-- will Become 7 47 -->
- *
- * Example with defined fractionDigits and template (en-US localization):
- *
- *      <p>{{[7.1234, 46.9876] | ngeoNumberCoordinates:2:co {x} E; {y} N}}</p>
- *      <!-- will Become co 7.12 E; 46.99 N -->
- *
- * Example without fractionDigits but with defined template and localize:
- *
- *      <!-- With en-US localization (opt_localize can be true or undefined) -->
- *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
- *      <!-- will Become 2,600,000, 1,600,000 -->
- *      <br/>
- *      <!-- With fr-CH localization (opt_localize can be true or undefined) -->
- *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:true}}</p>
- *      <!-- will Become 2'600'000, 1'600'000 -->
- *      <br/>
- *      <!-- With en-US localization but with localization to false -->
- *      <p>{{[2600000, 1600000] | ngeoNumberCoordinates::{x}, {y}:false}}</p>
- *      <!-- will Become 2'600'000, 1'600'000 -->
- *
- * @param {angular.$filter} $filter Angular filter
- * @return {function(ol.Coordinate, (number|string)=, string=,
- *     (boolean|string)=): string} A function to format numbers into
- *     coordinates string.
- * @ngInject
- * @ngdoc filter
- * @ngname ngeoNumberCoordinates
- */
-ngeo.NumberCoordinates = function($filter) {
-  /**
-   * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
-   *     Default to 0.
-   * @param {string=} opt_template Optional template. Default to '{x} {y}'.
-   *     Where "{x}" will be replaced by the first coordinate and "{y}" by the
-   *     second one. Note: Use a html entity to use the semicolon symbole
-   *     into a template.
-   * @param {(boolean|string)=} opt_localize Optional. If true or not defined,
-   *     format number as the current local system (see Angular number filter).
-   *     Set it explicitely to false to use always "." as the decimal separator
-   *     and include "'" group separators after each third digit.
-   * @return {string} Number formated coordinates.
-   */
-  var filterFn = function(coordinates, opt_fractionDigits, opt_template,
-      opt_localize) {
-    var template = opt_template ? opt_template : '{x} {y}';
-    var x = coordinates[0];
-    var y = coordinates[1];
-    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
-    if (opt_localize === 'false' || opt_localize === false) {
-      x = x.toFixed(fractionDigits);
-      y = y.toFixed(fractionDigits);
-      x = x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
-      y = y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
-    } else {
-      x = $filter('number')(x, fractionDigits);
-      y = $filter('number')(y, fractionDigits);
-    }
-    return template.replace('{x}', x).replace('{y}', y);
-  };
-  return filterFn;
-};
-
-ngeo.module.filter('ngeoNumberCoordinates', ngeo.NumberCoordinates);
-
-
-/**
- * Format a couple of numbers as DMS coordinates.
- *
- * Example without parameters:
- *
- *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates}}</p>
- *      <!-- will Become 46° 59' 15'' N 7° 07' 24'' E-->
- *
- * Example with defined fractionDigits and a template.
- *
- *      <p>{{[7.1234, 46.9876] | ngeoDMSCoordinates:2:[{x}; {y}]}}</p>
- *      <!-- will Become [46° 59' 15.36'' N; 7° 07' 24.24'' E] -->
- *
- * @return {function(ol.Coordinate, (number|string)=, string=): string} A
- *     function to format numbers into a DMS coordinates string.
- * @ngInject
- * @ngdoc filter
- * @ngname ngeoDMSCoordinates
- */
-ngeo.DMSCoordinates = function() {
-  var degreesToStringHDMS = function(degrees, hemispheres, fractionDigits) {
-    var normalizedDegrees = goog.math.modulo(degrees + 180, 360) - 180;
-    var dms = Math.abs(3600 * normalizedDegrees);
-    var d = Math.floor(dms / 3600);
-    var m = Math.floor((dms / 60) % 60);
-    var s = (dms % 60);
-    return d + '\u00b0 ' +
-        goog.string.padNumber(m, 2) + '\u2032 ' +
-        goog.string.padNumber(s, 2, fractionDigits) + '\u2033 ' +
-        hemispheres.charAt(normalizedDegrees < 0 ? 1 : 0);
-  };
-
-  /**
-   * @param {ol.Coordinate} coordinates Array of two numbers.
-   * @param {(number|string)=} opt_fractionDigits Optional number of digit.
-   *     Default to 0.
-   * @param {string=} opt_template Optional template. Default to
-   *     '{x} {y}'. Where "{x}" will be replaced by the first
-   *     coordinate, {y} by the second one. Note: Use a html entity to use the
-   *     semicolon symbole into a template.
-   * @return {string} DMS formated coordinates.
-   */
-  var filterFn = function(coordinates, opt_fractionDigits, opt_template) {
-    var fractionDigits = parseInt(opt_fractionDigits, 10) | 0;
-
-    var template = opt_template ? opt_template : '{x} {y}';
-
-    var xdms = degreesToStringHDMS(coordinates[1], 'NS', fractionDigits);
-    var ydms = degreesToStringHDMS(coordinates[0], 'EW', fractionDigits);
-
-    return template.replace('{x}', xdms).replace('{y}', ydms);
-  };
-
-  return filterFn;
-};
-
-ngeo.module.filter('ngeoDMSCoordinates', ngeo.DMSCoordinates);
 
 goog.provide('ngeo.GetBrowserLanguage');
 
@@ -128892,10 +129404,11 @@ goog.require('ngeo');
    * @ngInject
    */
   var runner = function($templateCache) {
+    $templateCache.put('ngeo/attributes.html', '<form class=form> <div class=form-group ng-repeat="attribute in ::attrCtrl.attributes"> <label>{{ attribute.name }}:</label> <div ng-switch=attribute.type> <select ng-switch-when=select ng-model=attrCtrl.properties[attribute.name] ng-change=attrCtrl.handleInputChange(attribute.name); class=form-control type=text> <option ng-repeat="attribute in ::attribute.choices" value="{{ ::attribute }}"> {{ ::attribute }} </option> </select> <input ng-switch-default ng-model=attrCtrl.properties[attribute.name] ng-change=attrCtrl.handleInputChange(attribute.name); class=form-control type=text> </div> </div> </form> ');
     $templateCache.put('ngeo/popup.html', '<h4 class="popover-title ngeo-popup-title"> <span ng-bind-html=title></span> <button type=button class=close ng-click="open = false"> &times;</button> </h4> <div class=popover-content ng-bind-html=content></div> ');
-    $templateCache.put('ngeo/scaleselector.html', '<div class="btn-group btn-block" ng-class="::{\'dropup\': scaleselectorCtrl.options.dropup}"> <button type=button class="btn btn-default btn-sm dropdown-toggle" data-toggle=dropdown aria-expanded=false> <span ng-bind-html=scaleselectorCtrl.currentScale></span>&nbsp;<i class=caret></i> </button> <ul class="dropdown-menu btn-block" role=menu> <li ng-repeat="zoomLevel in ::scaleselectorCtrl.zoomLevels"> <a href ng-click=scaleselectorCtrl.changeZoom(zoomLevel) ng-bind-html=scaleselectorCtrl.getScale(zoomLevel)> </a> </li> </ul> </div> ');
     $templateCache.put('ngeo/layertree.html', '<span ng-if=::!layertreeCtrl.isRoot>{{::layertreeCtrl.node.name}}</span> <input type=checkbox ng-if="::layertreeCtrl.node && !layertreeCtrl.node.children" ng-model=layertreeCtrl.getSetActive ng-model-options="{getterSetter: true}"> <ul ng-if=::layertreeCtrl.node.children> <li ng-repeat="node in ::layertreeCtrl.node.children" ngeo-layertree=::node ngeo-layertree-notroot ngeo-layertree-map=layertreeCtrl.map ngeo-layertree-nodelayerexpr=layertreeCtrl.nodelayerExpr ngeo-layertree-listenersexpr=layertreeCtrl.listenersExpr> </li> </ul> ');
     $templateCache.put('ngeo/colorpicker.html', '<table class=palette> <tr ng-repeat="colors in ::ctrl.colors"> <td ng-repeat="color in ::colors" ng-click=ctrl.setColor(color) ng-class="{\'selected\': color == ctrl.color}"> <div ng-style="::{\'background-color\': color}"></div> </td> </tr> </table> ');
+    $templateCache.put('ngeo/scaleselector.html', '<div class="btn-group btn-block" ng-class="::{\'dropup\': scaleselectorCtrl.options.dropup}"> <button type=button class="btn btn-default dropdown-toggle" data-toggle=dropdown aria-expanded=false> <span ng-bind-html=scaleselectorCtrl.currentScale></span>&nbsp;<i class=caret></i> </button> <ul class="dropdown-menu btn-block" role=menu> <li ng-repeat="zoomLevel in ::scaleselectorCtrl.zoomLevels"> <a href ng-click=scaleselectorCtrl.changeZoom(zoomLevel) ng-bind-html=scaleselectorCtrl.getScale(zoomLevel)> </a> </li> </ul> </div> ');
   };
 
   ngeo.module.run(runner);

@@ -21,17 +21,18 @@
       </gmf-displayqueries>
       <div
         class="measure-tools-control"
-        gmf-mobile-measure-length
-        gmf-mobile-measure-length-active="mainCtrl.measureLengthActive"
-        gmf-mobile-measure-length-decimals="2"
-        gmf-mobile-measure-length-map="::mainCtrl.map">
+        gmf-mobile-measurelength
+        gmf-mobile-measurelength-active="mainCtrl.measureLengthActive"
+        gmf-mobile-measurelength-decimals="2"
+        gmf-mobile-measurelength-map="::mainCtrl.map">
       </div>
       <div
         class="measure-tools-control"
-        gmf-mobile-measure-point
-        gmf-mobile-measure-point-active="mainCtrl.measurePointActive"
-        gmf-mobile-measure-point-decimals="2"
-        gmf-mobile-measure-point-map="::mainCtrl.map">
+        gmf-mobile-measurepoint
+        gmf-mobile-measurepoint-active="mainCtrl.measurePointActive"
+        gmf-mobile-measurepoint-decimals="2"
+        gmf-mobile-measurepoint-layers="::mainCtrl.elevationLayers"
+        gmf-mobile-measurepoint-map="::mainCtrl.map">
       </div>
       <button class="nav-trigger nav-left-trigger"
         ng-click="mainCtrl.toggleLeftNavVisibility()">
@@ -138,10 +139,11 @@
     <script src="../../../../lib/watchwatchers.js"></script>
     <script>
       (function() {
+        var cacheVersion = 'ef64ccacd43cc3c2e760415b9c72d185ece0729c';
         var urlElements = window.location.pathname.split('/');
 
         var angularLocaleScriptUrlElements = urlElements.slice(0, urlElements.length - 3);
-        angularLocaleScriptUrlElements.push('build', 'angular-locale_{{locale}}.js');
+        angularLocaleScriptUrlElements.push('build', 'angular-locale_{{locale}}.js?cache_version=' + cacheVersion);
 
         var gmfModule = angular.module('gmf');
         gmfModule.constant('angularLocaleScript', angularLocaleScriptUrlElements.join('/'));
@@ -149,13 +151,14 @@
         var langUrls = {};
         ['en', 'fr', 'de'].forEach(function(lang) {
             var langUrlElements = urlElements.slice(0, urlElements.length - 3);
-            langUrlElements.push('build', 'gmf-' + lang + '.json')
+            langUrlElements.push('build', 'gmf-' + lang + '.json?cache_version=' + cacheVersion)
             langUrls[lang] = langUrlElements.join('/')
         });
 
         var module = angular.module('app');
         module.constant('defaultLang', 'en');
         module.constant('langUrls', langUrls);
+        module.constant('cacheVersion', cacheVersion);
         module.constant('authenticationBaseUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi');
         module.constant('fulltextsearchUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi/fulltextsearch?limit=20');
         module.constant('gmfWmsUrl', 'https://geomapfish-demo.camptocamp.net/2.1/wsgi/mapserv_proxy');
