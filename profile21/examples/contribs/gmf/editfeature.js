@@ -173,8 +173,7 @@ app.MainController.prototype.insertFeature = function() {
   var view = map.getView();
   var resolution = view.getResolution();
   var buffer = resolution * -50; // 50 pixel buffer inside the extent
-  var size = map.getSize();
-  goog.asserts.assert(size);
+  var size = /** @type {!Array.<number>} */ (map.getSize());
   var extent = ol.extent.buffer(
     view.calculateExtent(size),
     buffer
@@ -213,7 +212,7 @@ app.MainController.prototype.insertFeature = function() {
  */
 app.MainController.prototype.updateFeature = function() {
 
-  goog.asserts.assert(this.feature);
+  console.assert(this.feature);
 
   this.pending = true;
 
@@ -239,7 +238,7 @@ app.MainController.prototype.updateFeature = function() {
  */
 app.MainController.prototype.deleteFeature = function() {
 
-  goog.asserts.assert(this.feature);
+  console.assert(this.feature);
 
   // (1) Launch request
   this.editFeature_.deleteFeature(

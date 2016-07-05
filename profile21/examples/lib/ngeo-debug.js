@@ -25397,9 +25397,9 @@ ol.control.FullScreen.prototype.handleFullScreenChange_ = function() {
 ol.control.FullScreen.prototype.setMap = function(map) {
   ol.control.Control.prototype.setMap.call(this, map);
   if (map) {
-    this.listenerKeys.push(
-        ol.events.listen(ol.global.document, ol.control.FullScreen.CHANGETYPE,
-          this.handleFullScreenChange_, this)
+    this.listenerKeys.push(ol.events.listen(ol.global.document,
+        ol.control.FullScreen.getChangeType_(),
+        this.handleFullScreenChange_, this)
     );
   }
 };
@@ -25473,20 +25473,26 @@ ol.control.FullScreen.exitFullScreen = function() {
 };
 
 /**
- * @type {string}
+ * @return {string} Change type.
+ * @private
  */
-ol.control.FullScreen.CHANGETYPE = (function() {
-  var body = document.body;
-  if (body.webkitRequestFullscreen) {
-    return 'webkitfullscreenchange';
-  } else if (body.mozRequestFullScreen) {
-    return 'mozfullscreenchange';
-  } else if (body.msRequestFullscreen) {
-    return 'MSFullscreenChange';
-  } else if (body.requestFullscreen) {
-    return 'fullscreenchange';
-  }
-  return undefined;
+ol.control.FullScreen.getChangeType_ = (function() {
+  var changeType;
+  return function() {
+    if (!changeType) {
+      var body = document.body;
+      if (body.webkitRequestFullscreen) {
+        changeType = 'webkitfullscreenchange';
+      } else if (body.mozRequestFullScreen) {
+        changeType = 'mozfullscreenchange';
+      } else if (body.msRequestFullscreen) {
+        changeType = 'MSFullscreenChange';
+      } else if (body.requestFullscreen) {
+        changeType = 'fullscreenchange';
+      }
+    }
+    return changeType;
+  };
 })();
 
 // FIXME should listen on appropriate pane, once it is defined
@@ -33542,7 +33548,7 @@ ol.render.Box = function(className) {
   this.endPixel_ = null;
 
 };
-goog.inherits(ol.render.Box, ol.Disposable);
+ol.inherits(ol.render.Box, ol.Disposable);
 
 
 /**
@@ -43214,7 +43220,6 @@ ol.xml.getAllTextContent_ = function(node, normalizeWhitespace, accumulator) {
   if (node.nodeType == Node.CDATA_SECTION_NODE ||
       node.nodeType == Node.TEXT_NODE) {
     if (normalizeWhitespace) {
-      // FIXME understand why goog.dom.getTextContent_ uses String here
       accumulator.push(String(node.nodeValue).replace(/(\r\n|\r|\n)/g, ''));
     } else {
       accumulator.push(node.nodeValue);
@@ -43891,14 +43896,12 @@ var define;
  * @fileoverview
  * @suppress {accessControls, ambiguousFunctionDecl, checkDebuggerStatement, checkRegExp, checkTypes, checkVars, const, constantProperty, deprecated, duplicate, es5Strict, fileoverviewTags, missingProperties, nonStandardJsDocs, strictModuleDepCheck, suspiciousCode, undefinedNames, undefinedVars, unknownDefines, uselessCode, visibility}
  */
-/*
- (c) 2015, Vladimir Agafonkin
- RBush, a JavaScript library for high-performance 2D spatial indexing of points and rectangles.
- https://github.com/mourner/rbush
-*/
-
-(function () {
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.rbush = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
+
+module.exports = rbush;
+
+var quickselect = _dereq_('quickselect');
 
 function rbush(maxEntries, format) {
     if (!(this instanceof rbush)) return new rbush(maxEntries, format);
@@ -43926,7 +43929,7 @@ rbush.prototype = {
             result = [],
             toBBox = this.toBBox;
 
-        if (!intersects(bbox, node.bbox)) return result;
+        if (!intersects(bbox, node)) return result;
 
         var nodesToSearch = [],
             i, len, child, childBBox;
@@ -43935,7 +43938,7 @@ rbush.prototype = {
             for (i = 0, len = node.children.length; i < len; i++) {
 
                 child = node.children[i];
-                childBBox = node.leaf ? toBBox(child) : child.bbox;
+                childBBox = node.leaf ? toBBox(child) : child;
 
                 if (intersects(bbox, childBBox)) {
                     if (node.leaf) result.push(child);
@@ -43954,7 +43957,7 @@ rbush.prototype = {
         var node = this.data,
             toBBox = this.toBBox;
 
-        if (!intersects(bbox, node.bbox)) return false;
+        if (!intersects(bbox, node)) return false;
 
         var nodesToSearch = [],
             i, len, child, childBBox;
@@ -43963,7 +43966,7 @@ rbush.prototype = {
             for (i = 0, len = node.children.length; i < len; i++) {
 
                 child = node.children[i];
-                childBBox = node.leaf ? toBBox(child) : child.bbox;
+                childBBox = node.leaf ? toBBox(child) : child;
 
                 if (intersects(bbox, childBBox)) {
                     if (node.leaf || contains(bbox, childBBox)) return true;
@@ -44018,16 +44021,11 @@ rbush.prototype = {
     },
 
     clear: function () {
-        this.data = {
-            children: [],
-            height: 1,
-            bbox: empty(),
-            leaf: true
-        };
+        this.data = createNode([]);
         return this;
     },
 
-    remove: function (item) {
+    remove: function (item, equalsFn) {
         if (!item) return this;
 
         var node = this.data,
@@ -44047,7 +44045,7 @@ rbush.prototype = {
             }
 
             if (node.leaf) { // check current node
-                index = node.children.indexOf(item);
+                index = findItem(item, node.children, equalsFn);
 
                 if (index !== -1) {
                     // item found, remove the item and condense tree upwards
@@ -44058,7 +44056,7 @@ rbush.prototype = {
                 }
             }
 
-            if (!goingUp && !node.leaf && contains(node.bbox, bbox)) { // go down
+            if (!goingUp && !node.leaf && contains(node, bbox)) { // go down
                 path.push(node);
                 indexes.push(i);
                 i = 0;
@@ -44078,8 +44076,8 @@ rbush.prototype = {
 
     toBBox: function (item) { return item; },
 
-    compareMinX: function (a, b) { return a[0] - b[0]; },
-    compareMinY: function (a, b) { return a[1] - b[1]; },
+    compareMinX: compareNodeMinX,
+    compareMinY: compareNodeMinY,
 
     toJSON: function () { return this.data; },
 
@@ -44107,12 +44105,7 @@ rbush.prototype = {
 
         if (N <= M) {
             // reached leaf level; return leaf
-            node = {
-                children: items.slice(left, right + 1),
-                height: 1,
-                bbox: null,
-                leaf: true
-            };
+            node = createNode(items.slice(left, right + 1));
             calcBBox(node, this.toBBox);
             return node;
         }
@@ -44125,12 +44118,9 @@ rbush.prototype = {
             M = Math.ceil(N / Math.pow(M, height - 1));
         }
 
-        node = {
-            children: [],
-            height: height,
-            bbox: null,
-            leaf: false
-        };
+        node = createNode([]);
+        node.leaf = false;
+        node.height = height;
 
         // split the items into M mostly square tiles
 
@@ -44173,8 +44163,8 @@ rbush.prototype = {
 
             for (i = 0, len = node.children.length; i < len; i++) {
                 child = node.children[i];
-                area = bboxArea(child.bbox);
-                enlargement = enlargedArea(bbox, child.bbox) - area;
+                area = bboxArea(child);
+                enlargement = enlargedArea(bbox, child) - area;
 
                 // choose entry with the least area enlargement
                 if (enlargement < minEnlargement) {
@@ -44200,7 +44190,7 @@ rbush.prototype = {
     _insert: function (item, level, isNode) {
 
         var toBBox = this.toBBox,
-            bbox = isNode ? item.bbox : toBBox(item),
+            bbox = isNode ? item : toBBox(item),
             insertPath = [];
 
         // find the best node for accommodating the item, saving all nodes along the path too
@@ -44208,7 +44198,7 @@ rbush.prototype = {
 
         // put the item into the node
         node.children.push(item);
-        extend(node.bbox, bbox);
+        extend(node, bbox);
 
         // split on node overflow; propagate upwards if necessary
         while (level >= 0) {
@@ -44233,14 +44223,9 @@ rbush.prototype = {
 
         var splitIndex = this._chooseSplitIndex(node, m, M);
 
-        var newNode = {
-            children: node.children.splice(splitIndex, node.children.length - splitIndex),
-            height: node.height,
-            bbox: null,
-            leaf: false
-        };
-
-        if (node.leaf) newNode.leaf = true;
+        var newNode = createNode(node.children.splice(splitIndex, node.children.length - splitIndex));
+        newNode.height = node.height;
+        newNode.leaf = node.leaf;
 
         calcBBox(node, this.toBBox);
         calcBBox(newNode, this.toBBox);
@@ -44251,12 +44236,9 @@ rbush.prototype = {
 
     _splitRoot: function (node, newNode) {
         // split root node
-        this.data = {
-            children: [node, newNode],
-            height: node.height + 1,
-            bbox: null,
-            leaf: false
-        };
+        this.data = createNode([node, newNode]);
+        this.data.height = node.height + 1;
+        this.data.leaf = false;
         calcBBox(this.data, this.toBBox);
     },
 
@@ -44318,13 +44300,13 @@ rbush.prototype = {
 
         for (i = m; i < M - m; i++) {
             child = node.children[i];
-            extend(leftBBox, node.leaf ? toBBox(child) : child.bbox);
+            extend(leftBBox, node.leaf ? toBBox(child) : child);
             margin += bboxMargin(leftBBox);
         }
 
         for (i = M - m - 1; i >= m; i--) {
             child = node.children[i];
-            extend(rightBBox, node.leaf ? toBBox(child) : child.bbox);
+            extend(rightBBox, node.leaf ? toBBox(child) : child);
             margin += bboxMargin(rightBBox);
         }
 
@@ -44334,7 +44316,7 @@ rbush.prototype = {
     _adjustParentBBoxes: function (bbox, path, level) {
         // adjust bboxes along the given tree path
         for (var i = level; i >= 0; i--) {
-            extend(path[i].bbox, bbox);
+            extend(path[i], bbox);
         }
     },
 
@@ -44364,71 +44346,97 @@ rbush.prototype = {
         this.compareMinX = new Function('a', 'b', compareArr.join(format[0]));
         this.compareMinY = new Function('a', 'b', compareArr.join(format[1]));
 
-        this.toBBox = new Function('a', 'return [a' + format.join(', a') + '];');
+        this.toBBox = new Function('a',
+            'return {minX: a' + format[0] +
+            ', minY: a' + format[1] +
+            ', maxX: a' + format[2] +
+            ', maxY: a' + format[3] + '};');
     }
 };
 
+function findItem(item, items, equalsFn) {
+    if (!equalsFn) return items.indexOf(item);
+
+    for (var i = 0; i < items.length; i++) {
+        if (equalsFn(item, items[i])) return i;
+    }
+    return -1;
+}
 
 // calculate node's bbox from bboxes of its children
 function calcBBox(node, toBBox) {
-    node.bbox = distBBox(node, 0, node.children.length, toBBox);
+    distBBox(node, 0, node.children.length, toBBox, node);
 }
 
 // min bounding rectangle of node children from k to p-1
-function distBBox(node, k, p, toBBox) {
-    var bbox = empty();
+function distBBox(node, k, p, toBBox, destNode) {
+    if (!destNode) destNode = createNode(null);
+    destNode.minX = Infinity;
+    destNode.minY = Infinity;
+    destNode.maxX = -Infinity;
+    destNode.maxY = -Infinity;
 
     for (var i = k, child; i < p; i++) {
         child = node.children[i];
-        extend(bbox, node.leaf ? toBBox(child) : child.bbox);
+        extend(destNode, node.leaf ? toBBox(child) : child);
     }
 
-    return bbox;
+    return destNode;
 }
 
-function empty() { return [Infinity, Infinity, -Infinity, -Infinity]; }
-
 function extend(a, b) {
-    a[0] = Math.min(a[0], b[0]);
-    a[1] = Math.min(a[1], b[1]);
-    a[2] = Math.max(a[2], b[2]);
-    a[3] = Math.max(a[3], b[3]);
+    a.minX = Math.min(a.minX, b.minX);
+    a.minY = Math.min(a.minY, b.minY);
+    a.maxX = Math.max(a.maxX, b.maxX);
+    a.maxY = Math.max(a.maxY, b.maxY);
     return a;
 }
 
-function compareNodeMinX(a, b) { return a.bbox[0] - b.bbox[0]; }
-function compareNodeMinY(a, b) { return a.bbox[1] - b.bbox[1]; }
+function compareNodeMinX(a, b) { return a.minX - b.minX; }
+function compareNodeMinY(a, b) { return a.minY - b.minY; }
 
-function bboxArea(a)   { return (a[2] - a[0]) * (a[3] - a[1]); }
-function bboxMargin(a) { return (a[2] - a[0]) + (a[3] - a[1]); }
+function bboxArea(a)   { return (a.maxX - a.minX) * (a.maxY - a.minY); }
+function bboxMargin(a) { return (a.maxX - a.minX) + (a.maxY - a.minY); }
 
 function enlargedArea(a, b) {
-    return (Math.max(b[2], a[2]) - Math.min(b[0], a[0])) *
-           (Math.max(b[3], a[3]) - Math.min(b[1], a[1]));
+    return (Math.max(b.maxX, a.maxX) - Math.min(b.minX, a.minX)) *
+           (Math.max(b.maxY, a.maxY) - Math.min(b.minY, a.minY));
 }
 
 function intersectionArea(a, b) {
-    var minX = Math.max(a[0], b[0]),
-        minY = Math.max(a[1], b[1]),
-        maxX = Math.min(a[2], b[2]),
-        maxY = Math.min(a[3], b[3]);
+    var minX = Math.max(a.minX, b.minX),
+        minY = Math.max(a.minY, b.minY),
+        maxX = Math.min(a.maxX, b.maxX),
+        maxY = Math.min(a.maxY, b.maxY);
 
     return Math.max(0, maxX - minX) *
            Math.max(0, maxY - minY);
 }
 
 function contains(a, b) {
-    return a[0] <= b[0] &&
-           a[1] <= b[1] &&
-           b[2] <= a[2] &&
-           b[3] <= a[3];
+    return a.minX <= b.minX &&
+           a.minY <= b.minY &&
+           b.maxX <= a.maxX &&
+           b.maxY <= a.maxY;
 }
 
 function intersects(a, b) {
-    return b[0] <= a[2] &&
-           b[1] <= a[3] &&
-           b[2] >= a[0] &&
-           b[3] >= a[1];
+    return b.minX <= a.maxX &&
+           b.minY <= a.maxY &&
+           b.maxX >= a.minX &&
+           b.maxY >= a.minY;
+}
+
+function createNode(children) {
+    return {
+        children: children,
+        height: 1,
+        leaf: true,
+        minX: Infinity,
+        minY: Infinity,
+        maxX: -Infinity,
+        maxY: -Infinity
+    };
 }
 
 // sort an array so that items come in groups of n unsorted items, with groups sorted between each other;
@@ -44445,32 +44453,41 @@ function multiSelect(arr, left, right, n, compare) {
         if (right - left <= n) continue;
 
         mid = left + Math.ceil((right - left) / n / 2) * n;
-        select(arr, left, right, mid, compare);
+        quickselect(arr, mid, left, right, compare);
 
         stack.push(left, mid, mid, right);
     }
 }
 
+},{"quickselect":2}],2:[function(_dereq_,module,exports){
+'use strict';
+
+module.exports = partialSort;
+
 // Floyd-Rivest selection algorithm:
-// sort an array between left and right (inclusive) so that the smallest k elements come first (unordered)
-function select(arr, left, right, k, compare) {
-    var n, i, z, s, sd, newLeft, newRight, t, j;
+// Rearrange items so that all items in the [left, k] range are smaller than all items in (k, right];
+// The k-th element will have the (k - left + 1)th smallest value in [left, right]
+
+function partialSort(arr, k, left, right, compare) {
+    left = left || 0;
+    right = right || (arr.length - 1);
+    compare = compare || defaultCompare;
 
     while (right > left) {
         if (right - left > 600) {
-            n = right - left + 1;
-            i = k - left + 1;
-            z = Math.log(n);
-            s = 0.5 * Math.exp(2 * z / 3);
-            sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * (i - n / 2 < 0 ? -1 : 1);
-            newLeft = Math.max(left, Math.floor(k - i * s / n + sd));
-            newRight = Math.min(right, Math.floor(k + (n - i) * s / n + sd));
-            select(arr, newLeft, newRight, k, compare);
+            var n = right - left + 1;
+            var m = k - left + 1;
+            var z = Math.log(n);
+            var s = 0.5 * Math.exp(2 * z / 3);
+            var sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * (m - n / 2 < 0 ? -1 : 1);
+            var newLeft = Math.max(left, Math.floor(k - m * s / n + sd));
+            var newRight = Math.min(right, Math.floor(k + (n - m) * s / n + sd));
+            partialSort(arr, k, newLeft, newRight, compare);
         }
 
-        t = arr[k];
-        i = left;
-        j = right;
+        var t = arr[k];
+        var i = left;
+        var j = right;
 
         swap(arr, left, k);
         if (compare(arr[right], t) > 0) swap(arr, left, right);
@@ -44500,15 +44517,12 @@ function swap(arr, i, j) {
     arr[j] = tmp;
 }
 
+function defaultCompare(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+}
 
-// export as AMD/CommonJS module or global variable
-if (typeof define === 'function' && define.amd) define('rbush', function () { return rbush; });
-else if (typeof module !== 'undefined') module.exports = rbush;
-else if (typeof self !== 'undefined') self.rbush = rbush;
-else window.rbush = rbush;
-
-})();
-
+},{}]},{},[1])(1)
+});
 ol.ext.rbush = module.exports;
 })();
 
@@ -44540,7 +44554,7 @@ ol.structs.RBush = function(opt_maxEntries) {
    * A mapping between the objects added to this rbush wrapper
    * and the objects that are actually added to the internal rbush.
    * @private
-   * @type {Object.<number, Object>}
+   * @type {Object.<number, ol.RBushEntry>}
    */
   this.items_ = {};
 
@@ -44563,13 +44577,15 @@ ol.structs.RBush.prototype.insert = function(extent, value) {
   if (goog.DEBUG && this.readers_) {
     throw new Error('Can not insert value while reading');
   }
-  var item = [
-    extent[0],
-    extent[1],
-    extent[2],
-    extent[3],
-    value
-  ];
+  /** @type {ol.RBushEntry} */
+  var item = {
+    minX: extent[0],
+    minY: extent[1],
+    maxX: extent[2],
+    maxY: extent[3],
+    value: value
+  };
+
   this.rbush_.insert(item);
   // remember the object that was added to the internal rbush
   goog.asserts.assert(!(goog.getUid(value) in this.items_),
@@ -44596,13 +44612,14 @@ ol.structs.RBush.prototype.load = function(extents, values) {
     var extent = extents[i];
     var value = values[i];
 
-    var item = [
-      extent[0],
-      extent[1],
-      extent[2],
-      extent[3],
-      value
-    ];
+    /** @type {ol.RBushEntry} */
+    var item = {
+      minX: extent[0],
+      minY: extent[1],
+      maxX: extent[2],
+      maxY: extent[3],
+      value: value
+    };
     items[i] = item;
     goog.asserts.assert(!(goog.getUid(value) in this.items_),
         'uid (%s) of value (%s) already exists', goog.getUid(value), value);
@@ -44644,7 +44661,8 @@ ol.structs.RBush.prototype.update = function(extent, value) {
       'uid (%s) of value (%s) does not exist', uid, value);
 
   var item = this.items_[uid];
-  if (!ol.extent.equals(item.slice(0, 4), extent)) {
+  var bbox = [item.minX, item.minY, item.maxX, item.maxY];
+  if (!ol.extent.equals(bbox, extent)) {
     if (goog.DEBUG && this.readers_) {
       throw new Error('Can not update extent while reading');
     }
@@ -44661,7 +44679,7 @@ ol.structs.RBush.prototype.update = function(extent, value) {
 ol.structs.RBush.prototype.getAll = function() {
   var items = this.rbush_.all();
   return items.map(function(item) {
-    return item[4];
+    return item.value;
   });
 };
 
@@ -44672,9 +44690,16 @@ ol.structs.RBush.prototype.getAll = function() {
  * @return {Array.<T>} All in extent.
  */
 ol.structs.RBush.prototype.getInExtent = function(extent) {
-  var items = this.rbush_.search(extent);
+  /** @type {ol.RBushEntry} */
+  var bbox = {
+    minX: extent[0],
+    minY: extent[1],
+    maxX: extent[2],
+    maxY: extent[3]
+  };
+  var items = this.rbush_.search(bbox);
   return items.map(function(item) {
-    return item[4];
+    return item.value;
   });
 };
 
@@ -44767,7 +44792,8 @@ ol.structs.RBush.prototype.clear = function() {
  */
 ol.structs.RBush.prototype.getExtent = function(opt_extent) {
   // FIXME add getExtent() to rbush
-  return this.rbush_.data.bbox;
+  var data = this.rbush_.data;
+  return [data.minX, data.minY, data.maxX, data.maxY];
 };
 
 // FIXME bulk feature upload - suppress events
@@ -46454,6 +46480,41 @@ ol.renderer.canvas.TileLayer.prototype.renderTileImages = function(context, fram
     tilesToDraw.reverse();
     pixelExtents = [];
   }
+
+  var extent = layerState.extent;
+  var clipped = extent !== undefined;
+  if (clipped) {
+    goog.asserts.assert(extent !== undefined,
+        'layerState extent is defined');
+    var topLeft = ol.extent.getTopLeft(extent);
+    var topRight = ol.extent.getTopRight(extent);
+    var bottomRight = ol.extent.getBottomRight(extent);
+    var bottomLeft = ol.extent.getBottomLeft(extent);
+
+    ol.vec.Mat4.multVec2(frameState.coordinateToPixelMatrix,
+        topLeft, topLeft);
+    ol.vec.Mat4.multVec2(frameState.coordinateToPixelMatrix,
+        topRight, topRight);
+    ol.vec.Mat4.multVec2(frameState.coordinateToPixelMatrix,
+        bottomRight, bottomRight);
+    ol.vec.Mat4.multVec2(frameState.coordinateToPixelMatrix,
+        bottomLeft, bottomLeft);
+
+    var ox = drawOffsetX || 0;
+    var oy = drawOffsetY || 0;
+    renderContext.save();
+    var cx = (renderContext.canvas.width * pixelRatio) / 2;
+    var cy = (renderContext.canvas.height * pixelRatio) / 2;
+    ol.render.canvas.rotateAtOffset(renderContext, -rotation, cx, cy);
+    renderContext.beginPath();
+    renderContext.moveTo(topLeft[0] * pixelRatio + ox, topLeft[1] * pixelRatio + oy);
+    renderContext.lineTo(topRight[0] * pixelRatio + ox, topRight[1] * pixelRatio + oy);
+    renderContext.lineTo(bottomRight[0] * pixelRatio + ox, bottomRight[1] * pixelRatio + oy);
+    renderContext.lineTo(bottomLeft[0] * pixelRatio + ox, bottomLeft[1] * pixelRatio + oy);
+    renderContext.clip();
+    ol.render.canvas.rotateAtOffset(renderContext, rotation, cx, cy);
+  }
+
   for (var i = 0, ii = tilesToDraw.length; i < ii; ++i) {
     var tile = tilesToDraw[i];
     var tileCoord = tile.getTileCoord();
@@ -46500,6 +46561,10 @@ ol.renderer.canvas.TileLayer.prototype.renderTileImages = function(context, fram
     if (!opaque) {
       renderContext.restore();
     }
+  }
+
+  if (clipped) {
+    renderContext.restore();
   }
 
   if (hasRenderListeners) {
@@ -51769,7 +51834,7 @@ ol.webgl.Context = function(canvas, gl) {
       this.handleWebGLContextRestored, this);
 
 };
-goog.inherits(ol.webgl.Context, ol.Disposable);
+ol.inherits(ol.webgl.Context, ol.Disposable);
 
 
 /**
@@ -55695,14 +55760,14 @@ ol.MapProperty = {
  *       }),
  *       layers: [
  *         new ol.layer.Tile({
- *           source: new ol.source.MapQuest({layer: 'osm'})
+ *           source: new ol.source.OSM()
  *         })
  *       ],
  *       target: 'map'
  *     });
  *
  * The above snippet creates a map using a {@link ol.layer.Tile} to display
- * {@link ol.source.MapQuest} OSM data and render it to a DOM element with the
+ * {@link ol.source.OSM} OSM data and render it to a DOM element with the
  * id `map`.
  *
  * The constructor places a viewport container (with CSS class name
@@ -57049,8 +57114,6 @@ ol.Map.createOptionsInternal = function(options) {
    */
   var keyboardEventTarget = null;
   if (options.keyboardEventTarget !== undefined) {
-    // cannot use goog.dom.getElement because its argument cannot be
-    // of type Document
     keyboardEventTarget = typeof options.keyboardEventTarget === 'string' ?
         document.getElementById(options.keyboardEventTarget) :
         options.keyboardEventTarget;
@@ -57186,7 +57249,6 @@ ol.proj.common.add();
 
 goog.provide('ol.Overlay');
 goog.provide('ol.OverlayPositioning');
-goog.provide('ol.OverlayProperty');
 
 goog.require('goog.asserts');
 goog.require('ol.events');
@@ -58288,8 +58350,6 @@ ol.control.OverviewMap.prototype.getOverviewMap = function() {
 };
 
 goog.provide('ol.control.ScaleLine');
-goog.provide('ol.control.ScaleLineProperty');
-goog.provide('ol.control.ScaleLineUnits');
 
 goog.require('goog.asserts');
 goog.require('ol.events');
@@ -59053,7 +59113,6 @@ ol.control.ZoomToExtent.prototype.handleZoomToExtent_ = function() {
 };
 
 goog.provide('ol.DeviceOrientation');
-goog.provide('ol.DeviceOrientationProperty');
 
 goog.require('ol.events');
 goog.require('ol');
@@ -59148,7 +59207,7 @@ ol.DeviceOrientation = function(opt_options) {
   this.setTracking(options.tracking !== undefined ? options.tracking : false);
 
 };
-goog.inherits(ol.DeviceOrientation, ol.Object);
+ol.inherits(ol.DeviceOrientation, ol.Object);
 
 
 /**
@@ -66557,7 +66616,6 @@ ol.format.TextFeature.prototype.writeGeometry = function(
 ol.format.TextFeature.prototype.writeGeometryText = goog.abstractMethod;
 
 goog.provide('ol.format.IGC');
-goog.provide('ol.format.IGCZ');
 
 goog.require('goog.asserts');
 goog.require('ol.Feature');
@@ -81746,7 +81804,6 @@ ol.format.WMTSCapabilities.TM_PARSERS_ = ol.xml.makeStructureNS(
 // FIXME handle geolocation not supported
 
 goog.provide('ol.Geolocation');
-goog.provide('ol.GeolocationProperty');
 
 goog.require('ol.events');
 goog.require('ol.events.EventType');
@@ -85989,7 +86046,6 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
   var features = this.featureOverlay_.getSource().getFeaturesCollection();
   var deselected = [];
   var selected = [];
-  var change = false;
   if (set) {
     // Replace the currently selected feature(s) with the feature(s) at the
     // pixel, or clear the selected feature(s) if there is no feature at
@@ -86008,11 +86064,10 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
             return !this.multi_;
           }
         }, this, this.layerFilter_);
-    if (selected.length > 0 && features.getLength() == 1 &&
-        features.item(0) == selected[0]) {
-      // No change
+    if (selected.length > 0 && features.getLength() == 1 && features.item(0) == selected[0]) {
+      // No change; an already selected feature is selected again
+      selected.length = 0;
     } else {
-      change = true;
       if (features.getLength() !== 0) {
         deselected = Array.prototype.concat(features.getArray());
         features.clear();
@@ -86046,11 +86101,8 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
       features.remove(deselected[i]);
     }
     features.extend(selected);
-    if (selected.length > 0 || deselected.length > 0) {
-      change = true;
-    }
   }
-  if (change) {
+  if (selected.length > 0 || deselected.length > 0) {
     this.dispatchEvent(
         new ol.interaction.SelectEvent(ol.interaction.SelectEventType.SELECT,
             selected, deselected, mapBrowserEvent));
@@ -89820,110 +89872,6 @@ ol.source.OSM.ATTRIBUTION = new ol.Attribution({
       'contributors.'
 });
 
-goog.provide('ol.source.MapQuest');
-
-goog.require('goog.asserts');
-goog.require('ol.Attribution');
-goog.require('ol.source.OSM');
-goog.require('ol.source.XYZ');
-
-
-/**
- * @classdesc
- * Layer source for the MapQuest tile server.
- *
- * @constructor
- * @extends {ol.source.XYZ}
- * @param {olx.source.MapQuestOptions=} opt_options MapQuest options.
- * @api stable
- */
-ol.source.MapQuest = function(opt_options) {
-
-  var options = opt_options || {};
-  goog.asserts.assert(options.layer in ol.source.MapQuestConfig,
-      'known layer configured');
-
-  var layerConfig = ol.source.MapQuestConfig[options.layer];
-
-  /**
-   * Layer. Possible values are `osm`, `sat`, and `hyb`.
-   * @type {string}
-   * @private
-   */
-  this.layer_ = options.layer;
-
-  var url = options.url !== undefined ? options.url :
-      'https://otile{1-4}-s.mqcdn.com/tiles/1.0.0/' +
-      this.layer_ + '/{z}/{x}/{y}.jpg';
-
-  ol.source.XYZ.call(this, {
-    attributions: layerConfig.attributions,
-    cacheSize: options.cacheSize,
-    crossOrigin: 'anonymous',
-    logo: 'https://developer.mapquest.com/content/osm/mq_logo.png',
-    maxZoom: layerConfig.maxZoom,
-    reprojectionErrorThreshold: options.reprojectionErrorThreshold,
-    opaque: layerConfig.opaque,
-    tileLoadFunction: options.tileLoadFunction,
-    url: url
-  });
-
-};
-ol.inherits(ol.source.MapQuest, ol.source.XYZ);
-
-
-/**
- * @const
- * @type {ol.Attribution}
- */
-ol.source.MapQuest.TILE_ATTRIBUTION = new ol.Attribution({
-  html: 'Tiles Courtesy of <a href="http://www.mapquest.com/">MapQuest</a>'
-});
-
-
-/**
- * @type {Object.<string, {maxZoom: number, opaque: boolean, attributions: (Array.<ol.Attribution>)}>}
- */
-ol.source.MapQuestConfig = {
-  'osm': {
-    maxZoom: 19,
-    opaque: true,
-    attributions: [
-      ol.source.MapQuest.TILE_ATTRIBUTION,
-      ol.source.OSM.ATTRIBUTION
-    ]
-  },
-  'sat': {
-    maxZoom: 18,
-    opaque: true,
-    attributions: [
-      ol.source.MapQuest.TILE_ATTRIBUTION,
-      new ol.Attribution({
-        html: 'Portions Courtesy NASA/JPL-Caltech and ' +
-            'U.S. Depart. of Agriculture, Farm Service Agency'
-      })
-    ]
-  },
-  'hyb': {
-    maxZoom: 18,
-    opaque: false,
-    attributions: [
-      ol.source.MapQuest.TILE_ATTRIBUTION,
-      ol.source.OSM.ATTRIBUTION
-    ]
-  }
-};
-
-
-/**
- * Get the layer of the source, either `osm`, `sat`, or `hyb`.
- * @return {string} Layer.
- * @api
- */
-ol.source.MapQuest.prototype.getLayer = function() {
-  return this.layer_;
-};
-
 goog.provide('ol.ext.pixelworks');
 /** @typedef {function(*)} */
 ol.ext.pixelworks;
@@ -90867,8 +90815,8 @@ ol.source.Stamen = function(options) {
     attributions: ol.source.Stamen.ATTRIBUTIONS,
     cacheSize: options.cacheSize,
     crossOrigin: 'anonymous',
-    maxZoom: providerConfig.maxZoom,
-    minZoom: providerConfig.minZoom,
+    maxZoom: options.maxZoom != undefined ? options.maxZoom : providerConfig.maxZoom,
+    minZoom: options.minZoom != undefined ? options.minZoom : providerConfig.minZoom,
     opaque: layerConfig.opaque,
     reprojectionErrorThreshold: options.reprojectionErrorThreshold,
     tileLoadFunction: options.tileLoadFunction,
@@ -92356,7 +92304,6 @@ ol.tilegrid.WMTS.createFromCapabilitiesMatrixSet = function(matrixSet, opt_exten
 };
 
 goog.provide('ol.source.WMTS');
-goog.provide('ol.source.WMTSRequestEncoding');
 
 goog.require('goog.asserts');
 goog.require('ol.TileUrlFunction');
@@ -94190,8 +94137,8 @@ ngeo.profile = function(options) {
 
   var profile = function(selection) {
     selection.each(function(data) {
+      d3.select(this).selectAll('svg').remove();
       if (data === undefined) {
-        d3.select(this).selectAll('svg').remove();
         return;
       }
 
@@ -94263,7 +94210,7 @@ ngeo.profile = function(options) {
           .attr('dy', '.75em')
           .attr('transform', 'rotate(-90)')
           .style('fill', 'grey')
-          .text(yAxisLabel + ' (m)');
+          .text(yAxisLabel + ' [m]');
 
         gEnter.append('g')
           .attr('class', 'metas')
@@ -94386,7 +94333,7 @@ ngeo.profile = function(options) {
           .call(xAxis);
 
         g.select('.x.label')
-          .text(xAxisLabel + ' (' + xUnits + ')')
+          .text(xAxisLabel + ' [' + xUnits + ']')
           .style('fill', 'grey')
           .style('shape-rendering', 'crispEdges');
 
@@ -129472,11 +129419,9 @@ goog.require('ol.Collection');
 goog.require('ol.CollectionEvent');
 goog.require('ol.CollectionEventType');
 goog.require('ol.DeviceOrientation');
-goog.require('ol.DeviceOrientationProperty');
 goog.require('ol.DragBoxEvent');
 goog.require('ol.Feature');
 goog.require('ol.Geolocation');
-goog.require('ol.GeolocationProperty');
 goog.require('ol.Graticule');
 goog.require('ol.Image');
 goog.require('ol.ImageTile');
@@ -129495,7 +129440,6 @@ goog.require('ol.ObjectEventType');
 goog.require('ol.Observable');
 goog.require('ol.Overlay');
 goog.require('ol.OverlayPositioning');
-goog.require('ol.OverlayProperty');
 goog.require('ol.RasterOperationType');
 goog.require('ol.Sphere');
 goog.require('ol.Tile');
@@ -129515,8 +129459,6 @@ goog.require('ol.control.MousePosition');
 goog.require('ol.control.OverviewMap');
 goog.require('ol.control.Rotate');
 goog.require('ol.control.ScaleLine');
-goog.require('ol.control.ScaleLineProperty');
-goog.require('ol.control.ScaleLineUnits');
 goog.require('ol.control.Zoom');
 goog.require('ol.control.ZoomSlider');
 goog.require('ol.control.ZoomToExtent');
@@ -129537,7 +129479,6 @@ goog.require('ol.format.GMLBase');
 goog.require('ol.format.GPX');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.format.IGC');
-goog.require('ol.format.IGCZ');
 goog.require('ol.format.KML');
 goog.require('ol.format.MVT');
 goog.require('ol.format.OSMXML');
@@ -129645,7 +129586,6 @@ goog.require('ol.source.ImageMapGuide');
 goog.require('ol.source.ImageStatic');
 goog.require('ol.source.ImageVector');
 goog.require('ol.source.ImageWMS');
-goog.require('ol.source.MapQuest');
 goog.require('ol.source.OSM');
 goog.require('ol.source.Raster');
 goog.require('ol.source.RasterEvent');
@@ -129667,7 +129607,6 @@ goog.require('ol.source.VectorEvent');
 goog.require('ol.source.VectorEventType');
 goog.require('ol.source.VectorTile');
 goog.require('ol.source.WMTS');
-goog.require('ol.source.WMTSRequestEncoding');
 goog.require('ol.source.XYZ');
 goog.require('ol.source.Zoomify');
 goog.require('ol.style.Atlas');
@@ -139675,160 +139614,6 @@ goog.exportProperty(
     ol.source.ImageWMS.prototype,
     'updateParams',
     ol.source.ImageWMS.prototype.updateParams);
-
-goog.exportSymbol(
-    'ol.source.MapQuest',
-    ol.source.MapQuest);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'changed',
-    ol.source.MapQuest.prototype.changed);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'dispatchEvent',
-    ol.source.MapQuest.prototype.dispatchEvent);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'get',
-    ol.source.MapQuest.prototype.get);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getAttributions',
-    ol.source.MapQuest.prototype.getAttributions);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getKeys',
-    ol.source.MapQuest.prototype.getKeys);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getLayer',
-    ol.source.MapQuest.prototype.getLayer);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getLogo',
-    ol.source.MapQuest.prototype.getLogo);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getProjection',
-    ol.source.MapQuest.prototype.getProjection);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getProperties',
-    ol.source.MapQuest.prototype.getProperties);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getRevision',
-    ol.source.MapQuest.prototype.getRevision);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getState',
-    ol.source.MapQuest.prototype.getState);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getTileGrid',
-    ol.source.MapQuest.prototype.getTileGrid);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getTileLoadFunction',
-    ol.source.MapQuest.prototype.getTileLoadFunction);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getTileUrlFunction',
-    ol.source.MapQuest.prototype.getTileUrlFunction);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'getUrls',
-    ol.source.MapQuest.prototype.getUrls);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'on',
-    ol.source.MapQuest.prototype.on);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'once',
-    ol.source.MapQuest.prototype.once);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'refresh',
-    ol.source.MapQuest.prototype.refresh);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'set',
-    ol.source.MapQuest.prototype.set);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setAttributions',
-    ol.source.MapQuest.prototype.setAttributions);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setProperties',
-    ol.source.MapQuest.prototype.setProperties);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setRenderReprojectionEdges',
-    ol.source.MapQuest.prototype.setRenderReprojectionEdges);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setTileGridForProjection',
-    ol.source.MapQuest.prototype.setTileGridForProjection);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setTileLoadFunction',
-    ol.source.MapQuest.prototype.setTileLoadFunction);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setTileUrlFunction',
-    ol.source.MapQuest.prototype.setTileUrlFunction);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setUrl',
-    ol.source.MapQuest.prototype.setUrl);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'setUrls',
-    ol.source.MapQuest.prototype.setUrls);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'un',
-    ol.source.MapQuest.prototype.un);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'unByKey',
-    ol.source.MapQuest.prototype.unByKey);
-
-goog.exportProperty(
-    ol.source.MapQuest.prototype,
-    'unset',
-    ol.source.MapQuest.prototype.unset);
 
 goog.exportSymbol(
     'ol.source.OSM',

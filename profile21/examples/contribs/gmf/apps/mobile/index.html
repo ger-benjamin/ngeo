@@ -132,14 +132,15 @@
           </li>
         </ul>
       </div>
-      <gmf-authentication id="login" class="slide" data-header-title="{{'Login' | translate}}">
+      <gmf-authentication id="login" class="slide" data-header-title="{{'Login' | translate}}"
+        gmf-mobile-nav-back="authCtrl.gmfUser.username !== null">
       </gmf-authentication>
     </nav>
     <script src="../../build/mobile.js"></script>
     <script src="../../../../lib/watchwatchers.js"></script>
     <script>
       (function() {
-        var cacheVersion = '8702c95c5362d54489c88f9bdaacc2696ec60614';
+        var cacheVersion = '550df9c782ab5e8ef94fe46e5b3f8e2c95b95374';
         var urlElements = window.location.pathname.split('/');
 
         var angularLocaleScriptUrlElements = urlElements.slice(0, urlElements.length - 3);
