@@ -94910,6 +94910,1071 @@ ngeo.AttributesController.prototype.handleFeaturePropertyChange_ = function(
 
 ngeo.module.controller('ngeoAttributesController', ngeo.AttributesController);
 
+goog.provide('ngeo.LayerHelper');
+
+goog.require('ngeo');
+goog.require('ol.Collection');
+goog.require('ol.array');
+goog.require('ol.format.WMTSCapabilities');
+goog.require('ol.layer.Group');
+goog.require('ol.layer.Image');
+goog.require('ol.layer.Tile');
+goog.require('ol.source.ImageWMS');
+goog.require('ol.source.WMTS');
+
+
+/**
+ * Provides help functions that helps you to create and manage layers.
+ * @param {angular.$q} $q Angular promises/deferred service.
+ * @param {angular.$http} $http Angular http service.
+ * @constructor
+ * @ngdoc service
+ * @ngname ngeoLayerHelper
+ * @ngInject
+ */
+ngeo.LayerHelper = function($q, $http) {
+
+  /**
+   * @type {angular.$q}
+   * @private
+   */
+  this.$q_ = $q;
+
+  /**
+   * @type {angular.$http}
+   * @private
+   */
+  this.$http_ = $http;
+};
+
+
+/**
+ * @const
+ */
+ngeo.LayerHelper.GROUP_KEY = 'groupName';
+
+
+/**
+ * Create and return a basic WMS layer with only a source URL and a dot
+ * separated layers names (see {@link ol.source.ImageWMS}).
+ * @param {string} sourceURL The source URL.
+ * @param {string} sourceLayersName A dot separated names string.
+ * @param {string=} opt_serverType Type of the server ("mapserver",
+ *     "geoserver", "qgisserver", …).
+ * @param {string=} opt_time time parameter for layer queryable by time/periode
+ * @return {ol.layer.Image} WMS Layer.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
+    sourceLayersName, opt_serverType, opt_time) {
+  var params = {'LAYERS': sourceLayersName};
+  var olServerType;
+  if (opt_time) {
+    params['TIME'] = opt_time;
+  }
+  if (opt_serverType) {
+    params['SERVERTYPE'] = opt_serverType;
+    // OpenLayers expects 'qgis' insteads of 'qgisserver'
+    olServerType = opt_serverType.replace('qgisserver', 'qgis');
+  }
+  var layer = new ol.layer.Image({
+    source: new ol.source.ImageWMS({
+      url: sourceURL,
+      params: params,
+      serverType: olServerType
+    })
+  });
+  return layer;
+};
+
+
+/**
+ * Create and return a promise that provides a WMTS layer with source on
+ * success, no layer else.
+ * The WMTS layer source will be configured by the capabilities that are
+ * loaded from the given capabilitiesUrl.
+ * The style object described in the capabilities for this layer will be added
+ * as key 'capabilitiesStyles' as param of the new layer.
+ * @param {string} capabilitiesURL The getCapabilities url.
+ * @param {string} layerName The name of the layer.
+ * @param {Object.<string, string>=} opt_dimensions WMTS dimensions.
+ * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
+ *     no layer else.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(capabilitiesURL, layerName, opt_dimensions) {
+  var parser = new ol.format.WMTSCapabilities();
+  var layer = new ol.layer.Tile();
+  var $q = this.$q_;
+
+  return this.$http_.get(capabilitiesURL).then(function(response) {
+    var result;
+    if (response.data) {
+      result = parser.read(response.data);
+    }
+    if (result !== undefined) {
+      var options = ol.source.WMTS.optionsFromCapabilities(result, {
+        layer: layerName
+      });
+      var source = new ol.source.WMTS(options);
+      if (opt_dimensions) {
+        source.updateDimensions(opt_dimensions);
+      }
+      layer.setSource(source);
+
+      // Add styles from capabilities as param of the layer
+      var layers = result['Contents']['Layer'];
+      var l = ol.array.find(layers, function(elt, index, array) {
+        return elt['Identifier'] == layerName;
+      });
+      layer.set('capabilitiesStyles', l['Style']);
+
+      return $q.resolve(layer);
+    }
+    return $q.reject('Failed to get WMTS capabilities from ' +
+        capabilitiesURL);
+  });
+};
+
+
+/**
+ * Create and return an ol.layer.Group. You can pass a collection of layers to
+ * directly add them in the returned group.
+ * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
+ * returned Group.
+ * @return {ol.layer.Group} Layer group.
+ * @export
+ */
+ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
+  var group = new ol.layer.Group();
+  if (goog.isDefAndNotNull(opt_layers)) {
+    group.setLayers(opt_layers);
+  }
+  return group;
+};
+
+
+/**
+ * Retrieve (or create if it doesn't exist) and return a group of layer from
+ * the base array of layers of a map. The given name is used as unique
+ * identifier. If the group is created, it will be automatically added to
+ * the map.
+ * @param {ol.Map} map A map.
+ * @param {string} groupName The name of the group.
+ * @return {ol.layer.Group} The group corresponding to the given name.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getGroupFromMap = function(map, groupName) {
+  var groups = map.getLayerGroup().getLayers();
+  var group;
+  groups.getArray().some(function(exitingGroup) {
+    if (exitingGroup.get(ngeo.LayerHelper.GROUP_KEY) === groupName) {
+      group = /** @type {ol.layer.Group} */ (exitingGroup);
+      return true;
+    } else {
+      return false;
+    }
+  });
+  if (!group) {
+    group = this.createBasicGroup();
+    group.set(ngeo.LayerHelper.GROUP_KEY, groupName);
+    map.addLayer(group);
+  }
+  return group;
+};
+
+
+/**
+ * Get an array of all layers in a group. The group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @return {Array.<ol.layer.Layer>} Layers.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
+  return this.getFlatLayers_(layer, []);
+};
+
+
+/**
+ * Get an array of all layers in a group. The group can contain multiple levels
+ * of others groups.
+ * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
+ * @param {Array.<ol.layer.Base>} array An array to add layers.
+ * @return {Array.<ol.layer.Layer>} Layers.
+ * @private
+ */
+ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
+  if (layer instanceof ol.layer.Group) {
+    var sublayers = layer.getLayers();
+    sublayers.forEach(function(l) {
+      this.getFlatLayers_(l, array);
+    }, this);
+  } else {
+    if (array.indexOf(layer) < 0) {
+      array.push(layer);
+    }
+  }
+  return array;
+};
+
+
+/**
+ * Get a layer that has a `layerName` property equal to a given layer name from
+ * an array of layers. If one of the layers in the array is a group, then the
+ * layers contained in that group are searched as well.
+ * @param {string} layerName The name of the layer we're looking for.
+ * @param {Array.<ol.layer.Base>} layers Layers.
+ * @return {?ol.layer.Base} Layer.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getLayerByName = function(layerName, layers) {
+  var found = null;
+  layers.some(function(layer) {
+    if (layer instanceof ol.layer.Group) {
+      var sublayers = layer.getLayers().getArray();
+      found = this.getLayerByName(layerName, sublayers);
+    } else if (layer.get('layerName') === layerName) {
+      found = layer;
+    }
+    return !!found;
+  }, this);
+
+  return found;
+};
+
+
+/**
+ * Get the WMTS legend URL for the given layer.
+ * @param {ol.layer.Tile} layer Tile layer as returned by the
+ * ngeo layerHelper service.
+ * @return {?string} The legend URL or null.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getWMTSLegendURL = function(layer) {
+  // FIXME case of multiple styles ?  case of multiple legendUrl ?
+  var url;
+  var styles = layer.get('capabilitiesStyles');
+  if (styles !== undefined) {
+    var legendURL = styles[0]['legendURL'];
+    if (legendURL !== undefined) {
+      url = legendURL[0]['href'];
+    }
+  }
+  return url || null;
+};
+
+
+/**
+ * Get the WMS legend URL for the given node.
+ * @param {string} url The base url of the wms service.
+ * @param {string} layerName The name of a wms layer.
+ * @param {number} scale A scale.
+ * @param {string=} opt_legendRule rule parameters to add to the returned URL.
+ * @return {?string} The legend URL or null.
+ * @export
+ */
+ngeo.LayerHelper.prototype.getWMSLegendURL = function(url,
+    layerName, scale, opt_legendRule) {
+  if (!url) {
+    return null;
+  }
+  url = goog.uri.utils.setParam(url, 'FORMAT', 'image/png');
+  url = goog.uri.utils.setParam(url, 'TRANSPARENT', true);
+  url = goog.uri.utils.setParam(url, 'SERVICE', 'wms');
+  url = goog.uri.utils.setParam(url, 'VERSION', '1.1.1');
+  url = goog.uri.utils.setParam(url, 'REQUEST', 'GetLegendGraphic');
+  url = goog.uri.utils.setParam(url, 'LAYER', layerName);
+  url = goog.uri.utils.setParam(url, 'SCALE', scale);
+  if (opt_legendRule !== undefined) {
+    url = goog.uri.utils.setParam(url, 'RULE', opt_legendRule);
+  }
+  return url;
+};
+
+
+/**
+ * Returns if this layer is visible at the current resolution.
+ * @param {ol.layer.Base} layer Layer.
+ * @param {ol.Map} map Map.
+ * @return {boolean} Is the layer currently visible?
+ */
+ngeo.LayerHelper.prototype.isLayerVisible = function(layer, map) {
+  if (!layer.getVisible()) {
+    return false;
+  }
+
+  var currentResolution = map.getView().getResolution();
+  return currentResolution > layer.getMinResolution() &&
+      currentResolution < layer.getMaxResolution();
+};
+
+
+ngeo.module.service('ngeoLayerHelper', ngeo.LayerHelper);
+
+goog.provide('ngeo.Query');
+
+goog.require('ngeo');
+goog.require('ngeo.LayerHelper');
+goog.require('ol.format.WFS');
+goog.require('ol.format.WMSGetFeatureInfo');
+goog.require('ol.source.ImageWMS');
+goog.require('ol.source.TileWMS');
+goog.require('goog.uri.utils');
+
+
+/**
+ * @enum {string}
+ */
+ngeo.QueryInfoFormatType = {
+  GML: 'application/vnd.ogc.gml'
+};
+
+
+/**
+ * @typedef {{
+ *     resultSource: (ngeox.QueryResultSource),
+ *     source: (ngeox.QuerySource)
+ * }}
+ */
+ngeo.QueryCacheItem;
+
+
+/**
+ * @typedef {{
+ *     wms: (Object.<string, Array.<ngeo.QueryCacheItem>>),
+ *     wfs: (Object.<string, Array.<ngeo.QueryCacheItem>>)
+ * }}
+ */
+ngeo.QueryableSources;
+
+
+/**
+ * The `ngeoQueryResult` is the value service where the features of the query
+ * result are added.
+ */
+ngeo.module.value('ngeoQueryResult', /** @type {ngeox.QueryResult} */ ({
+  sources: [],
+  total: 0
+}));
+
+
+/**
+ * The Query service provides a way to send WMS GetFeatureInfo and WFS GetFeature
+ * requests from visible layer objects within a map. Those do not necessarily need to have
+ * a WMS source. The Query service requires source configuration in order
+ * for layers to actually be considered queryable.
+ *
+ * To know more about the specification of a source configuration, see
+ * `ngeox.QuerySource`
+ *
+ * @constructor
+ * @param {angular.$http} $http Angular $http service.
+ * @param {angular.$q} $q The Angular $q service.
+ * @param {ngeox.QueryResult} ngeoQueryResult The ngeo query result service.
+ * @param {ngeox.QueryOptions|undefined} ngeoQueryOptions The options to
+ *     configure the ngeo query service with.
+ * @param {ngeo.LayerHelper} ngeoLayerHelper Ngeo Layer Helper.
+ * @ngdoc service
+ * @ngname ngeoQuery
+ * @ngInject
+ */
+ngeo.Query = function($http, $q, ngeoQueryResult, ngeoQueryOptions,
+    ngeoLayerHelper) {
+
+  var options = ngeoQueryOptions !== undefined ? ngeoQueryOptions : {};
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.limit_ = options.limit !== undefined ? options.limit : 50;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.sourceIdsProperty_ = options.sourceIdsProperty !== undefined ?
+      options.sourceIdsProperty : ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.tolerancePx_ = options.tolerance !== undefined ?
+      options.tolerance : 3;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.featureNS_ = options.featureNS !== undefined ?
+      options.featureNS : 'http://mapserver.gis.umn.edu/mapserver';
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.featurePrefix_ = options.featurePrefix !== undefined ?
+      options.featurePrefix : 'feature';
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.geometryName_ = options.geometryName !== undefined ?
+      options.geometryName : 'the_geom';
+
+  /**
+   * @type {ngeo.LayerHelper}
+   * @private
+   */
+  this.ngeoLayerHelper_ = ngeoLayerHelper;
+
+  /**
+   * @type {angular.$http}
+   * @private
+   */
+  this.$http_ = $http;
+
+  /**
+   * @type {angular.$q}
+   * @private
+   */
+  this.$q_ = $q;
+
+  /**
+   * @type {ngeox.QueryResult}
+   * @private
+   */
+  this.result_ = ngeoQueryResult;
+
+  /**
+   * @type {Array.<ngeox.QuerySource>}
+   * @private
+   */
+  this.sources_ = [];
+
+  /**
+   * @type {Object.<number|string, ngeo.QueryCacheItem>}
+   * @private
+   */
+  this.cache_ = {};
+
+  /**
+   * Promises that can be resolved to cancel started requests.
+   * @type {Array.<angular.$q.Deferred>}
+   * @private
+   */
+  this.requestCancelers_ = [];
+};
+
+
+/**
+ * @const
+ * @private
+ */
+ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_ = 'querySourceIds';
+
+
+/**
+ * Adds a new source to the query service.
+ *
+ * A source must at least have an `id` configured.  That id is then used to
+ * associate the corresponding layer object within a map.
+ *
+ * A source will require a `ol.source.ImageWMS` or `ol.source.TileWMS` object.
+ * You can either set it directly in the config, or use the one from a given
+ * layer or let the query service create one for you using other source config
+ * such as `url` and `params`.
+ *
+ * A source can be set with either a `format` and/or `infoFormat`, which will
+ * determine how the returned features of a query will be read.
+ *
+ * This method will also create a result entry in the `ngeoQueryResult`
+ * value service.
+ *
+ * @param {ngeox.QuerySource} source The source to add to the query service.
+ * @export
+ */
+ngeo.Query.prototype.addSource = function(source) {
+  var sourceId = source.id;
+
+  goog.asserts.assert(sourceId, 'source.id should be thruthy');
+  goog.asserts.assert(!this.cache_[sourceId],
+      'no other source with the same id should be present');
+
+  // == wmsSource ==
+  // if the source doesn't have a wmsSource property set, it must at least have
+  // a layer that has one or have the required configuration options in order
+  // to create one.
+  if (!source.wmsSource) {
+    if (source.layer &&
+        (source.layer instanceof ol.layer.Image ||
+         source.layer instanceof ol.layer.Tile)) {
+      var wmsSource = source.layer.getSource();
+      if (wmsSource &&
+          (wmsSource instanceof ol.source.ImageWMS ||
+           wmsSource instanceof ol.source.TileWMS)) {
+        source.wmsSource =
+            /** @type {ol.source.ImageWMS|ol.source.TileWMS} */ (wmsSource);
+      }
+    } else {
+      var url = source.url;
+      var params = source.params;
+      goog.asserts.assert(url,
+          'url must be set when no layer or wmsSource is set in the source');
+      goog.asserts.assert(params,
+          'parmas must be set when no layer or wmsSource is set in the source');
+      source.wmsSource = new ol.source.ImageWMS({
+        url: url,
+        params: params
+      });
+    }
+  }
+  goog.asserts.assert(source.wmsSource, 'wmsSource should be thruthy');
+
+  // == format ==
+  if (!source.format) {
+    // GML is the default infoFormat if the source doesn't have one defined
+    if (!source.infoFormat) {
+      source.infoFormat = ngeo.QueryInfoFormatType.GML;
+    }
+
+    var layers = source.wmsSource.getParams()['LAYERS'].split(',');
+
+    if (source.infoFormat === ngeo.QueryInfoFormatType.GML) {
+      source.format = new ol.format.WMSGetFeatureInfo({
+        layers: layers
+      });
+    }
+  } else if (!source.infoFormat) {
+    // == infoFormat ==
+    var format = source.format;
+    if (format instanceof ol.format.WMSGetFeatureInfo) {
+      source.infoFormat = ngeo.QueryInfoFormatType.GML;
+    }
+  }
+  goog.asserts.assert(source.format, 'format should be thruthy');
+
+  this.sources_.push(source);
+
+  var sourceLabel = source.label !== undefined ? source.label : sourceId;
+
+  var sourceIdentifierAttributeField =
+      source.identifierAttributeField !== undefined ?
+      source.identifierAttributeField : sourceId;
+
+  var resultSource = /** @type {ngeox.QueryResultSource} */ ({
+    'features': [],
+    'id': sourceId,
+    'identifierAttributeField': sourceIdentifierAttributeField,
+    'label': sourceLabel,
+    'pending': false,
+    'queried': false
+  });
+
+  this.result_.sources.push(resultSource);
+
+  var cacheItem = {
+    'source': source,
+    'resultSource': resultSource
+  };
+  this.cache_[sourceId] = cacheItem;
+};
+
+
+/**
+ * Add multiple sources at once in the order they are given.
+ * @param {Array.<ngeox.QuerySource>} sources The sources to add to the query
+ *     service.
+ * @export
+ */
+ngeo.Query.prototype.addSources = function(sources) {
+  sources.forEach(this.addSource, this);
+};
+
+
+/**
+ * Clear the results.
+ * @export
+ */
+ngeo.Query.prototype.clear = function() {
+  this.clearResult_();
+};
+
+
+/**
+ * Issue a new request using a given map and a given object, which can be
+ * a coordinate or extent.
+ *
+ * When given a coordinate, WMS GetFeatureInfo or WFS GetFeature requests will
+ * be made. If a layer supports WFS, a GetFeature request with a bbox around the
+ * coordinate are issued.
+ *
+ * For an extent, WFS GetFeature is used.
+ *
+ * @param {ol.Map} map The ol3 map object to fetch the layers from.
+ * @param {ol.Coordinate|ol.Extent} object The coordinate or extent to issue
+ *     the request with.
+ * @export
+ */
+ngeo.Query.prototype.issue = function(map, object) {
+  this.cancelStillRunningRequests_();
+  this.clearResult_();
+
+  if (object.length === 2) {
+    this.issueIdentifyFeaturesRequests_(map, object);
+  } else {
+    goog.asserts.assert(object.length === 4, 'expecting extent');
+    this.issueGetFeatureRequests_(map, object);
+  }
+};
+
+
+/**
+ * Issue WMS GetFeatureInfo or WFS GetFeature requests using the given
+ * coordinate and map.
+ * For each visible layer of the map, if that layer has a source configured
+ * within this query service, then a query will be sent and the results
+ * will be stocked in the `ngeoQueryResult`.
+ *
+ * For WMS GetFeatureInfo, gf multiple sources share the same url and use GML
+ * as info format, then only one request will be sent for all these sources.
+ *
+ * NOTE: Only GML info format are currently supported.
+ *
+ * @param {ol.Map} map The ol3 map object to fetch the layers from.
+ * @param {ol.Coordinate} coordinate The coordinate to issue the request with.
+ * @private
+ */
+ngeo.Query.prototype.issueIdentifyFeaturesRequests_ = function(map, coordinate) {
+  var sources = this.getQueryableSources_(map, false);
+
+  this.doGetFeatureInfoRequests_(sources.wms, coordinate, map);
+  this.doGetFeatureRequestsWithCoordinate_(sources.wfs, coordinate, map);
+};
+
+
+/**
+ * Issue WFS GetFeature requests using the given extent for each visible layer
+ * of the map.
+ *
+ * @param {ol.Map} map The ol3 map object to fetch the layers from.
+ * @param {ol.Extent} extent The coordinate to issue the request with.
+ * @private
+ */
+ngeo.Query.prototype.issueGetFeatureRequests_ = function(map, extent) {
+  var sources = this.getQueryableSources_(map, true);
+  this.doGetFeatureRequests_(sources.wfs, extent, map);
+};
+
+
+/**
+ * @param {ol.Map} map Map.
+ * @param {boolean} wfsOnly Only get sources queryable via WFS.
+ * @return {ngeo.QueryableSources} Queryable sources.
+ * @private
+ */
+ngeo.Query.prototype.getQueryableSources_ = function(map, wfsOnly) {
+
+  var wmsItemsByUrl =
+      /** @type {Object.<string, Array.<ngeo.QueryCacheItem>>} */ ({});
+  var wfsItemsByUrl =
+      /** @type {Object.<string, Array.<ngeo.QueryCacheItem>>} */ ({});
+
+  var layers = this.ngeoLayerHelper_.getFlatLayers(map.getLayerGroup());
+
+  layers.forEach(function(layer) {
+
+    // Skip layers that are not visible
+    if (!this.ngeoLayerHelper_.isLayerVisible(layer, map)) {
+      return;
+    }
+
+    // Skip layers that don't have one or more sources configured
+    var ids = this.getLayerSourceIds_(layer);
+    if (ids.length === 0) {
+      return;
+    }
+
+    var infoFormat;
+    var url;
+    var item;
+    for (var i = 0, len = ids.length; i < len; i++) {
+      var id = ids[i];
+      item = this.cache_[id];
+      if (!item) {
+        continue;
+      }
+
+      // If `validateLayerParams` is set, then the source config layer in the
+      // LAYERS params must be in the current LAYERS params of the layer
+      // wms source object.
+      if (item.source.validateLayerParams) {
+        goog.asserts.assert(
+            layer instanceof ol.layer.Image ||
+            layer instanceof ol.layer.Tile,
+            'The layer should be an Image or Tile when using the ' +
+            'validateLayerParams option.'
+        );
+        var layerSource = layer.getSource();
+        goog.asserts.assert(
+            layerSource instanceof ol.source.ImageWMS ||
+            layerSource instanceof ol.source.TileWMS,
+            'The layer source should be a WMS one when using the ' +
+            'validateLayerParams option.'
+        );
+        var layerLayers = layerSource.getParams()['LAYERS'].split(',');
+        var cfgLayer = item.source.wmsSource.getParams()['LAYERS'];
+        goog.asserts.assert(cfgLayer.indexOf(',') === -1,
+            'The LAYERS param contains more than one item');
+        if (layerLayers.indexOf(cfgLayer) === -1) {
+          continue;
+        }
+      }
+
+      item['resultSource'].pending = true;
+      item['resultSource'].queried = true;
+
+      if (item.source.wfsQuery) {
+        // use WFS GetFeature
+        url = item.source.urlWfs || item.source.wmsSource.getUrl();
+        goog.asserts.assertString(url);
+        if (!wfsItemsByUrl[url]) {
+          wfsItemsByUrl[url] = [];
+        }
+        wfsItemsByUrl[url].push(item);
+      } else if (!wfsOnly) {
+        // use WMF GetFeatureInfo
+        infoFormat = item.source.infoFormat;
+
+        // Sources that use GML as info format are combined together if they
+        // share the same server url
+        if (infoFormat === ngeo.QueryInfoFormatType.GML) {
+          url = item.source.wmsSource.getUrl();
+          goog.asserts.assertString(url);
+          if (!wmsItemsByUrl[url]) {
+            wmsItemsByUrl[url] = [];
+          }
+          wmsItemsByUrl[url].push(item);
+        } else {
+          // TODO - support other kinds of infoFormats
+          item['resultSource'].pending = false;
+          item['resultSource'].queried = false;
+        }
+      }
+    }
+  }, this);
+
+  return {
+    wms: wmsItemsByUrl,
+    wfs: wfsItemsByUrl
+  };
+};
+
+
+/**
+ * @param {Object.<string, Array.<ngeo.QueryCacheItem>>} wmsItemsByUrl Queryable
+ *    layers for GetFeatureInfo
+ * @param {ol.Coordinate} coordinate Query coordinate
+ * @param {ol.Map} map Map
+ * @private
+ */
+ngeo.Query.prototype.doGetFeatureInfoRequests_ = function(
+    wmsItemsByUrl, coordinate, map) {
+  var view = map.getView();
+  var projCode = view.getProjection().getCode();
+  var resolution = /** @type {number} */(view.getResolution());
+
+  angular.forEach(wmsItemsByUrl, function(items) {
+    var infoFormat = items[0].source.infoFormat;
+    var wmsGetFeatureInfoUrl = items[0].source.wmsSource.getGetFeatureInfoUrl(
+        coordinate, resolution, projCode, {
+          'INFO_FORMAT': infoFormat,
+          'FEATURE_COUNT': this.limit_
+        });
+
+    goog.asserts.assert(
+        wmsGetFeatureInfoUrl, 'WMS GetFeatureInfo url should be thruty');
+
+    var layers = this.getLayersForItems_(items);
+    var lyrStr = layers.join(',');
+
+    wmsGetFeatureInfoUrl =
+        goog.uri.utils.setParam(wmsGetFeatureInfoUrl, 'LAYERS', lyrStr);
+    wmsGetFeatureInfoUrl =
+        goog.uri.utils.setParam(wmsGetFeatureInfoUrl, 'QUERY_LAYERS', lyrStr);
+
+    var canceler = this.registerCanceler_();
+    this.$http_.get(wmsGetFeatureInfoUrl, {timeout: canceler.promise})
+        .then(function(items, response) {
+          items.forEach(function(item) {
+            var format = item.source.format;
+            var features = format.readFeatures(response.data);
+            this.setUniqueIds_(features, item.source.id);
+            item['resultSource'].pending = false;
+            item['resultSource'].features = features;
+            this.result_.total += features.length;
+          }, this);
+        }.bind(this, items));
+  }, this);
+};
+
+
+/**
+ * @param {Object.<string, Array.<ngeo.QueryCacheItem>>} wfsItemsByUrl Queryable
+ *    layers for GetFeature
+ * @param {ol.Coordinate} coordinate Query coordinate
+ * @param {ol.Map} map Map
+ * @private
+ */
+ngeo.Query.prototype.doGetFeatureRequestsWithCoordinate_ = function(
+    wfsItemsByUrl, coordinate, map) {
+  var view = map.getView();
+  var bbox = this.getQueryBbox_(coordinate, view);
+  this.doGetFeatureRequests_(wfsItemsByUrl, bbox, map);
+};
+
+
+/**
+ * @param {Object.<string, Array.<ngeo.QueryCacheItem>>} wfsItemsByUrl Queryable
+ *    layers for GetFeature
+ * @param {ol.Extent} bbox Query bbox
+ * @param {ol.Map} map Map
+ * @private
+ */
+ngeo.Query.prototype.doGetFeatureRequests_ = function(
+    wfsItemsByUrl, bbox, map) {
+  var view = map.getView();
+  var projCode = view.getProjection().getCode();
+  var wfsFormat = new ol.format.WFS();
+  var xmlSerializer = new XMLSerializer();
+
+  angular.forEach(wfsItemsByUrl, function(items, url) {
+    items.forEach(function(item) {
+      var layers = this.getLayersForItem_(item);
+
+      var featureRequestXml = wfsFormat.writeGetFeature({
+        srsName: projCode,
+        featureNS: this.featureNS_,
+        featurePrefix: this.featurePrefix_,
+        featureTypes: layers,
+        outputFormat: 'GML3',
+        bbox: bbox,
+        geometryName: this.geometryName_,
+        maxFeatures: this.limit_
+      });
+
+      var featureRequest = xmlSerializer.serializeToString(featureRequestXml);
+      var canceler = this.registerCanceler_();
+      this.$http_.post(url, featureRequest, {timeout: canceler.promise})
+          .then(function(response) {
+            var sourceFormat = new ol.format.WFS({
+              featureType: layers,
+              featureNS: this.featureNS_
+            });
+            var features = sourceFormat.readFeatures(response.data);
+            this.setUniqueIds_(features, item.source.id);
+            item['resultSource'].pending = false;
+            item['resultSource'].features = features;
+            this.result_.total += features.length;
+          }.bind(this));
+    }.bind(this));
+  }.bind(this));
+};
+
+/**
+ * Clear every features for all result sources and reset the total counter
+ * as well.
+ * @private
+ */
+ngeo.Query.prototype.clearResult_ = function() {
+  this.result_.total = 0;
+  this.result_.sources.forEach(function(source) {
+    source.features.length = 0;
+    source.pending = false;
+    source.queried = false;
+  }, this);
+};
+
+
+/**
+ * Returns the source ids from an ol3 layer object.
+ * @param {ol.layer.Base} layer The ol3 layer object.
+ * @return {Array.<number|string>} ids The ids of the sources bound to that
+ *     layer.
+ * @private
+ */
+ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
+  var ids = layer.get(this.sourceIdsProperty_) || [];
+  goog.asserts.assertArray(ids);
+  var clone = ids.slice();
+  return clone;
+};
+
+
+/**
+ * @param {ngeo.QueryCacheItem} item Cache item
+ * @return {Array.<string>} Layer names
+ * @private
+ */
+ngeo.Query.prototype.getLayersForItem_ = function(item) {
+  return item.source.wmsSource.getParams()['LAYERS'].split(',');
+};
+
+
+/**
+ * @param {Array.<ngeo.QueryCacheItem>} items Cache items
+ * @return {Array.<string>} Layer names
+ * @private
+ */
+ngeo.Query.prototype.getLayersForItems_ = function(items) {
+  var layers = this.getLayersForItem_(items[0]);
+  for (var i = 1, len = items.length; i < len; i++) {
+    layers = layers.concat(this.getLayersForItem_(items[i]));
+  }
+  return layers;
+};
+
+
+/**
+ * Make sure that feature ids are unique, because the same features might
+ * be returned for different layers.
+ * @param {Array.<ol.Feature>} features Features
+ * @param {string|number} sourceId Source id.
+ * @private
+ */
+ngeo.Query.prototype.setUniqueIds_ = function(features, sourceId) {
+  features.forEach(function(feature) {
+    if (feature.getId() !== undefined) {
+      var id = sourceId + '_' + feature.getId();
+      feature.setId(id);
+    }
+  });
+};
+
+
+/**
+ * Construct a bbox around a coordinate with a tolerance relative to the
+ * current resolution.
+ * @param {ol.Coordinate} coordinate Coordinate
+ * @param {ol.View} view View
+ * @return {ol.Extent} Bbox
+ * @private
+ */
+ngeo.Query.prototype.getQueryBbox_ = function(coordinate, view) {
+  var tolerance = this.tolerancePx_ * view.getResolution();
+
+  return ol.extent.buffer(
+      ol.extent.createOrUpdateFromCoordinate(coordinate),
+      tolerance);
+};
+
+
+/**
+ * @return {angular.$q.Deferred} A deferred that can be resolved to cancel a
+ *    HTTP request.
+ * @private
+ */
+ngeo.Query.prototype.registerCanceler_ = function() {
+  var canceler = this.$q_.defer();
+  this.requestCancelers_.push(canceler);
+  return canceler;
+};
+
+
+/**
+ * @private
+ */
+ngeo.Query.prototype.cancelStillRunningRequests_ = function() {
+  this.requestCancelers_.forEach(function(canceler) {
+    canceler.resolve();
+  });
+  this.requestCancelers_.length = 0;
+};
+
+
+ngeo.module.service('ngeoQuery', ngeo.Query);
+
+goog.provide('ngeo.bboxQueryDirective');
+
+goog.require('ngeo');
+goog.require('ngeo.Query');
+goog.require('ol.interaction.DragBox');
+
+
+/**
+ * Provides a "bbox query" directive.
+ *
+ * This directive is responsible of binding a map and the ngeo query service
+ * together. While active, drawing a bbox while CTRL or the 'meta' key is pressed
+ * issues a request to the query service.
+ *
+ * This directive doesn't require to be rendered in a visible DOM element, but
+ * it could be used with a ngeo-btn to manage the activation of the directive.
+ * See below an example without any use of UI:
+ *
+ * Example:
+ *
+ *      <span
+ *        ngeo-bbox-query=""
+ *        ngeo-bbox-query-map="::ctrl.map"
+ *        ngeo-bbox-query-active="ctrl.queryActive">
+ *      </span>
+ *
+ * See the live example: {@link ../examples/bboxquery.html}
+ *
+ * @param {ngeo.Query} ngeoQuery The ngeo Query service.
+ * @return {angular.Directive} The Directive Definition Object.
+ * @ngInject
+ * @ngdoc directive
+ * @ngname ngeoBboxQuery
+ */
+ngeo.bboxQueryDirective = function(ngeoQuery) {
+  return {
+    restrict: 'A',
+    scope: false,
+    link: function(scope, elem, attrs) {
+      /**
+       * @type {ol.Map}
+       */
+      var map = scope.$eval(attrs['ngeoBboxQueryMap']);
+
+      var interaction = new ol.interaction.DragBox({
+        condition: ol.events.condition.platformModifierKeyOnly
+      });
+
+      /**
+       * Called when a bbox is drawn while this controller is active. Issue
+       * a request to the query service using the extent that was drawn.
+       * @param {ol.DragBoxEvent} evt Event.
+       */
+      var handleBoxEnd = function(evt) {
+        var extent = interaction.getGeometry().getExtent();
+        ngeoQuery.issue(map, extent);
+      };
+      interaction.on('boxend', handleBoxEnd);
+
+      // watch 'active' property -> activate/deactivate accordingly
+      scope.$watch(attrs['ngeoBboxQueryActive'],
+          function(newVal, oldVal) {
+            if (newVal) {
+              // activate
+              map.addInteraction(interaction);
+            } else {
+              // deactivate
+              map.removeInteraction(interaction);
+              ngeoQuery.clear();
+            }
+          }
+      );
+    }
+  };
+};
+
+ngeo.module.directive('ngeoBboxQuery', ngeo.bboxQueryDirective);
+
 goog.provide('ngeo.BtnGroupController');
 goog.provide('ngeo.btnDirective');
 goog.provide('ngeo.btngroupDirective');
@@ -108397,720 +109462,6 @@ ngeo.mapDirective = function() {
 };
 
 ngeo.module.directive('ngeoMap', ngeo.mapDirective);
-
-goog.provide('ngeo.LayerHelper');
-
-goog.require('ngeo');
-goog.require('ol.Collection');
-goog.require('ol.array');
-goog.require('ol.format.WMTSCapabilities');
-goog.require('ol.layer.Group');
-goog.require('ol.layer.Image');
-goog.require('ol.layer.Tile');
-goog.require('ol.source.ImageWMS');
-goog.require('ol.source.WMTS');
-
-
-/**
- * Provides help functions that helps you to create and manage layers.
- * @param {angular.$q} $q Angular promises/deferred service.
- * @param {angular.$http} $http Angular http service.
- * @constructor
- * @ngdoc service
- * @ngname ngeoLayerHelper
- * @ngInject
- */
-ngeo.LayerHelper = function($q, $http) {
-
-  /**
-   * @type {angular.$q}
-   * @private
-   */
-  this.$q_ = $q;
-
-  /**
-   * @type {angular.$http}
-   * @private
-   */
-  this.$http_ = $http;
-};
-
-
-/**
- * @const
- */
-ngeo.LayerHelper.GROUP_KEY = 'groupName';
-
-
-/**
- * Create and return a basic WMS layer with only a source URL and a dot
- * separated layers names (see {@link ol.source.ImageWMS}).
- * @param {string} sourceURL The source URL.
- * @param {string} sourceLayersName A dot separated names string.
- * @param {string=} opt_serverType Type of the server ("mapserver",
- *     "geoserver", "qgisserver", …).
- * @param {string=} opt_time time parameter for layer queryable by time/periode
- * @return {ol.layer.Image} WMS Layer.
- * @export
- */
-ngeo.LayerHelper.prototype.createBasicWMSLayer = function(sourceURL,
-    sourceLayersName, opt_serverType, opt_time) {
-  var params = {'LAYERS': sourceLayersName};
-  var olServerType;
-  if (opt_time) {
-    params['TIME'] = opt_time;
-  }
-  if (opt_serverType) {
-    params['SERVERTYPE'] = opt_serverType;
-    // OpenLayers expects 'qgis' insteads of 'qgisserver'
-    olServerType = opt_serverType.replace('qgisserver', 'qgis');
-  }
-  var layer = new ol.layer.Image({
-    source: new ol.source.ImageWMS({
-      url: sourceURL,
-      params: params,
-      serverType: olServerType
-    })
-  });
-  return layer;
-};
-
-
-/**
- * Create and return a promise that provides a WMTS layer with source on
- * success, no layer else.
- * The WMTS layer source will be configured by the capabilities that are
- * loaded from the given capabilitiesUrl.
- * The style object described in the capabilities for this layer will be added
- * as key 'capabilitiesStyles' as param of the new layer.
- * @param {string} capabilitiesURL The getCapabilities url.
- * @param {string} layerName The name of the layer.
- * @return {angular.$q.Promise} A Promise with a layer (with source) on success,
- *     no layer else.
- * @export
- */
-ngeo.LayerHelper.prototype.createWMTSLayerFromCapabilitites = function(capabilitiesURL, layerName) {
-  var parser = new ol.format.WMTSCapabilities();
-  var layer = new ol.layer.Tile();
-  var $q = this.$q_;
-
-  return this.$http_.get(capabilitiesURL).then(function(response) {
-    var result;
-    if (response.data) {
-      result = parser.read(response.data);
-    }
-    if (result !== undefined) {
-      var options = ol.source.WMTS.optionsFromCapabilities(result, {
-        layer: layerName
-      });
-      layer.setSource(new ol.source.WMTS(options));
-
-      // Add styles from capabilities as param of the layer
-      var layers = result['Contents']['Layer'];
-      var l = ol.array.find(layers, function(elt, index, array) {
-        return elt['Identifier'] == layerName;
-      });
-      layer.set('capabilitiesStyles', l['Style']);
-
-      return $q.resolve(layer);
-    }
-    return $q.reject('Failed to get WMTS capabilities from ' +
-        capabilitiesURL);
-  });
-};
-
-
-/**
- * Create and return an ol.layer.Group. You can pass a collection of layers to
- * directly add them in the returned group.
- * @param {ol.Collection.<ol.layer.Base>=} opt_layers The layer to add to the
- * returned Group.
- * @return {ol.layer.Group} Layer group.
- * @export
- */
-ngeo.LayerHelper.prototype.createBasicGroup = function(opt_layers) {
-  var group = new ol.layer.Group();
-  if (goog.isDefAndNotNull(opt_layers)) {
-    group.setLayers(opt_layers);
-  }
-  return group;
-};
-
-
-/**
- * Retrieve (or create if it doesn't exist) and return a group of layer from
- * the base array of layers of a map. The given name is used as unique
- * identifier. If the group is created, it will be automatically added to
- * the map.
- * @param {ol.Map} map A map.
- * @param {string} groupName The name of the group.
- * @return {ol.layer.Group} The group corresponding to the given name.
- * @export
- */
-ngeo.LayerHelper.prototype.getGroupFromMap = function(map, groupName) {
-  var groups = map.getLayerGroup().getLayers();
-  var group;
-  groups.getArray().some(function(exitingGroup) {
-    if (exitingGroup.get(ngeo.LayerHelper.GROUP_KEY) === groupName) {
-      group = /** @type {ol.layer.Group} */ (exitingGroup);
-      return true;
-    } else {
-      return false;
-    }
-  });
-  if (!group) {
-    group = this.createBasicGroup();
-    group.set(ngeo.LayerHelper.GROUP_KEY, groupName);
-    map.addLayer(group);
-  }
-  return group;
-};
-
-
-/**
- * Get an array of all layers in a group. The group can contain multiple levels
- * of others groups.
- * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @return {Array.<ol.layer.Layer>} Layers.
- * @export
- */
-ngeo.LayerHelper.prototype.getFlatLayers = function(layer) {
-  return this.getFlatLayers_(layer, []);
-};
-
-
-/**
- * Get an array of all layers in a group. The group can contain multiple levels
- * of others groups.
- * @param {ol.layer.Base} layer The base layer, mostly a group of layers.
- * @param {Array.<ol.layer.Base>} array An array to add layers.
- * @return {Array.<ol.layer.Layer>} Layers.
- * @private
- */
-ngeo.LayerHelper.prototype.getFlatLayers_ = function(layer, array) {
-  if (layer instanceof ol.layer.Group) {
-    var sublayers = layer.getLayers();
-    sublayers.forEach(function(l) {
-      this.getFlatLayers_(l, array);
-    }, this);
-  } else {
-    if (array.indexOf(layer) < 0) {
-      array.push(layer);
-    }
-  }
-  return array;
-};
-
-
-/**
- * Get a layer that has a `layerName` property equal to a given layer name from
- * an array of layers. If one of the layers in the array is a group, then the
- * layers contained in that group are searched as well.
- * @param {string} layerName The name of the layer we're looking for.
- * @param {Array.<ol.layer.Base>} layers Layers.
- * @return {?ol.layer.Base} Layer.
- * @export
- */
-ngeo.LayerHelper.prototype.getLayerByName = function(layerName, layers) {
-  var found = null;
-  layers.some(function(layer) {
-    if (layer instanceof ol.layer.Group) {
-      var sublayers = layer.getLayers().getArray();
-      found = this.getLayerByName(layerName, sublayers);
-    } else if (layer.get('layerName') === layerName) {
-      found = layer;
-    }
-    return !!found;
-  }, this);
-
-  return found;
-};
-
-
-/**
- * Get the WMTS legend URL for the given layer.
- * @param {ol.layer.Tile} layer Tile layer as returned by the
- * ngeo layerHelper service.
- * @return {?string} The legend URL or null.
- * @export
- */
-ngeo.LayerHelper.prototype.getWMTSLegendURL = function(layer) {
-  // FIXME case of multiple styles ?  case of multiple legendUrl ?
-  var url;
-  var styles = layer.get('capabilitiesStyles');
-  if (styles !== undefined) {
-    var legendURL = styles[0]['legendURL'];
-    if (legendURL !== undefined) {
-      url = legendURL[0]['href'];
-    }
-  }
-  return url || null;
-};
-
-
-/**
- * Get the WMS legend URL for the given node.
- * @param {string} url The base url of the wms service.
- * @param {string} layerName The name of a wms layer.
- * @param {number} scale A scale.
- * @param {string=} opt_legendRule rule parameters to add to the returned URL.
- * @return {?string} The legend URL or null.
- * @export
- */
-ngeo.LayerHelper.prototype.getWMSLegendURL = function(url,
-    layerName, scale, opt_legendRule) {
-  if (!url) {
-    return null;
-  }
-  url = goog.uri.utils.setParam(url, 'FORMAT', 'image/png');
-  url = goog.uri.utils.setParam(url, 'TRANSPARENT', true);
-  url = goog.uri.utils.setParam(url, 'SERVICE', 'wms');
-  url = goog.uri.utils.setParam(url, 'VERSION', '1.1.1');
-  url = goog.uri.utils.setParam(url, 'REQUEST', 'GetLegendGraphic');
-  url = goog.uri.utils.setParam(url, 'LAYER', layerName);
-  url = goog.uri.utils.setParam(url, 'SCALE', scale);
-  if (opt_legendRule !== undefined) {
-    url = goog.uri.utils.setParam(url, 'RULE', opt_legendRule);
-  }
-  return url;
-};
-
-
-ngeo.module.service('ngeoLayerHelper', ngeo.LayerHelper);
-
-goog.provide('ngeo.Query');
-
-goog.require('ngeo');
-goog.require('ngeo.LayerHelper');
-goog.require('ol.format.WMSGetFeatureInfo');
-goog.require('ol.source.ImageWMS');
-goog.require('ol.source.TileWMS');
-goog.require('goog.uri.utils');
-
-
-/**
- * @typedef {{
- *     resultSource: (ngeox.QueryResultSource),
- *     source: (ngeox.QuerySource)
- * }}
- */
-ngeo.QueryCacheItem;
-
-
-/**
- * @enum {string}
- */
-ngeo.QueryInfoFormatType = {
-  GML: 'application/vnd.ogc.gml'
-};
-
-
-/**
- * The `ngeoQueryResult` is the value service where the features of the query
- * result are added.
- */
-ngeo.module.value('ngeoQueryResult', /** @type {ngeox.QueryResult} */ ({
-  sources: [],
-  total: 0
-}));
-
-
-/**
- * The Query service provides a way to send WMS GetFeatureInfo requests from
- * visible layer objects within a map. Those do not necessarily need to have
- * a WMS source. The Query service requires source configuration in order
- * for layers to actually be considered queryable.
- *
- * To know more about the specification of a source configuration, see
- * `ngeox.QuerySource`
- *
- * @constructor
- * @param {angular.$http} $http Angular $http service.
- * @param {ngeox.QueryResult} ngeoQueryResult The ngeo query result service.
- * @param {ngeox.QueryOptions|undefined} ngeoQueryOptions The options to
- *     configure the ngeo query service with.
- * @param {ngeo.LayerHelper} ngeoLayerHelper Ngeo Layer Helper.
- * @ngdoc service
- * @ngname ngeoQuery
- * @ngInject
- */
-ngeo.Query = function($http, ngeoQueryResult, ngeoQueryOptions,
-    ngeoLayerHelper) {
-
-  var options = ngeoQueryOptions !== undefined ? ngeoQueryOptions : {};
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.limit_ = options.limit !== undefined ? options.limit : 50;
-
-  /**
-   * @type {string}
-   * @private
-   */
-  this.sourceIdsProperty_ = options.sourceIdsProperty !== undefined ?
-      options.sourceIdsProperty : ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_;
-
-  /**
-   * @type {ngeo.LayerHelper}
-   * @private
-   */
-  this.ngeoLayerHelper_ = ngeoLayerHelper;
-
-  /**
-   * @type {angular.$http}
-   * @private
-   */
-  this.$http_ = $http;
-
-  /**
-   * @type {ngeox.QueryResult}
-   * @private
-   */
-  this.result_ = ngeoQueryResult;
-
-  /**
-   * @type {Array.<ngeox.QuerySource>}
-   * @private
-   */
-  this.sources_ = [];
-
-  /**
-   * @type {Object.<number|string, ngeo.QueryCacheItem>}
-   * @private
-   */
-  this.cache_ = {};
-};
-
-
-/**
- * @const
- * @private
- */
-ngeo.Query.DEFAULT_SOURCE_IDS_PROPERTY_ = 'querySourceIds';
-
-
-/**
- * Adds a new source to the query service.
- *
- * A source must at least have an `id` configured.  That id is then used to
- * associate the corresponding layer object within a map.
- *
- * A source will require a `ol.source.ImageWMS` or `ol.source.TileWMS` object.
- * You can either set it directly in the config, or use the one from a given
- * layer or let the query service create one from you using other source config
- * such as `url` and `params`.
- *
- * A source can be set with either a `format` and/or `infoFormat`, which will
- * determine how the returned features of a query will be read.
- *
- * This method will also create a result entry in the `ngeoQueryResult`
- * value service.
- *
- * @param {ngeox.QuerySource} source The source to add to the query service.
- * @export
- */
-ngeo.Query.prototype.addSource = function(source) {
-  var sourceId = source.id;
-
-  goog.asserts.assert(sourceId, 'source.id should be thruthy');
-  goog.asserts.assert(!this.cache_[sourceId],
-      'no other source with the same id should be present');
-
-  // == wmsSource ==
-  // if the source doesn't have a wmsSource property set, it must at least have
-  // a layer that has one or have the required configuration options in order
-  // to create one.
-  if (!source.wmsSource) {
-    if (source.layer &&
-        (source.layer instanceof ol.layer.Image ||
-         source.layer instanceof ol.layer.Tile)) {
-      var wmsSource = source.layer.getSource();
-      if (wmsSource &&
-          (wmsSource instanceof ol.source.ImageWMS ||
-           wmsSource instanceof ol.source.TileWMS)) {
-        source.wmsSource =
-            /** @type {ol.source.ImageWMS|ol.source.TileWMS} */ (wmsSource);
-      }
-    } else {
-      var url = source.url;
-      var params = source.params;
-      goog.asserts.assert(url,
-          'url must be set when no layer or wmsSource is set in the source');
-      goog.asserts.assert(params,
-          'parmas must be set when no layer or wmsSource is set in the source');
-      source.wmsSource = new ol.source.ImageWMS({
-        url: url,
-        params: params
-      });
-    }
-  }
-  goog.asserts.assert(source.wmsSource, 'wmsSource should be thruthy');
-
-  // == format ==
-  if (!source.format) {
-    // GML is the default infoFormat if the source doesn't have one defined
-    if (!source.infoFormat) {
-      source.infoFormat = ngeo.QueryInfoFormatType.GML;
-    }
-
-    var layers = source.wmsSource.getParams()['LAYERS'].split(',');
-
-    if (source.infoFormat === ngeo.QueryInfoFormatType.GML) {
-      source.format = new ol.format.WMSGetFeatureInfo({
-        layers: layers
-      });
-    }
-  } else if (!source.infoFormat) {
-    // == infoFormat ==
-    var format = source.format;
-    if (format instanceof ol.format.WMSGetFeatureInfo) {
-      source.infoFormat = ngeo.QueryInfoFormatType.GML;
-    }
-  }
-  goog.asserts.assert(source.format, 'format should be thruthy');
-
-
-  this.sources_.push(source);
-
-  var sourceLabel = source.label !== undefined ? source.label : sourceId;
-
-  var sourceIdentifierAttributeField =
-      source.identifierAttributeField !== undefined ?
-      source.identifierAttributeField : sourceId;
-
-  var resultSource = /** @type {ngeox.QueryResultSource} */ ({
-    'features': [],
-    'id': sourceId,
-    'identifierAttributeField': sourceIdentifierAttributeField,
-    'label': sourceLabel,
-    'pending': false,
-    'queried': false
-  });
-
-  this.result_.sources.push(resultSource);
-
-  var cacheItem = {
-    'source': source,
-    'resultSource': resultSource
-  };
-  this.cache_[sourceId] = cacheItem;
-};
-
-
-/**
- * Add multiple sources at once in the order they are given.
- * @param {Array.<ngeox.QuerySource>} sources The sources to add to the query
- *     service.
- * @export
- */
-ngeo.Query.prototype.addSources = function(sources) {
-  sources.forEach(this.addSource, this);
-};
-
-
-/**
- * Clear the results.
- * @export
- */
-ngeo.Query.prototype.clear = function() {
-  this.clearResult_();
-};
-
-
-/**
- * Issue a new request using a given map and a given object, which can be
- * a coordinate or extent.
- *
- * NOTE: only coordinates are currently supported.
- *
- * @param {ol.Map} map The ol3 map object to fetch the layers from.
- * @param {ol.Coordinate|ol.Extent} object The coordinate or extent to issue
- *     the request with.
- * @export
- */
-ngeo.Query.prototype.issue = function(map, object) {
-
-  this.clearResult_();
-
-  if (object.length === 2) {
-    this.issueWMSGetFeatureInfoRequests_(map, object);
-  }
-};
-
-
-/**
- * Issue a new WMS GetFeatureInfo request using a given map and a coordinate.
- * For each visible layer of the map, if that layer has a source configured
- * within this query service, then a query will be sent and the results
- * will be stocked in the `ngeoQueryResult`.
- *
- * If multiple sources share the same url and use GML as info format, then
- * only one request will be sent for all these sources.
- *
- * NOTE: Only GML info format are currently supported.
- *
- * @param {ol.Map} map The ol3 map object to fetch the layers from.
- * @param {ol.Coordinate} coordinate The coordinate to issue the request with.
- * @private
- */
-ngeo.Query.prototype.issueWMSGetFeatureInfoRequests_ = function(
-    map, coordinate) {
-
-  var view = map.getView();
-  var projCode = view.getProjection().getCode();
-
-  var id;
-  var ids;
-  var infoFormat;
-  var url;
-  var item;
-  var wmsGetFeatureInfoUrl;
-
-  var itemsByUrl =
-      /** @type {Object.<string, Array.<ngeo.QueryCacheItem>>} */ ({});
-
-  var resolution = /** @type {number} */ (view.getResolution());
-
-  var layers = this.ngeoLayerHelper_.getFlatLayers(map.getLayerGroup());
-
-  layers.forEach(function(layer) {
-
-    // Skip layers that are not visible
-    if (!layer.getVisible()) {
-      return;
-    }
-
-    // Skip layers that don't have one or more sources configured
-    ids = this.getLayerSourceIds_(layer);
-    if (ids.length === 0) {
-      return;
-    }
-
-    for (var i = 0, len = ids.length; i < len; i++) {
-      id = ids[i];
-      item = this.cache_[id];
-      if (!item) {
-        continue;
-      }
-
-      // If `validateLayerParams` is set, then the source config layer in the
-      // LAYERS params must be in the current LAYERS params of the layer
-      // wms source object.
-      if (item.source.validateLayerParams) {
-        goog.asserts.assert(
-            layer instanceof ol.layer.Image ||
-            layer instanceof ol.layer.Tile,
-            'The layer should be an Image or Tile when using the ' +
-            'validateLayerParams option.'
-        );
-        var layerSource = layer.getSource();
-        goog.asserts.assert(
-            layerSource instanceof ol.source.ImageWMS ||
-            layerSource instanceof ol.source.TileWMS,
-            'The layer source should be a WMS one when using the ' +
-            'validateLayerParams option.'
-        );
-        var layerLayers = layerSource.getParams()['LAYERS'].split(',');
-        var cfgLayer = item.source.wmsSource.getParams()['LAYERS'];
-        goog.asserts.assert(cfgLayer.indexOf(',') === -1,
-            'The LAYERS param contains more than one item');
-        if (layerLayers.indexOf(cfgLayer) === -1) {
-          continue;
-        }
-      }
-
-      item['resultSource'].pending = true;
-      item['resultSource'].queried = true;
-      infoFormat = item.source.infoFormat;
-
-      // Sources that use GML as info format are combined together if they
-      // share the same server url
-      if (infoFormat === ngeo.QueryInfoFormatType.GML) {
-        url = item.source.wmsSource.getUrl();
-        goog.asserts.assertString(url);
-        if (!itemsByUrl[url]) {
-          itemsByUrl[url] = [];
-        }
-        itemsByUrl[url].push(item);
-      } else {
-        // TODO - support other kinds of infoFormats
-        item['resultSource'].pending = false;
-      }
-    }
-  }, this);
-
-  goog.object.forEach(itemsByUrl, function(items) {
-
-    infoFormat = items[0].source.infoFormat;
-    var layers = items[0].source.wmsSource.getParams()['LAYERS'].split(',');
-
-    wmsGetFeatureInfoUrl = items[0].source.wmsSource.getGetFeatureInfoUrl(
-        coordinate, resolution, projCode, {
-          'INFO_FORMAT': infoFormat,
-          'FEATURE_COUNT': this.limit_
-        });
-
-    goog.asserts.assert(
-        wmsGetFeatureInfoUrl, 'WMS GetFeatureInfo url should be thruty');
-
-    for (var i = 1, len = items.length; i < len; i++) {
-      layers = layers.concat(
-          items[i].source.wmsSource.getParams()['LAYERS'].split(','));
-    }
-
-    var lyrStr = layers.join(',');
-
-    wmsGetFeatureInfoUrl =
-        goog.uri.utils.setParam(wmsGetFeatureInfoUrl, 'LAYERS', lyrStr);
-    wmsGetFeatureInfoUrl =
-        goog.uri.utils.setParam(wmsGetFeatureInfoUrl, 'QUERY_LAYERS', lyrStr);
-
-    this.$http_.get(wmsGetFeatureInfoUrl).then(function(items, response) {
-      items.forEach(function(item) {
-        var format = item.source.format;
-        var features = format.readFeatures(response.data);
-        item['resultSource'].pending = false;
-        item['resultSource'].features = features;
-        this.result_.total += features.length;
-      }, this);
-    }.bind(this, items));
-  }, this);
-};
-
-
-/**
- * Clear every features for all result sources and reset the total counter
- * as well.
- * @private
- */
-ngeo.Query.prototype.clearResult_ = function() {
-  this.result_.total = 0;
-  this.result_.sources.forEach(function(source) {
-    source.features.length = 0;
-    source.pending = false;
-    source.queried = false;
-  }, this);
-};
-
-
-/**
- * Returns the source ids from an ol3 layer object.
- * @param {ol.layer.Base} layer The ol3 layer object.
- * @return {Array.<number|string>} ids The ids of the sources bound to that
- *     layer.
- * @private
- */
-ngeo.Query.prototype.getLayerSourceIds_ = function(layer) {
-  var ids = layer.get(this.sourceIdsProperty_) || [];
-  goog.asserts.assertArray(ids);
-  var clone = ids.slice();
-  return clone;
-};
-
-
-ngeo.module.service('ngeoQuery', ngeo.Query);
 
 goog.provide('ngeo.mapQueryDirective');
 
@@ -128628,25 +128979,60 @@ ngeo.StateManager = function(ngeoLocation) {
       for (i = 0; i < count; ++i) {
         key = this.localStorage.key(i);
         goog.asserts.assert(key !== null);
-        this.initialState[key] = this.localStorage.get(key);
+        this.initialState[key] = this.getItemFromLocalStorage_(key);
       }
+      this.ngeoLocation.updateParams(this.initialState);
     }
   } else {
     var keys = ngeoLocation.getParamKeys();
     for (i = 0; i < keys.length; ++i) {
       key = keys[i];
-      this.initialState[key] = ngeoLocation.getParam(key);
+      this.initialState[key] = this.getItemFromLocation_(key);
     }
   }
+};
 
-  this.ngeoLocation.updateParams({});
+
+/**
+ * Get the item for the given key  from localStorage and try to parse to the appropriate type
+ * If it cannot be parsed, the raw value (string) is returned
+ *
+ * @param  {string} key the localStorage key for the item
+ * @return {*} Param value.
+ * @private
+ */
+ngeo.StateManager.prototype.getItemFromLocalStorage_ = function(key) {
+  var value = this.localStorage.get(key);
+  try {
+    return angular.fromJson(value);
+  } catch (e) {
+    return value;
+  }
+};
+
+
+/**
+ * Get the item for the given key  from Location and try to parse to the appropriate type
+ * If it cannot be parsed, the raw value (string) is returned
+ *
+ * @param  {string} key the localStorage key for the item
+ * @return {*} Param value.
+ * @private
+ */
+ngeo.StateManager.prototype.getItemFromLocation_ = function(key) {
+  var value = this.ngeoLocation.getParam(key);
+  try {
+    return angular.fromJson(value);
+  } catch (e) {
+    return value;
+  }
 };
 
 
 /**
  * Get the state value for `key`.
  * @param {string} key State key.
- * @return {string|undefined} State value.
+ * @return {*} State value.
  */
 ngeo.StateManager.prototype.getInitialValue = function(key) {
   return this.initialState[key];
@@ -128662,7 +129048,7 @@ ngeo.StateManager.prototype.updateState = function(object) {
   if (this.localStorage.isAvailable()) {
     var key;
     for (key in object) {
-      this.localStorage.set(key, object[key]);
+      this.localStorage.set(key, angular.toJson(object[key]));
     }
   }
 };
@@ -129192,7 +129578,8 @@ ngeo.WfsPermalink.prototype.issue = function(queryData, map) {
  * @private
  */
 ngeo.WfsPermalink.prototype.issueRequest_ = function(wfsType, filter, map, showFeatures) {
-  var featureRequestXml = new ol.format.WFS().writeGetFeature({
+  var wfsFormat = new ol.format.WFS();
+  var featureRequestXml = wfsFormat.writeGetFeature({
     srsName: map.getView().getProjection().getCode(),
     featureNS: (wfsType.featureNS !== undefined) ?
         wfsType.featureNS : this.defaultFeatureNS_,
@@ -129206,7 +129593,7 @@ ngeo.WfsPermalink.prototype.issueRequest_ = function(wfsType, filter, map, showF
 
   var featureRequest = new XMLSerializer().serializeToString(featureRequestXml);
   this.$http_.post(this.url_, featureRequest).then(function(response) {
-    var features = new ol.format.WFS().readFeatures(response.data);
+    var features = wfsFormat.readFeatures(response.data);
     if (features.length == 0) {
       return;
     }

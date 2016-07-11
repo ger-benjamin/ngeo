@@ -49,11 +49,11 @@
             data-toggle="tooltip" data-placement="left" data-original-title="{{'Print'|translate}}">
             <span class="fa fa-print"></span>
           </button>
-          <button ngeo-btn class="btn btn-default" ng-model="measureActive"
+          <button ngeo-btn class="btn btn-default" ng-model="mainCtrl.drawFeatureActive"
             data-toggle="tooltip" data-placement="left" data-original-title="{{'Draw & Measure'|translate}}">
             <span class="fa fa-pencil"></span>
           </button>
-          <button ngeo-btn class="btn btn-default" ng-model="profileActive"
+          <button ngeo-btn class="btn btn-default" ng-model="mainCtrl.drawProfilePanelActive"
             data-toggle="tooltip" data-placement="left" data-original-title="{{'Profile'|translate}}">
             <span class="fa fa-area-chart"></span>
           </button>
@@ -81,27 +81,27 @@
               </gmf-print>
             </div>
           </div>
-          <div ng-show="measureActive" class="row">
+          <div ng-show="mainCtrl.drawFeatureActive" class="row">
             <div class="col-sm-12">
               <div class="tools-content-heading">
                 {{'Draw & Measure'|translate}}
-                <a class="btn close" ng-click="measureActive = false">&times;</a>
+                <a class="btn close" ng-click="mainCtrl.drawFeatureActive = false">&times;</a>
               </div>
               <gmf-drawfeature
-                  gmf-drawfeature-active="measureActive"
+                  gmf-drawfeature-active="mainCtrl.drawFeatureActive"
                   gmf-drawfeature-layer="::mainCtrl.drawFeatureLayer"
                   gmf-drawfeature-map="::mainCtrl.map">
               </gmf-drawfeature>
             </div>
           </div>
-          <div ng-show="profileActive" class="row">
+          <div ng-show="mainCtrl.drawProfilePanelActive" class="row">
             <div class="col-sm-12">
               <div class="tools-content-heading">
                 {{'Profile'|translate}}
-                <a class="btn close" ng-click="profileActive = false">&times;</a>
+                <a class="btn close" ng-click="mainCtrl.drawProfilePanelActive = false">&times;</a>
               </div>
               <div gmf-drawprofileline
-                   gmf-drawprofileline-active="profileActive"
+                   gmf-drawprofileline-active="mainCtrl.drawProfilePanelActive"
                    gmf-drawprofileline-map="::mainCtrl.map"
                    gmf-drawprofileline-line="mainCtrl.profileLine">
                  <p>
@@ -185,7 +185,7 @@
     <script src="../../../../lib/watchwatchers.js"></script>
     <script>
       (function() {
-        var cacheVersion = '550df9c782ab5e8ef94fe46e5b3f8e2c95b95374';
+        var cacheVersion = '076584b64b52dad95f03ec0ddd63d74c5db310ac';
         var urlElements = window.location.pathname.split('/');
 
         var angularLocaleScriptUrlElements = urlElements.slice(0, urlElements.length - 3);
