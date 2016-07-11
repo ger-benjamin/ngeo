@@ -1,0 +1,20 @@
+<div class="displayquerygrid">
+  <button ng-click="ctrl.debug()">Debug</button>
+  <button type="button" class="btn fa-close close" ng-click="ctrl.clear()"></button>
+  <ul class="nav nav-tabs small" role="tablist">
+    <li ng-repeat="gridSource in ctrl.gridSources" role="presentation" ng-class="{'active' : gridSource.source.label === ctrl.selectedTab}" ng-click="ctrl.onSelectTab(gridSource)"><a data-target="#{{gridSource.source.label}}" aria-controls="gridSource.source.label" role="tab" data-toggle="tab">{{gridSource.source.label | translate}} ({{gridSource.source.features.length}})</a></li>
+  </ul>
+  <div ng-if="ctrl.tooManyResults === false" class="tab-content">
+    <div ng-repeat="gridSource in ctrl.gridSources" role="tabpanel" class="tab-pane" ng-class="{'active' : gridSource.source.label === ctrl.selectedTab}" id="{{gridSource.source.label}}">
+      <div class="grid" ng-show="gridSource.isLoading === false"
+          ui-grid="gridSource.gridUIOptions"
+          ui-grid-selection
+          ui.grid.resizeColumns>
+      </div>
+      <div class="spinner" ng-if="gridSource.isLoading === true"><i class="fa fa-refresh fa-spin"></i></div>
+    </div>
+  </div>
+  <div ng-if="ctrl.tooManyResults === true">
+    <p>try again</p>
+  </div>
+</div>

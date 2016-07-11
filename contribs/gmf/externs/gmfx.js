@@ -27,6 +27,38 @@ gmfx.Config;
 
 
 /**
+ * Results of the query source.
+ * @typedef {{
+ *     gridUIOptions: Object,
+ *     isLoading: boolean,
+ *     source: ngeox.QueryResultSource
+ * }}
+ */
+gmfx.GridSource;
+
+
+/**
+ * TODO
+ * @type {Object}
+ */
+gmfx.GridSource.prototype.gridUIOptions;
+
+
+/**
+ * TODO
+ * @type {boolean}
+ */
+gmfx.GridSource.prototype.isLoading;
+
+
+/**
+ * TODO
+ * @type {ngeox.QueryResultSource}
+ */
+gmfx.GridSource.prototype.source;
+
+
+/**
  * Projection object for the MousePositionDirective. Define a label and a filter
  * to use to display coordinates for a projection.
  * @typedef {{

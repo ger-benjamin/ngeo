@@ -39,6 +39,7 @@ module.exports = function(config) {
       'node_modules/angular-sanitize/angular-sanitize.js',
       'node_modules/angular-touch/angular-touch.js',
       'node_modules/angular-ui-date/dist/date.js',
+      'node_modules/angular-ui-grid/ui-grid.js',
       'node_modules/angular-ui-slider/src/slider.js',
       'test/spec/beforeeach.js',
       'test/spec/data/*.js',

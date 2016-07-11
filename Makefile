@@ -26,8 +26,9 @@ GMF_APPS_LIBS_JS_FILES += \
 	node_modules/angular-sanitize/angular-sanitize.min.js \
 	node_modules/angular-touch/angular-touch.min.js \
 	node_modules/angular-dynamic-locale/dist/tmhDynamicLocale.min.js \
-	node_modules/angular-ui-slider/src/slider.js \
 	node_modules/angular-ui-date/dist/date.js \
+	node_modules/angular-ui-grid/ui-grid.min.js \
+	node_modules/angular-ui-slider/src/slider.js \
 	node_modules/bootstrap/dist/js/bootstrap.min.js \
 	node_modules/proj4/dist/proj4.js \
 	node_modules/d3/d3.min.js \
@@ -48,6 +49,8 @@ EXAMPLE_HOSTED_REQUIREMENTS = .build/examples-hosted/lib/ngeo.js \
 	.build/examples-hosted/lib/angular-sanitize.min.js \
 	.build/examples-hosted/lib/angular-touch.min.js \
 	.build/examples-hosted/lib/date.min.js \
+	.build/examples-hosted/lib/ui-grid.min.js \
+	.build/examples-hosted/lib/ui-grid.min.css \
 	.build/examples-hosted/lib/slider.min.js \
 	.build/examples-hosted/lib/tmhDynamicLocale.min.js \
 	.build/examples-hosted/lib/bootstrap.min.js \
@@ -353,6 +356,14 @@ dist/gmf.js.map: dist/gmf.js
 	mkdir -p $(dir $@)
 	cp $< $@
 
+.build/examples-hosted/lib/ui-grid.min.js: node_modules/angular-ui-grid/ui-grid.min.js
+	mkdir -p $(dir $@)
+	cp $< $@
+
+.build/examples-hosted/lib/ui-grid.min.css: node_modules/angular-ui-grid/ui-grid.min.css
+	mkdir -p $(dir $@)
+	cp $< $@
+
 .build/examples-hosted/lib/slider.min.js: node_modules/angular-ui-slider/src/slider.js
 	mkdir -p $(dir $@)
 	cp $< $@
@@ -486,6 +497,8 @@ node_modules/angular/angular.min.js: .build/node_modules.timestamp
 		-e 's|\.\./node_modules/angular-touch/angular-touch\.js|lib/angular-touch.min.js|' \
 		-e 's|\.\./node_modules/angular-dynamic-locale/dist/tmhDynamicLocale.js|lib/tmhDynamicLocale.min.js|' \
 		-e 's|\.\./node_modules/angular-ui-date/dist/date.js|lib/date.min.js|' \
+		-e 's|\.\./node_modules/angular-ui-grid/ui-grid.js|lib/ui-grid.min.js|' \
+		-e 's|\.\./node_modules/angular-ui-grid/ui-grid.css|lib/ui-grid.min.css|' \
 		-e 's|\.\./node_modules/angular-ui-slider/src/slider.js|lib/slider.min.js|' \
 		-e 's|\.\./node_modules/d3/d3\.js|lib/d3.min.js|' \
 		-e 's|\.\./node_modules/typeahead.js/dist/typeahead.bundle\.js|lib/typeahead.bundle.min.js|' \
