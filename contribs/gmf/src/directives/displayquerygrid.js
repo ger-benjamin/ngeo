@@ -85,8 +85,32 @@ gmf.module.directive('gmfDisplayquerygrid', gmf.displayquerygridDirective);
 
 
 /**
- * @param {angular.Scope} $scope Angular scope.
+ * First try with Angular-UI-Grid. And it appearance, it shines quite useful
+ * and easy to use. But:
+ *
+ * One problem is that it works not well with multiple grid. Our use case is
+ * challenging: after a query, we get sources one after another. Then working
+ * with a heavy directive like UIGrid and a ng-repeat is not possible (more
+ * than 12 seconds for a query and sometimes, the browser crash). So I've
+ * tried to add dynamically but UIGrid don't like to be destroyed and the
+ * second request work not well.
+ *
+ * Another problem is that UIGrid suffers from several bugs. For example, it
+ * doesn't like to have a width in percent and be hidden sometimes. There is
+ * function to redraw, recalculate the grid but I don't know why, these
+ * function works sot every times...
+ *
+ * Also, some things leave me puzzled in the documentation, on their Github, in
+ * the manner to handle css and minified file.
+ *
+ * For all these reasons, I don't recommend Angular-UI-Grid for further
+ * development.
+ *
+ * @param {!angular.Scope} $scope Angular scope.
+ * @param {angular.JQLite} $element Element.
+ * @param {angular.$compile} $compile Angular compile service.
  * @param {angular.$timeout} $timeout Angular timeout.
+ * @param {Object} uiGridConstants TODO.
  * @param {ngeox.QueryResult} ngeoQueryResult ngeo query result.
  * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
  *     overlay manager service.
@@ -96,20 +120,38 @@ gmf.module.directive('gmfDisplayquerygrid', gmf.displayquerygridDirective);
  * @ngdoc Controller
  * @ngname GmfDisplayquerygridController
  */
-gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
-    ngeoFeatureOverlayMgr) {
+gmf.DisplayquerygridController = function($scope, $element, $compile,
+    $timeout, uiGridConstants, ngeoQueryResult, ngeoFeatureOverlayMgr) {
 
   /**
-   * @type {angular.Scope}
+   * @type {!angular.Scope}
    * @private
    */
   this.$scope_ = $scope;
+
+  /**
+   * @type {angular.JQLite}
+   * @private
+   */
+  this.$element_ = $element;
+
+  /**
+   * @type {angular.$compile}
+   * @private
+   */
+  this.$compile_ = $compile;
 
   /**
    * @type {angular.$timeout}
    * @private
    */
   this.$timeout_ = $timeout;
+
+  /**
+   * @type {Object} TODO
+   * @private
+   */
+  this.uiGridConstants_ = uiGridConstants;
 
   /**
    * @type {ngeox.QueryResult}
@@ -148,10 +190,10 @@ gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
   this.gridUIApis = {};
 
   /**
-   * @type {string}
+   * @type {number}
    * @export
    */
-  this.selectedTab;
+  this.selectedTab = -1;
 
   /**
    * @type {Object}
@@ -162,9 +204,15 @@ gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
     enableRowHeaderSelection: false,
     enableRowSelection: true,
     enableSelectAll: true,
-    multiSelect: true
+    multiSelect: true,
+    // For performance, see "ui-grid Tuto - 404 Large Data Sets and Performance"
+    flatEntityAccess: true,
+    fastWatch: true,
+    virtualizationThreshold: 1,
+    columnVirtualizationThreshold:1
   };
 
+  // ****************** UNUSED for now (all things below) ******************* //
   /**
    * @type {ol.Collection}
    * @private
@@ -206,6 +254,8 @@ gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
   }
   this.highlightFeatureOverlay_.setStyle(highlightFeatureStyle);
 
+  // ************************************************************************ //
+
   this.$scope_.$watchCollection(
       function() {
         return ngeoQueryResult;
@@ -215,8 +265,6 @@ gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
           this.updateData_();
         }
       }.bind(this));
-
-  this.COUNT = 0;
 };
 
 
@@ -224,6 +272,7 @@ gmf.DisplayquerygridController = function($scope, $timeout, ngeoQueryResult,
  * @export
  */
 gmf.DisplayquerygridController.prototype.debug = function() {
+  console.log('debugger');
   //debugger;
 };
 
@@ -232,53 +281,81 @@ gmf.DisplayquerygridController.prototype.debug = function() {
  * @private
  */
 gmf.DisplayquerygridController.prototype.updateData_ = function() {
-  this.clear();
+  // Don't make grid if there are too many reslts
   if (this.ngeoQueryResult.total > this.maxResults_) {
     this.tooManyResults = true;
     return;
   }
-  this.collectData_();
+  // And clear grid if there are no result.
+  if (this.ngeoQueryResult.total === 0) {
+    this.clear();
+  }
+
+  // Create grids
+  var sources = this.ngeoQueryResult.sources;
+  sources.forEach(function(source) {
+    this.makeAGrid_(source);
+  }.bind(this));
 
   var ids = Object.keys(this.gridSources);
-  if (ids.length > 0) {
-    this.selectedTab = this.gridSources[ids[0]].source.label;
+  if (!this.selectedTab || ids.indexOf('' + this.selectedTab) === -1) {
+    this.selectedTab = parseInt(ids[0], 10);
+  }
+};
+
+
+/**
+ * @param {ngeox.QueryResultSource} source TODO.
+ * private
+ */
+gmf.DisplayquerygridController.prototype.makeAGrid_ = function(source) {
+  var features = source.features;
+  if (features.length === 0) {
+    return;
+  }
+
+  this.collectData_(source);
+
+  // Check if grid exist, create the grid if it doesn't exists.
+  if (this.$element_.find('.grid-' + source.id).length === 0) {
+    this.$timeout_(function() {
+      var gridElement = this.$compile_('<div ' +
+        'ui-grid="ctrl.gridSources[' +  source.id + '].gridUIOptions" ' +
+        'ui-grid-selection ' +
+        'ui.grid.resizeColumns ' +
+        '</div>')(this.$scope_);
+      this.$element_.find('.grid-' + source.id).append(gridElement);
+    }.bind(this));
   }
 };
 
 
 /**
  * Collect all features in the queryResult object.
+ * @param {ngeox.QueryResultSource} source TODO.
  * @private
  */
-gmf.DisplayquerygridController.prototype.collectData_ = function() {
-  var sources = this.ngeoQueryResult.sources;
-  this.features_.clear();
-  for (var i = 0; i < sources.length; i++) {
-    var source = sources[i];
-    var features = source.features;
-    if (features.length === 0) {
-      continue;
+gmf.DisplayquerygridController.prototype.collectData_ = function(source) {
+  var features = source.features;
+  var allProperties = [];
+  var featureGeometriesNames = [];
+  var feature, properties, featureGeometryName;
+  for (var ii = 0; ii < features.length; ii++) {
+    feature = features[ii];
+    properties = feature.getProperties();
+    featureGeometryName = feature.getGeometryName();
+    if (featureGeometriesNames.indexOf(featureGeometryName) === -1) {
+      featureGeometriesNames.push(featureGeometryName);
     }
-    var allProperties = [];
-    var featureGeometriesNames = [];
-    var feature, properties, featureGeometryName;
-    for (var ii = 0; ii < features.length; ii++) {
-      feature = features[ii];
-      properties = feature.getProperties();
-      featureGeometryName = feature.getGeometryName();
-      if (featureGeometriesNames.indexOf(featureGeometryName) === -1) {
-        featureGeometriesNames.push(featureGeometryName);
-      }
-      if (properties !== undefined) {
-        allProperties.push(properties);
-        this.features_.push(feature);
-      }
+    if (properties !== undefined) {
+      allProperties.push(properties);
+      this.features_.push(feature);
     }
+  }
 
-    this.cleanProperties_(allProperties, featureGeometriesNames);
-    if (allProperties.length > 0) {
-      this.makeGrid_(allProperties, source);
-    }
+  this.cleanProperties_(allProperties, featureGeometriesNames);
+  if (allProperties.length > 0) {
+    this.makeGrid_(allProperties, source);
   }
 };
 
@@ -295,21 +372,6 @@ gmf.DisplayquerygridController.prototype.makeGrid_ = function(data, source) {
     isLoading: true,
     source: source
   };
-
-  // The timeout stand for: On grid ready, do:
-  this.$timeout_(function() {
-    var gridSource = this.gridSources[sourceId];
-    var gridUIApi = this.gridUIApis[sourceId];
-    // Wait that the the first tab is ready to deactivate the spinner.
-    if (this.selectedTab === gridSource.source.label && gridUIApi) {
-      gridUIApi['core']['handleWindowResize']().then(function() {
-        gridSource.isLoading = false;
-      });
-    } else {
-      // Deactivate spinner on others tab in all case
-      gridSource.isLoading = false;
-    }
-  }.bind(this));
 };
 
 
@@ -338,6 +400,9 @@ gmf.DisplayquerygridController.prototype.getGridUIOptions_ = function(
   };
   goog.object.extend(gridUIOptions, this.gridUIOptionsModel_);
 
+  // Keep a reference to the gridapi to manage the grid. That can't be saved
+  // in the GridSource object because GridUI reset the Grid Source state after
+  // this function.
   gridUIOptions['onRegisterApi'] = function(gridUIApi) {
     this.gridUIApis[gridSourceId] = gridUIApi;
   }.bind(this);
@@ -352,9 +417,16 @@ gmf.DisplayquerygridController.prototype.getGridUIOptions_ = function(
  * @export
  */
 gmf.DisplayquerygridController.prototype.clear = function() {
+  // Remove grids.
+  var gridElements = this.$element_.find('.grid');
+  gridElements['each'](function(i, gridElement) {
+    gridElement.remove(); //FIXME Doesn't work well with UIGrid.
+  });
+
+  // Then, clear otherthings
   this.gridSources = {};
-  this.source = null;
-  this.selectedSource = null;
+  this.gridUIApis = {};
+  this.selectedTab = -1;
   this.tooManyResults = false;
   this.features_.clear();
   this.highlightFeatures_.clear();
@@ -408,13 +480,15 @@ gmf.DisplayquerygridController.prototype.cleanProperties_ = function(
  */
 gmf.DisplayquerygridController.prototype.onSelectTab = function(gridSource) {
   var source = gridSource.source;
-  this.selectedTab = source.label;
-  this.$timeout_(function() {
-    var gridUIApi = this.gridUIApis[source.id];
-    if (gridUIApi) {
-      gridUIApi['core']['handleWindowResize']();
-    }
-  }.bind(this));
+  this.selectedTab = parseInt(source.id, 10);
+  var gridUIApi = this.gridUIApis[source.id];
+  if (gridUIApi) {
+    gridUIApi['core']['notifyDataChange'](
+      // FIXME Should be a refresh but that doesn't work every time.
+      // GridUI appears sometime with a width of 0...
+      this.uiGridConstants_['dataChange']['ALL']
+    );
+  }
 };
 
 
