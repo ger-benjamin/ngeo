@@ -95165,7 +95165,7 @@ ngeo.LayerHelper.prototype.getLayerByName = function(layerName, layers) {
     if (layer instanceof ol.layer.Group) {
       var sublayers = layer.getLayers().getArray();
       found = this.getLayerByName(layerName, sublayers);
-    } else if (layer.get('layerName') === layerName) {
+    } else if (layer.get('layerNodeName') === layerName) {
       found = layer;
     }
     return !!found;
@@ -122159,30 +122159,30 @@ ngeo.format.FeatureHash.setStyleInFeature_ = function(text, feature) {
   }
   var fillColor, fontSize, fontColor, pointRadius, strokeColor, strokeWidth;
   var properties = ngeo.format.FeatureHash.getStyleProperties_(text, feature);
-  fillColor = properties.fillColor;
-  fontSize = properties.fontSize;
-  fontColor = properties.fontColor;
-  pointRadius = properties.pointRadius;
-  strokeColor = properties.strokeColor;
-  strokeWidth = properties.strokeWidth;
+  fillColor = properties['fillColor'];
+  fontSize = properties['fontSize'];
+  fontColor = properties['fontColor'];
+  pointRadius = properties['pointRadius'];
+  strokeColor = properties['strokeColor'];
+  strokeWidth = properties['strokeWidth'];
 
   var fillStyle = null;
   if (fillColor !== undefined) {
     fillStyle = new ol.style.Fill({
-      color: fillColor
+      color: /** @type {Array<number>|string} */ (fillColor)
     });
   }
   var strokeStyle = null;
   if (strokeColor !== undefined && strokeWidth !== undefined) {
     strokeStyle = new ol.style.Stroke({
-      color: strokeColor,
-      width: strokeWidth
+      color: /** @type {Array<number>|string} */ (strokeColor),
+      width: /** @type {number} */ (strokeWidth)
     });
   }
   var imageStyle = null;
   if (pointRadius !== undefined) {
     imageStyle = new ol.style.Circle({
-      radius: pointRadius,
+      radius: /** @type {number} */ (pointRadius),
       fill: fillStyle,
       stroke: strokeStyle
     });
@@ -122193,7 +122193,7 @@ ngeo.format.FeatureHash.setStyleInFeature_ = function(text, feature) {
     textStyle = new ol.style.Text({
       font: fontSize + ' sans-serif',
       fill: new ol.style.Fill({
-        color: fontColor
+        color: /** @type {Array<number>|string} */ (fontColor)
       })
     });
   }
@@ -126522,24 +126522,36 @@ ngeo.BackgroundLayerMgr.prototype.set = function(map, layer) {
  * @export
  */
 ngeo.BackgroundLayerMgr.prototype.updateDimensions = function(map, dimensions) {
-  var layer = this.get(map);
-  goog.asserts.assertInstanceof(layer, ol.layer.Layer);
-  if (layer) {
-    var updatedDimensions = {};
-    for (var key in layer.get('dimensions')) {
-      var value = dimensions[key];
-      if (value !== undefined) {
-        updatedDimensions[key] = value;
-      }
+  var baseBgLayer = this.get(map);
+  if (baseBgLayer) {
+    var layers = [baseBgLayer];
+    if (baseBgLayer instanceof ol.layer.Group) {
+      // Handle the first level of layers of the base background layer.
+      layers = baseBgLayer.getLayers().getArray();
     }
-    if (!ol.object.isEmpty(dimensions)) {
-      var source = layer.getSource();
-      if (source instanceof ol.source.WMTS) {
-        source.updateDimensions(updatedDimensions);
-      } else if (source instanceof ol.source.TileWMS || source instanceof ol.source.ImageWMS) {
-        source.updateParams(updatedDimensions);
+
+    layers.forEach(function(layer) {
+      goog.asserts.assertInstanceof(layer, ol.layer.Layer);
+      if (layer) {
+        var updatedDimensions = {};
+        for (var key in layer.get('dimensions')) {
+          var value = dimensions[key];
+          if (value !== undefined) {
+            updatedDimensions[key] = value;
+          }
+        }
+        if (!ol.object.isEmpty(dimensions)) {
+          var source = layer.getSource();
+          if (source instanceof ol.source.WMTS) {
+            source.updateDimensions(updatedDimensions);
+            source.refresh();
+          } else if (source instanceof ol.source.TileWMS || source instanceof ol.source.ImageWMS) {
+            source.updateParams(updatedDimensions);
+            source.refresh();
+          }
+        }
       }
-    }
+    });
   }
 };
 
