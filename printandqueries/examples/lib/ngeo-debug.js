@@ -96061,7 +96061,7 @@ ngeo.bboxQueryDirective = function(ngeoQuery) {
             } else {
               // deactivate
               map.removeInteraction(interaction);
-              if (scope.$eval(attrs['ngeoMapQueryAutoclear']) !== false) {
+              if (scope.$eval(attrs['ngeoBboxQueryAutoclear']) !== false) {
                 ngeoQuery.clear();
               }
             }
