@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html ng-app='app'>
   <head>
+    <script src="https.js"></script>
     <title>Location chooser example</title>
     <meta charset="utf-8">
     <meta name="viewport"
@@ -16,7 +17,7 @@
   </head>
   <body ng-controller="MainController as ctrl">
     <div id="map" ngeo-map="ctrl.map"></div>
-    <p id="desc">This example shows how to use the <code>ngeo-recenter</code> directive to jump between some predefined areas.</p>
+    <p id="desc">This example shows how to use the <code><a href="../apidoc/ngeo.recenterDirective.html" title="Read our documentation">ngeo-recenter</a></code> directive to jump between some predefined areas.</p>
 
     <span>Move to:</span>
     <select ngeo-recenter ngeo-recenter-map="::ctrl.map">
@@ -27,11 +28,15 @@
     </select>
 
     <div ngeo-recenter ngeo-recenter-map="::ctrl.map">
-      <button ngeo-extent="[-1898084, 4676723, 3972279, 8590299]">Move to Europe</button>
+      <button ngeo-extent="[-1898084, 4676723, 3972279, 8590299]" translate>Move to Europe</button>
     </div>
 
+    <script src="lib/jquery.min.js"></script>
     <script src="lib/angular.min.js"></script>
     <script src="lib/angular-gettext.min.js"></script>
+    <script src="lib/date.min.js"></script>
+    <script src="lib/angular-floatThead.js"></script>
+    <script src="lib/jquery.floatThead.min.js"></script>
     <script src="lib/ngeo.js"></script>
     <script src="locationchooser.js"></script>
     <script src="lib/watchwatchers.js"></script>

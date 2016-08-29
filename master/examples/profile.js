@@ -95,7 +95,7 @@ app.MainController = function($http, $scope) {
    */
   this.profileData = undefined;
 
-  $http.get('data/profile.json').then(angular.bind(this, function(resp) {
+  $http.get('data/profile.json').then(function(resp) {
     var data = resp.data['profile'];
     this.profileData = data;
 
@@ -111,21 +111,16 @@ app.MainController = function($http, $scope) {
 
     map.getView().fit(source.getExtent(),
         /** @type {ol.Size} */ (this.map.getSize()));
-  }));
+  }.bind(this));
 
-
-  // Using closures for hoverCallback and outCallback since
-  // wrapping in angular.bind leads to a closure error.
-  // See PR https://github.com/google/closure-compiler/pull/867
-  var that = this;
 
   map.on('pointermove', function(evt) {
     if (evt.dragging) {
       return;
     }
     var coordinate = map.getEventCoordinate(evt.originalEvent);
-    that.snapToGeometry(coordinate, source.getFeatures()[0].getGeometry());
-  });
+    this.snapToGeometry(coordinate, source.getFeatures()[0].getGeometry());
+  }.bind(this));
 
 
   /**
@@ -159,12 +154,14 @@ app.MainController = function($http, $scope) {
   };
 
 
-  /**
-   * @type {ngeox.profile.ElevationExtractor}
-   */
-  var elevationExtractor = {
-    z: typedFunctionsFactory(types.number, 'mnt', 'values'),
-    dist: typedFunctionsFactory(types.number, 'dist')
+  var distanceExtractor = typedFunctionsFactory(types.number, 'dist');
+
+
+  var linesConfiguration = {
+    'line1': {
+      style: {},
+      zExtractor: typedFunctionsFactory(types.number, 'mnt', 'values')
+    }
   };
 
 
@@ -194,14 +191,14 @@ app.MainController = function($http, $scope) {
    */
   var hoverCallback = function(point) {
     // An item in the list of points given to the profile.
-    that.point = point;
-    that.snappedPoint_.setGeometry(new ol.geom.Point([point.x, point.y]));
-  };
+    this.point = point;
+    this.snappedPoint_.setGeometry(new ol.geom.Point([point.x, point.y]));
+  }.bind(this);
 
   var outCallback = function() {
-    that.point = null;
-    that.snappedPoint_.setGeometry(null);
-  };
+    this.point = null;
+    this.snappedPoint_.setGeometry(null);
+  }.bind(this);
 
 
   /**
@@ -209,7 +206,8 @@ app.MainController = function($http, $scope) {
    * @export
    */
   this.profileOptions = {
-    elevationExtractor: elevationExtractor,
+    distanceExtractor: distanceExtractor,
+    linesConfiguration: linesConfiguration,
     poiExtractor: poiExtractor,
     hoverCallback: hoverCallback,
     outCallback: outCallback

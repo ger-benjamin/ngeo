@@ -60,9 +60,9 @@ app.LayertreeController = function($http, $sce, appGetLayer, ngeoCreatePopup) {
    */
   this.tree = undefined;
 
-  $http.get('data/tree.json').then(angular.bind(this, function(resp) {
+  $http.get('data/tree.json').then(function(resp) {
     this.tree = resp.data;
-  }));
+  }.bind(this));
 
   /**
    * @private
@@ -118,10 +118,11 @@ app.LayertreeController.prototype.onButtonClick = function(node, layer) {
   var layerType = node['layerType'];
   if (!(layerType in this.promises_)) {
     this.promises_[layerType] = this.http_.get('data/metadata.html').then(
-        angular.bind(this, function(resp) {
+        function(resp) {
           var html = this.sce_.trustAsHtml(resp.data);
           return html;
-        }));
+        }.bind(this)
+    );
   }
   var infoPopup = this.infoPopup_;
   this.promises_[layerType].then(function(html) {
@@ -171,17 +172,17 @@ app.getLayer = (function() {
           source = new ol.source.Stamen({
             layer: 'terrain-labels'
           });
-        } else if (type == 'mapquestOsm') {
-          source = new ol.source.MapQuest({
-            layer: 'osm'
+        } else if (type == 'osmHumanitarian') {
+          source = new ol.source.OSM({
+            url: 'https://tile-{a-c}.openstreetmap.fr/hot/{z}/{x}/{y}.png'
           });
-        } else if (type == 'mapquestSat') {
-          source = new ol.source.MapQuest({
-            layer: 'sat'
+        } else if (type == 'osmCycle') {
+          source = new ol.source.OSM({
+            url: 'https://{a-c}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png'
           });
-        } else if (type == 'mapquestHyb') {
-          source = new ol.source.MapQuest({
-            layer: 'hyb'
+        } else if (type == 'osmTransport') {
+          source = new ol.source.OSM({
+            url: 'https://{a-c}.tile.thunderforest.com/transport/{z}/{x}/{y}.png'
           });
         } else {
           source = new ol.source.OSM();

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html ng-app='app'>
   <head>
+    <script src="https.js"></script>
     <title>Scale selector example</title>
     <meta charset="utf-8">
     <meta name="viewport"
@@ -14,9 +15,7 @@
       }
       app-scaleselector {
         display: inline-block;
-      }
-      app-scaleselector .dropdown button {
-        min-width: 132px;
+        min-width: 160px;
       }
     </style>
   </head>
@@ -27,10 +26,14 @@
       <app-scaleselector app-scaleselector-map="::mainCtrl.map"></app-scaleselector>
     </label>
     <div>
-      <p id="desc">This example shows how to write an application-specific directive (<code>app-scaleselecor</code>) based on <code>ngeo-scaleselector</code>to create a scale selector.</p>
+      <p id="desc">This example shows how to write an application-specific directive (<code>app-scaleselecor</code>) based on <code><a href="../apidoc/ngeo.scaleselectorDirective.html" title="Read our documentation">ngeo-scaleselector</a></code>to create a scale selector.</p>
     </div>
     <script src="lib/jquery.min.js"></script>
     <script src="lib/angular.min.js"></script>
+    <script src="lib/angular-gettext.min.js"></script>
+    <script src="lib/date.min.js"></script>
+    <script src="lib/angular-floatThead.js"></script>
+    <script src="lib/jquery.floatThead.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
     <script src="lib/ngeo.js"></script>
     <script src="scaleselector.js"></script>

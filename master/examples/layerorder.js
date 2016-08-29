@@ -20,10 +20,10 @@ app.module = angular.module('app', ['ngeo']);
 app.MainController = function($scope, ngeoDecorateLayer, ngeoSyncArrays) {
 
   /** @type {ol.layer.Tile} */
-  var mapquest = new ol.layer.Tile({
-    source: new ol.source.MapQuest({layer: 'sat'})
+  var osm = new ol.layer.Tile({
+    source: new ol.source.OSM()
   });
-  mapquest.set('name', 'MapQuest');
+  osm.set('name', 'osm');
 
   /** @type {ol.layer.Tile} */
   var boundaries = new ol.layer.Tile({
@@ -61,7 +61,7 @@ app.MainController = function($scope, ngeoDecorateLayer, ngeoSyncArrays) {
    */
   this.map = new ol.Map({
     layers: [
-      mapquest,
+      osm,
       boundaries,
       waterBodies,
       cities
@@ -112,7 +112,7 @@ app.MainController = function($scope, ngeoDecorateLayer, ngeoSyncArrays) {
    *     layers.
    */
   function layerFilter(layer) {
-    return layer !== mapquest;
+    return layer !== osm;
   }
 
 };
@@ -128,7 +128,7 @@ app.MainController = function($scope, ngeoDecorateLayer, ngeoSyncArrays) {
  * @export
  */
 app.MainController.prototype.toggleRoadsLayer = function(val) {
-  if (!angular.isDefined(val)) {
+  if (val === undefined) {
     return this.map.getLayers().getArray().indexOf(this.roads_) >= 0;
   } else {
     if (val) {

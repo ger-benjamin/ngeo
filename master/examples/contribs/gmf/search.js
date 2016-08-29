@@ -8,34 +8,61 @@ var app = {};
 /** @type {!angular.Module} **/
 app.module = angular.module('app', ['gmf']);
 
-app.module.constant('gmfTreeUrl', 'data/themes.json');
+app.module.value('gmfTreeUrl',
+    'https://geomapfish-demo.camptocamp.net/2.1/wsgi/themes?version=2&background=background');
 
 
 /**
- * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature
- *     overlay manager service.
  * @param {gmf.Themes} gmfThemes Themes service.
+ * @param {ngeo.FeatureOverlayMgr} ngeoFeatureOverlayMgr The ngeo feature overlay manager service.
  * @constructor
  * @ngInject
  */
-app.MainController = function(ngeoFeatureOverlayMgr, gmfThemes) {
+app.MainController = function(gmfThemes, ngeoFeatureOverlayMgr) {
 
   gmfThemes.loadThemes();
 
-  proj4.defs('EPSG:21781',
-      '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' +
-      '+x_0=600000 +y_0=200000 +ellps=bessel ' +
-      '+towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs');
+  ngeoFeatureOverlayMgr.init(this.map);
 
   /**
    * @type {Array.<gmfx.SearchDirectiveDatasource>}
    * @export
    */
   this.searchDatasources = [{
+    groupValues: ['osm', 'district'],
+    groupActions: [],
     labelKey: 'label',
     projection: 'EPSG:21781',
-    url: 'https://geomapfish-demo.camptocamp.net/2.0/wsgi/fulltextsearch'
+    bloodhoundOptions: {
+      remote: {
+        rateLimitWait: 250
+      }
+    },
+    url: 'https://geomapfish-demo.camptocamp.net/2.1/wsgi/fulltextsearch'
   }];
+
+  var fill = new ol.style.Fill({color: [255, 255, 255, 0.6]});
+  var stroke = new ol.style.Stroke({color: [255, 0, 0, 1], width: 2});
+  /**
+   * @type {Object.<string, ol.style.Style>} Map of styles for search overlay.
+   * @export
+   */
+  this.searchStyles = {
+    'osm': new ol.style.Style({
+      fill: fill,
+      image: new ol.style.Circle({fill: fill, radius: 5, stroke: stroke}),
+      stroke: stroke
+    })
+  };
+
+  /**
+   * @type {TypeaheadOptions}
+   * @export
+   */
+  this.searchOptions = {
+    minLength: 2
+  };
+
 
   /**
    * @type {ol.Map}
@@ -53,7 +80,6 @@ app.MainController = function(ngeoFeatureOverlayMgr, gmfThemes) {
     })
   });
 
-  ngeoFeatureOverlayMgr.init(this.map);
 };
 
 

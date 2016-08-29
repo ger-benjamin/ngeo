@@ -9,9 +9,9 @@ var app = {};
 app.module = angular.module('app', ['gmf']);
 
 
-app.module.constant(
-    'gmfAltitudeUrl',
-    'https://geomapfish-demo.camptocamp.net/2.0/wsgi/raster');
+app.module.value(
+    'gmfRasterUrl',
+    'https://geomapfish-demo.camptocamp.net/2.1/wsgi/raster');
 
 
 /**
@@ -51,6 +51,12 @@ app.MainController = function(gmfPermalink) {
    * @export
    */
   this.measureLengthActive = false;
+
+  /**
+   * @type {Array.<string>}
+   * @export
+   */
+  this.measurePointLayers = ['aster', 'srtm'];
 
   /**
    * @type {boolean}
