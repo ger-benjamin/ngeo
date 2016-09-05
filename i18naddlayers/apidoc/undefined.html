@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: searchDirective <small>directive:gmfSearch</small></title>
+    <title>JSDoc: Namespace: undefined</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: searchDirective <small>directive:gmfSearch</small></h1>
+    <h1 class="page-title">Namespace: undefined</h1>
 
     
 
@@ -28,8 +28,7 @@
 
 <header>
     
-        <h2 id="searchDirective">
-            <span class="ancestors">gmf.</span>searchDirective
+        <h2 id="GmfOgcServers">GmfOgcServers
         </h2>
         
     
@@ -40,75 +39,108 @@
     
         
 
+        
+
+
+<dl class="details">
+
     
 
-    <h4 class="name" id="searchDirective"><span class="type-signature"></span>new searchDirective<span class="signature">(gmfSearchTemplateUrl)</span><span class="type-signature"></span></h4>
+    
 
     
 
-
-
-<div class="description">
-    <p>A directive that allows to search and recenter on a selected
-result's feature.
-It can search in multiple GeoJSON datasources.
-It can filter and group results by a feature's property.</p>
-<p>This directive uses the <a href="ngeo.FeatureOverlayMgr.html"><code>ngeo.FeatureOverlayMgr</code></a> to create a
-feature overlay for drawing features on the map. The application
-is responsible to initialize the <a href="ngeo.FeatureOverlayMgr.html"><code>ngeo.FeatureOverlayMgr</code></a>
-with the map.</p>
-<p>Example flat results:</p>
-<pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
-   gmf-search-options=&quot;ctrl.searchOptions&quot;
-   gmf-search-styles=&quot;ctrl.searchStyles&quot;
-   gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
-   gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
-   gmf-search-clearbutton=&quot;true&quot;>
- &lt;/gmf-search>
- &lt;script>
-   (function() {
-     var module = angular.module('app');
-     module.value('fulltextsearchUrl', '${request.route_url('fulltextsearch', _query={&quot;limit&quot;: 20}) | n}');
-     module.value('gmfSearchGroups', []);
-     module.constant('gmfSearchActions', [
-           {action: 'add_theme', title: 'Add a theme'},
-           {action: 'add_group', title: 'Add a sub theme'},
-           {action: 'add_layer', title: 'Add a layer'}
-     ]);
-   })();
- &lt;/script></code></pre><p>Example with categories:</p>
-<pre class="prettyprint source"><code> &lt;gmf-search gmf-search-map=&quot;ctrl.map&quot;
-   gmf-search-options=&quot;ctrl.searchOptions&quot;
-   gmf-search-styles=&quot;ctrl.searchStyles&quot;
-   gmf-search-datasources=&quot;ctrl.searchDatasources&quot;
-   gmf-search-coordinatesprojections=&quot;ctrl.searchCoordinatesProjections&quot;
-   gmf-search-clearbutton=&quot;true&quot;>
-   gmf-search-colorchooser=&quot;true&quot;>
- &lt;/gmf-search>
- &lt;script>
-   (function() {
-     var module = angular.module('app');
-     module.value('fulltextsearchUrl', '${request.route_url('fulltextsearch', _query={&quot;limit&quot;: 30, &quot;partitionlimit&quot;: 5}) | n}');
-     module.value('gmfSearchGroups', ${dumps(fulltextsearch_groups) | n});
-     module.value('gmfSearchActions', []);
-   })();
- &lt;/script></code></pre>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-    <h5>HTML attributes:</h5>
     
 
-<table class="params">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+    
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/externs/gmf-themes.js">contribs/gmf/externs/gmf-themes.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/externs/gmf-themes.js#L11">line 11</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2 id="GmfThemesResponse">GmfThemesResponse
+        </h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+    
+    <h5 class="subsection-title">Properties:</h5>
+    
+
+    
+
+<table class="props">
     <thead>
     <tr>
         
@@ -121,7 +153,7 @@ with the map.</p>
 
         
 
-        <th class="last">Description</th>
+        
     </tr>
     </thead>
 
@@ -130,13 +162,13 @@ with the map.</p>
 
         <tr>
             
-                <td class="name"><code>gmf-search-input-value</code></td>
+                <td class="name"><code>themes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="GmfThemesNode.html">GmfThemesNode</a>></span>
 
 
             
@@ -146,20 +178,20 @@ with the map.</p>
 
             
 
-            <td class="description last">The input value (read only).</td>
+            </td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>gmf-search-map</code></td>
+                <td class="name"><code>background_layers</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="http://openlayers.org/en/master/apidoc/ol.Map.html">ol.Map</a></span>
+<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array</a>.&lt;<a href="GmfThemesNode.html">GmfThemesNode</a>></span>
 
 
             
@@ -169,23 +201,20 @@ with the map.</p>
 
             
 
-            <td class="description last">The map.</td>
+            </td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>gmf-search-options</code></td>
+                <td class="name"><code>ogcServers</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">TypeaheadOptions</span>
-|
-
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></span>
+<span class="param-type"><a href="undefined.html#GmfOgcServers">GmfOgcServers</a></span>
 
 
             
@@ -195,64 +224,14 @@ with the map.</p>
 
             
 
-            <td class="description last">Addition Typeahead options.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-search-datasource</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="gmfx.html#SearchDirectiveDatasource">gmfx.SearchDirectiveDatasource</a></span>
-
-
-            
             </td>
-
-            
-
-            
-
-            <td class="description last">The datasources.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>gmf-search-styles</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>.&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="http://openlayers.org/en/master/apidoc/ol.style.Style.html">ol.style.Style</a>></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A map of styles to apply on searched features. Keys
-     must be the 'layer_name' propertie of features except for coordinates
-     where the key ifor its style is the value of the constant
-     'gmf.COORDINATES_LAYER_NAME'. The 'default' key is used to apply the
-     default style.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-search-coordinatesprojections</code></td>
+                <td class="name"><code>errors</code></td>
             
 
             <td class="type">
@@ -268,87 +247,12 @@ with the map.</p>
 
             
 
-            <td class="description last">codes
-     of supported projections for coordinates search (projections must be
-     defined in ol3). If not provided, only the map's view projection
-     format will be supported.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-search-clearbutton</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
-
-
-            
             </td>
-
-            
-
-            
-
-            <td class="description last">The clear button.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-search-colorchooser</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Whether to let the user
-     change the style of the feature on the map. Default is false.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>gmf-search-listeners</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ngeox.html#SearchDirectiveListeners">ngeox.SearchDirectiveListeners</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The listeners.</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -383,8 +287,8 @@ with the map.</p>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
     
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js">contribs/gmf/src/directives/search.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/directives/search.js#L122">line 122</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/externs/gmf-themes.js">contribs/gmf/externs/gmf-themes.js</a>,
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/externs/gmf-themes.js#L22">line 22</a>
     </li></ul></dd>
     
 
@@ -396,20 +300,7 @@ with the map.</p>
 </dl>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
     
     </div>
 
