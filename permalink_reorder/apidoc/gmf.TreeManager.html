@@ -283,10 +283,15 @@ Thought to be the tree source of the gmf layertree directive.</p>
 
         
             
-<h4 class="name" id="layersToAddAtOnce"><span class="type-signature"></span>layersToAddAtOnce<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
+<h4 class="name" id="numberOfGroupsToAddInThisDigestLoop"><span class="type-signature"></span>numberOfGroupsToAddInThisDigestLoop<span class="type-signature"> :<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></span></h4>
 
 
 
+
+<div class="description">
+    <p>Number of group to add to the layertree during one single Angular
+digest loop.</p>
+</div>
 
 
 
@@ -335,7 +340,7 @@ Thought to be the tree source of the gmf layertree directive.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L82">line 82</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L84">line 84</a>
     </li></ul></dd>
     
 
@@ -537,7 +542,7 @@ Add it only if it's not already in the tree.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L183">line 183</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L192">line 192</a>
     </li></ul></dd>
     
 
@@ -578,7 +583,7 @@ Add it only if it's not already in the tree.</p>
 
     
 
-    <h4 class="name" id="addFirstLevelGroups"><span class="type-signature"></span>addFirstLevelGroups<span class="signature">(firstLevelGroups, [opt_add]<span class="signature-attributes">opt</span>, [opt_silent]<span class="signature-attributes">opt</span>, [opt_totalGroupsLength]<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addFirstLevelGroups"><span class="type-signature"></span>addFirstLevelGroups<span class="signature">(firstLevelGroups, [opt_add]<span class="signature-attributes">opt</span>, [opt_silent]<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -704,35 +709,6 @@ already in the tree.</p>
         </tr>
 
     
-
-        <tr>
-            
-                <td class="name"><code>[opt_totalGroupsLength]</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>length of all group to add for this
-    action.</p></td>
-        </tr>
-
-    
     </tbody>
 </table>
 
@@ -774,7 +750,7 @@ already in the tree.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L142">line 142</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L154">line 154</a>
     </li></ul></dd>
     
 
@@ -972,7 +948,7 @@ corresponding group is found.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L228">line 228</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L268">line 268</a>
     </li></ul></dd>
     
 
@@ -1003,7 +979,7 @@ corresponding group is found.</p>
 
     
 
-    <h4 class="name" id="addGroupByName"><span class="type-signature"></span>addGroupByName<span class="signature">(groupName, [opt_add]<span class="signature-attributes">opt</span>, [opt_totalGroupsLength]<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addGroupByName"><span class="type-signature"></span>addGroupByName<span class="signature">(groupName, [opt_add]<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1100,35 +1076,6 @@ if any corresponding group is found.</p>
         </tr>
 
     
-
-        <tr>
-            
-                <td class="name"><code>[opt_totalGroupsLength]</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>length of all group to add for this
-    user action.</p></td>
-        </tr>
-
-    
     </tbody>
 </table>
 
@@ -1170,7 +1117,7 @@ if any corresponding group is found.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L208">line 208</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L249">line 249</a>
     </li></ul></dd>
     
 
@@ -1301,7 +1248,7 @@ if any corresponding group is found.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L376">line 376</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L421">line 421</a>
     </li></ul></dd>
     
 
@@ -1441,7 +1388,7 @@ if any corresponding group is found.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L358">line 358</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L401">line 401</a>
     </li></ul></dd>
     
 
@@ -1468,7 +1415,7 @@ if any corresponding group is found.</p>
 
         
 <div class="param-desc">
-    <p>treeCtrl The associated controller.</p>
+    <p>treeCtrl The associated controller or null.</p>
 </div>
 
 
@@ -1537,7 +1484,7 @@ if any corresponding group is found.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L284">line 284</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L327">line 327</a>
     </li></ul></dd>
     
 
@@ -1668,7 +1615,7 @@ based on its name) will be removed. If any is found, nothing will append.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L264">line 264</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L307">line 307</a>
     </li></ul></dd>
     
 
@@ -1756,7 +1703,7 @@ already in the tree.</p>
     <dd class="tag-source"><ul class="dummy"><li>
     
         <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js">contribs/gmf/src/services/treemanager.js</a>,
-        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L124">line 124</a>
+        <a href="https://github.com/camptocamp/ngeo/blob/master/contribs/gmf/src/services/treemanager.js#L138">line 138</a>
     </li></ul></dd>
     
 
