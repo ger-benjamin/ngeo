@@ -17,7 +17,7 @@ app.module.value('gmfTreeUrl',
 
 /**
  * @constructor
- * @param {gmf.Themes} gmfThemes The gme themes service.
+ * @param {gmf.Themes} gmfThemes The gmf themes service.
  * @param {gmf.TreeManager} gmfTreeManager gmf Tree Manager service.
  * @param {gmf.ThemeManager} gmfThemeManager gmf Theme Manager service.
  * @param {ngeo.Location} ngeoLocation ngeo location service.
@@ -92,7 +92,7 @@ app.MainController = function(gmfThemes, gmfTreeManager, gmfThemeManager, ngeoLo
    * @export
    */
   this.getSetTheme = function(value) {
-    if (value !== undefined) {
+    if (value) {
       this.gmfThemeManager.addTheme(value);
     }
     return this.themes;

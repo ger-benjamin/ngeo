@@ -2872,12 +2872,6 @@ ol.MOUSEWHEELZOOM_MAXDELTA = 1;
 
 
 /**
- * @define {number} Mouse wheel timeout duration.
- */
-ol.MOUSEWHEELZOOM_TIMEOUT_DURATION = 80;
-
-
-/**
  * @define {number} Maximum width and/or height extent ratio that determines
  * when the overview map should be zoomed out.
  */
@@ -5451,18 +5445,6 @@ ol.extent.createOrUpdateFromRings = function(rings, opt_extent) {
 
 
 /**
- * Empty an extent in place.
- * @param {ol.Extent} extent Extent.
- * @return {ol.Extent} Extent.
- */
-ol.extent.empty = function(extent) {
-  extent[0] = extent[1] = Infinity;
-  extent[2] = extent[3] = -Infinity;
-  return extent;
-};
-
-
-/**
  * Determine if two extents are equivalent.
  * @param {ol.Extent} extent1 Extent 1.
  * @param {ol.Extent} extent2 Extent 2.
@@ -5865,29 +5847,6 @@ ol.extent.isEmpty = function(extent) {
 
 /**
  * @param {ol.Extent} extent Extent.
- * @return {boolean} Is infinite.
- */
-ol.extent.isInfinite = function(extent) {
-  return extent[0] == -Infinity || extent[1] == -Infinity ||
-      extent[2] == Infinity || extent[3] == Infinity;
-};
-
-
-/**
- * @param {ol.Extent} extent Extent.
- * @param {ol.Coordinate} coordinate Coordinate.
- * @return {ol.Coordinate} Coordinate.
- */
-ol.extent.normalize = function(extent, coordinate) {
-  return [
-    (coordinate[0] - extent[0]) / (extent[2] - extent[0]),
-    (coordinate[1] - extent[1]) / (extent[3] - extent[1])
-  ];
-};
-
-
-/**
- * @param {ol.Extent} extent Extent.
  * @param {ol.Extent=} opt_extent Extent.
  * @return {ol.Extent} Extent.
  */
@@ -5971,19 +5930,6 @@ ol.extent.intersectsSegment = function(extent, start, end) {
 
   }
   return intersects;
-};
-
-
-/**
- * @param {ol.Extent} extent1 Extent 1.
- * @param {ol.Extent} extent2 Extent 2.
- * @return {boolean} Touches.
- */
-ol.extent.touches = function(extent1, extent2) {
-  var intersects = ol.extent.intersects(extent1, extent2);
-  return intersects &&
-      (extent1[0] == extent2[2] || extent1[2] == extent2[0] ||
-       extent1[1] == extent2[3] || extent1[3] == extent2[1]);
 };
 
 
@@ -19415,6 +19361,12 @@ ol.interaction.MouseWheelZoom = function(opt_options) {
 
   /**
    * @private
+   * @type {number}
+   */
+  this.timeout_ = options.timeout !== undefined ? options.timeout : 80;
+
+  /**
+   * @private
    * @type {boolean}
    */
   this.useAnchor_ = options.useAnchor !== undefined ? options.useAnchor : true;
@@ -19486,8 +19438,7 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
       this.startTime_ = Date.now();
     }
 
-    var duration = ol.MOUSEWHEELZOOM_TIMEOUT_DURATION;
-    var timeLeft = Math.max(duration - (Date.now() - this.startTime_), 0);
+    var timeLeft = Math.max(this.timeout_ - (Date.now() - this.startTime_), 0);
 
     clearTimeout(this.timeoutId_);
     this.timeoutId_ = setTimeout(
@@ -25721,9 +25672,9 @@ ol.render.canvas.Replay = function(tolerance, maxExtent, resolution, overlaps) {
 
   /**
    * @private
-   * @type {boolean}
+   * @type {ol.Coordinate}
    */
-  this.alignFill_ = false;
+  this.fillOrigin_;
 
   /**
    * @private
@@ -25855,18 +25806,17 @@ ol.render.canvas.Replay.prototype.beginGeometry = function(geometry, feature) {
 /**
  * @private
  * @param {CanvasRenderingContext2D} context Context.
- * @param {ol.Transform} transform Transform.
  * @param {number} rotation Rotation.
  */
-ol.render.canvas.Replay.prototype.fill_ = function(context, transform, rotation) {
-  if (this.alignFill_) {
-    context.translate(transform[4], transform[5]);
+ol.render.canvas.Replay.prototype.fill_ = function(context, rotation) {
+  if (this.fillOrigin_) {
+    var origin = ol.transform.apply(this.renderedTransform_, this.fillOrigin_.slice());
+    context.translate(origin[0], origin[1]);
     context.rotate(rotation);
   }
   context.fill();
-  if (this.alignFill_) {
-    context.rotate(-rotation);
-    context.translate(-transform[4], -transform[5]);
+  if (this.fillOrigin_) {
+    context.setTransform.apply(context, this.resetTransform_);
   }
 };
 
@@ -25936,7 +25886,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
         break;
       case ol.render.canvas.Instruction.BEGIN_PATH:
         if (pendingFill > batchSize) {
-          this.fill_(context, transform, viewRotation);
+          this.fill_(context, viewRotation);
           pendingFill = 0;
         }
         if (pendingStroke > batchSize) {
@@ -26113,7 +26063,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
         if (batchSize) {
           pendingFill++;
         } else {
-          this.fill_(context, transform, viewRotation);
+          this.fill_(context, viewRotation);
         }
         ++i;
         break;
@@ -26151,10 +26101,10 @@ ol.render.canvas.Replay.prototype.replay_ = function(
             ol.colorlike.isColorLike(instruction[1]),
             '2nd instruction should be a string, ' +
             'CanvasPattern, or CanvasGradient');
-        this.alignFill_ = instruction[2];
+        this.fillOrigin_ = instruction[2];
 
         if (pendingFill) {
-          this.fill_(context, transform, viewRotation);
+          this.fill_(context, viewRotation);
           pendingFill = 0;
         }
 
@@ -26220,7 +26170,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
     }
   }
   if (pendingFill) {
-    this.fill_(context, transform, viewRotation);
+    this.fill_(context, viewRotation);
   }
   if (pendingStroke) {
     context.stroke();
@@ -26993,7 +26943,7 @@ ol.render.canvas.PolygonReplay.prototype.drawCircle = function(circleGeometry, f
     ol.DEBUG && console.assert(state.lineWidth !== undefined,
         'state.lineWidth should be defined');
   }
-  this.setFillStrokeStyles_();
+  this.setFillStrokeStyles_(circleGeometry);
   this.beginGeometry(circleGeometry, feature);
   // always fill the circle for hit detection
   this.hitDetectionInstructions.push(
@@ -27043,7 +26993,7 @@ ol.render.canvas.PolygonReplay.prototype.drawPolygon = function(polygonGeometry,
     ol.DEBUG && console.assert(state.lineWidth !== undefined,
         'state.lineWidth should be defined');
   }
-  this.setFillStrokeStyles_();
+  this.setFillStrokeStyles_(polygonGeometry);
   this.beginGeometry(polygonGeometry, feature);
   // always fill the polygon for hit detection
   this.hitDetectionInstructions.push(
@@ -27078,7 +27028,7 @@ ol.render.canvas.PolygonReplay.prototype.drawMultiPolygon = function(multiPolygo
     ol.DEBUG && console.assert(state.lineWidth !== undefined,
         'state.lineWidth should be defined');
   }
-  this.setFillStrokeStyles_();
+  this.setFillStrokeStyles_(multiPolygonGeometry);
   this.beginGeometry(multiPolygonGeometry, feature);
   // always fill the multi-polygon for hit detection
   this.hitDetectionInstructions.push(
@@ -27193,8 +27143,9 @@ ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyle = function(fillStyle
 
 /**
  * @private
+ * @param {ol.geom.Geometry|ol.render.Feature} geometry Geometry.
  */
-ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyles_ = function() {
+ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyles_ = function(geometry) {
   var state = this.state_;
   var fillStyle = state.fillStyle;
   var strokeStyle = state.strokeStyle;
@@ -27203,9 +27154,13 @@ ol.render.canvas.PolygonReplay.prototype.setFillStrokeStyles_ = function() {
   var lineJoin = state.lineJoin;
   var lineWidth = state.lineWidth;
   var miterLimit = state.miterLimit;
-  if (fillStyle !== undefined && state.currentFillStyle != fillStyle) {
-    this.instructions.push(
-        [ol.render.canvas.Instruction.SET_FILL_STYLE, fillStyle, typeof fillStyle != 'string']);
+  if (fillStyle !== undefined && (typeof fillStyle !== 'string' || state.currentFillStyle != fillStyle)) {
+    var fillInstruction = [ol.render.canvas.Instruction.SET_FILL_STYLE, fillStyle];
+    if (typeof fillStyle !== 'string') {
+      var fillExtent = geometry.getExtent();
+      fillInstruction.push([fillExtent[0], fillExtent[3]]);
+    }
+    this.instructions.push(fillInstruction);
     state.currentFillStyle = state.fillStyle;
   }
   if (strokeStyle !== undefined) {
@@ -30148,7 +30103,6 @@ goog.require('ol.extent');
 goog.require('ol.render.canvas');
 goog.require('ol.render.Event');
 goog.require('ol.renderer.canvas.Layer');
-goog.require('ol.size');
 
 
 /**
@@ -30352,7 +30306,7 @@ ol.renderer.canvas.TileLayer.prototype.forEachLayerAtPixel = function(
  */
 ol.renderer.canvas.TileLayer.prototype.renderTileImages = function(context, frameState, layerState) {
   var tilesToDraw = this.renderedTiles;
-  if (tilesToDraw.length == 0) {
+  if (tilesToDraw.length === 0) {
     return;
   }
 
@@ -30400,17 +30354,6 @@ ol.renderer.canvas.TileLayer.prototype.renderTileImages = function(context, fram
   var alpha = renderContext.globalAlpha;
   renderContext.globalAlpha = layerState.opacity;
 
-  // Origin of the lowest resolution tile that contains the map center. We will
-  // try to use the same origin for all resolutions for pixel-perfect tile
-  // alignment across resolutions.
-  var lowResTileCoord = tilesToDraw[0].getTileCoord();
-  var minZOrigin = ol.extent.getBottomLeft(tileGrid.getTileCoordExtent(
-      tileGrid.getTileCoordForCoordAndZ(center,
-          lowResTileCoord[0], this.tmpTileCoord_), this.tmpExtent));
-  var maxZ = tilesToDraw[tilesToDraw.length - 1].getTileCoord()[0];
-  var maxZResolution = tileGrid.getResolution(maxZ);
-  var maxZTileSize = ol.size.toSize(tileGrid.getTileSize(maxZ));
-
   var pixelExtents;
   var opaque = source.getOpaque(projection) && layerState.opacity == 1;
   if (!opaque) {
@@ -30453,23 +30396,17 @@ ol.renderer.canvas.TileLayer.prototype.renderTileImages = function(context, fram
   for (var i = 0, ii = tilesToDraw.length; i < ii; ++i) {
     var tile = tilesToDraw[i];
     var tileCoord = tile.getTileCoord();
+    var tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tmpExtent);
     var currentZ = tileCoord[0];
-    var tileSize = ol.size.toSize(tileGrid.getTileSize(currentZ));
     // Calculate all insert points by tile widths from a common origin to avoid
     // gaps caused by rounding
-    var originTileCoord = tileGrid.getTileCoordForCoordAndZ(minZOrigin, currentZ, this.tmpTileCoord_);
-    var origin = ol.extent.getBottomLeft(tileGrid.getTileCoordExtent(originTileCoord, this.tmpExtent));
-    // Calculate tile width and height by a tile size factor from the highest
-    // resolution tile size to avoid gaps when combining tiles from different
-    // resolutions
-    var resolutionFactor = tileGrid.getResolution(currentZ) / maxZResolution;
-    var tileSizeFactorW = tileSize[0] / maxZTileSize[0] * resolutionFactor;
-    var tileSizeFactorH = tileSize[1] / maxZTileSize[1] * resolutionFactor;
-    var w = Math.round(maxZTileSize[0] / resolution * maxZResolution * pixelRatio * drawScale) * tileSizeFactorW;
-    var h = Math.round(maxZTileSize[1] / resolution * maxZResolution * pixelRatio * drawScale) * tileSizeFactorH;
-    var left = (tileCoord[1] - originTileCoord[1]) * w +
+    var origin = ol.extent.getBottomLeft(tileGrid.getTileCoordExtent(
+        tileGrid.getTileCoordForCoordAndZ(center, currentZ, this.tmpTileCoord_)));
+    var w = Math.round(ol.extent.getWidth(tileExtent) * pixelScale);
+    var h = Math.round(ol.extent.getHeight(tileExtent) * pixelScale);
+    var left = Math.round((tileExtent[0] - origin[0]) * pixelScale / w) * w +
         offsetX + Math.round((origin[0] - center[0]) * pixelScale);
-    var top = (originTileCoord[2] - tileCoord[2] - 1) * h +
+    var top = Math.round((origin[1] - tileExtent[3]) * pixelScale / h) * h +
         offsetY + Math.round((center[1] - origin[1]) * pixelScale);
     if (!opaque) {
       var pixelExtent = [left, top, left + w, top + h];
@@ -63286,7 +63223,11 @@ ol.interaction.Draw = function(options) {
       geometryFunction = function(coordinates, opt_geometry) {
         var geometry = opt_geometry;
         if (geometry) {
-          geometry.setCoordinates(coordinates);
+          if (mode === ol.interaction.Draw.Mode.POLYGON) {
+            geometry.setCoordinates([coordinates[0].concat([coordinates[0][0]])]);
+          } else {
+            geometry.setCoordinates(coordinates);
+          }
         } else {
           geometry = new Constructor(coordinates);
         }
@@ -63751,12 +63692,10 @@ ol.interaction.Draw.prototype.finishDrawing = function() {
     coordinates.pop();
     this.geometryFunction_(coordinates, geometry);
   } else if (this.mode_ === ol.interaction.Draw.Mode.POLYGON) {
-    // When we finish drawing a polygon on the last point,
-    // the last coordinate is duplicated as for LineString
-    // we force the replacement by the first point
+    // remove the redundant last point in ring
     coordinates[0].pop();
-    coordinates[0].push(coordinates[0][0]);
     this.geometryFunction_(coordinates, geometry);
+    coordinates = geometry.getCoordinates();
   }
 
   // cast multi-part geometries
@@ -71377,8 +71316,23 @@ ol.source.TileArcGISRest = function(opt_options) {
    */
   this.tmpExtent_ = ol.extent.createEmpty();
 
+  this.setKey(this.getKeyForParams_());
 };
 ol.inherits(ol.source.TileArcGISRest, ol.source.TileImage);
+
+
+/**
+ * @private
+ * @return {string} The key for the current params.
+ */
+ol.source.TileArcGISRest.prototype.getKeyForParams_ = function() {
+  var i = 0;
+  var res = [];
+  for (var key in this.params_) {
+    res[i++] = key + '-' + this.params_[key];
+  }
+  return res.join('/');
+};
 
 
 /**
@@ -71490,7 +71444,7 @@ ol.source.TileArcGISRest.prototype.fixedTileUrlFunction = function(tileCoord, pi
  */
 ol.source.TileArcGISRest.prototype.updateParams = function(params) {
   ol.obj.assign(this.params_, params);
-  this.changed();
+  this.setKey(this.getKeyForParams_());
 };
 
 goog.provide('ol.source.TileDebug');
@@ -80863,7 +80817,7 @@ goog.require('ol.interaction.DragBox');
  *        ngeo-bbox-query-autoclear="ctrl.queryAutoClear">
  *      </span>
  *
- * See the live example: {@link ../examples/bboxquery.html}
+ * See the live example: [../examples/bboxquery.html](../examples/bboxquery.html)
  *
  * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
@@ -80947,7 +80901,7 @@ goog.require('ngeo');
  *
  *     <div ngeo-btn-group ngeo-btn-group-active="ctrl.drawToolActive">
  *
- * See our live example: {@link ../examples/interactionbtngroup.html}
+ * See our live example: [../examples/interactionbtngroup.html](../examples/interactionbtngroup.html)
  *
  * @htmlAttribute {*} ngeo-btn-group-active Any property of the scope.
  * Tells whether at least one button of the group is active.
@@ -81225,7 +81179,7 @@ goog.require('ol.control.Control');
  * instance, and the expression passed to "ngeo-control-map" should
  * evaluate to a map instance.
  *
- * See our live example: {@link ../examples/control.html}
+ * See our live example: [../examples/control.html](../examples/control.html)
  *
  * @htmlAttribute {ol.Map} ngeo-control-map The map.
  * @return {angular.Directive} The directive specs.
@@ -94069,7 +94023,7 @@ goog.require('ol.interaction.Draw');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -94149,7 +94103,7 @@ goog.require('ol.interaction.Draw');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -94758,7 +94712,7 @@ goog.require('ngeo');
  *
  *      <input type="checkbox" ngModel="geolocation.tracking" />
  *
- * See our live example: {@link ../examples/geolocation.html}
+ * See our live example: [../examples/geolocation.html](../examples/geolocation.html)
  *
  * @typedef {function(ol.Geolocation)}
  * @ngdoc service
@@ -95453,7 +95407,7 @@ ngeo.DesktopGeolocationEventType = {
  *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
  *      </button>
  *
- * See our live example: {@link ../examples/desktopgeolocation.html}
+ * See our live example: [../examples/desktopgeolocation.html](../examples/desktopgeolocation.html)
  *
  * @htmlAttribute {ol.Map} gmf-geolocation-map The map.
  * @htmlAttribute {ngeox.DesktopGeolocationDirectiveOptions} gmf-geolocation-options The options.
@@ -95667,7 +95621,7 @@ goog.require('ngeo');
  *
  *      <input type="checkbox" ngModel="interaction.active" />
  *
- * See our live example: {@link ../examples/interactiontoggle.html}
+ * See our live example: [../examples/interactiontoggle.html](../examples/interactiontoggle.html)
  *
  * @typedef {function(ol.interaction.Interaction)}
  * @ngdoc service
@@ -96177,7 +96131,7 @@ goog.require('ol.source.Vector');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -98490,7 +98444,7 @@ goog.require('ngeo');
  *      <input type="file" ngeo-filereader="ctrl.fileContent"
  *        ngeo-filereader-supported="ctrl.supported"/>
  *
- * See our live example: {@link ../examples/importfeatures.html}
+ * See our live example: [../examples/importfeatures.html](../examples/importfeatures.html)
  *
  * @htmlAttribute {string} ngeo-filereader The content of the file read.
  * @htmlAttribute {boolean=} ngeo-filereader-supported Whether the FileReader API is supported.
@@ -98964,8 +98918,8 @@ goog.require('ngeo');
  *      <input type="checkbox" ngModel="layer.visible" />
  *
  * See our live examples:
- * {@link ../examples/layeropacity.html}
- * {@link ../examples/layervisibility.html}
+ * [../examples/layeropacity.html](../examples/layeropacity.html)
+ * [../examples/layervisibility.html](../examples/layervisibility.html)
  *
  * @typedef {function(ol.layer.Base)}
  * @ngdoc service
@@ -99229,7 +99183,7 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  * controller: "layertreeCtrl". You can refer to that property in a custom
  * template for example.
  *
- * See our live example: {@link ../examples/layertree.html}
+ * See our live example: [../examples/layertree.html](../examples/layertree.html)
  *
  * @htmlAttribute {Object} ngeo-layertree One theme (JSON).
  * @htmlAttribute {string} ngeo-layertree-templateurl The template URL.
@@ -99634,8 +99588,8 @@ goog.require('ol.Map');
  *      <div ngeo-map="ctrl.map"></div>
  *
  * See our live examples:
- * {@link ../examples/permalink.html}
- * {@link ../examples/simple.html}
+ * [../examples/permalink.html](../examples/permalink.html)
+ * [../examples/simple.html](../examples/simple.html)
  *
  * @htmlAttribute {ol.Map} ngeo-map The map.
  * @return {angular.Directive} Directive Definition Object.
@@ -99692,7 +99646,7 @@ goog.require('ngeo.Query');
  *        ngeo-map-query-autoclear="ctrl.queryAutoClear">
  *      </span>
  *
- * See our live example: {@link ../examples/mapquery.html}
+ * See our live example: [../examples/mapquery.html](../examples/mapquery.html)
  *
  * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
@@ -99791,7 +99745,7 @@ ngeo.MobileGeolocationEventType = {
  *        ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
  *      </button>
  *
- * See our live example: {@link ../examples/mobilegeolocation.html}
+ * See our live example: [../examples/mobilegeolocation.html](../examples/mobilegeolocation.html)
  *
  * @htmlAttribute {ol.Map} ngeo-mobile-geolocation-map The map.
  * @htmlAttribute {ngeox.MobileGeolocationDirectiveOptions} ngeo-mobile-geolocation-options The options.
@@ -100080,7 +100034,7 @@ goog.require('ngeo');
  * Note: for z-indexing purpose, the modal DOM element is automatically moved
  * to document body element.
  *
- * See our live example: {@link ../examples/modal.html}
+ * See our live example: [../examples/modal.html](../examples/modal.html)
  *
  * @param {angular.$parse} $parse Angular parse service.
  * @return {angular.Directive} The directive specs.
@@ -103761,7 +103715,7 @@ goog.require('ngeo');
  * Provides a debounce service. That service is a function
  * used to debounce calls to a user-provided function.
  *
- * See our live example: {@link ../examples/permalink.html}
+ * See our live example: [../examples/permalink.html](../examples/permalink.html)
  *
  * @typedef {function(function(?), number, boolean):function()}
  * @ngdoc service
@@ -103833,7 +103787,7 @@ goog.require('ngeo.Debounce');
  * processed by {@link ngeox.profile.ElevationExtractor} and
  * {@link ngeox.profile.PoiExtractor}.
  *
- * See our live example: {@link ../examples/profile.html}
+ * See our live example: [../examples/profile.html](../examples/profile.html)
  *
  * @htmlAttribute {?Object} ngeo-profile The profile data.
  * @htmlAttribute {ngeox.profile.ProfileOptions} ngeo-profile-options The options.
@@ -103966,7 +103920,7 @@ goog.require('ngeo');
  *        <option ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</option>
  *      </select>
  *
- * See our live example: {@link ../examples/locationchooser.html}
+ * See our live example: [../examples/locationchooser.html](../examples/locationchooser.html)
  *
  * @htmlAttribute {ol.Map} ngeo-recenter-map The map.
  * @return {angular.Directive} Directive Definition Object.
@@ -104288,7 +104242,7 @@ goog.require('ol.Map');
  *      <div>
  *      <input type="checkbox" ng-model="ctrl.open" />
  *
- * See our live example: {@link ../examples/animation.html}
+ * See our live example: [../examples/animation.html](../examples/animation.html)
  *
  * @param {angular.$window} $window Angular window service.
  * @return {angular.Directive} The directive specs.
@@ -104411,7 +104365,7 @@ ngeo.ScaleselectorOptions;
  * The directive doesn't create any watcher. In particular the object including
  * the scales information is now watched.
  *
- * See our live example: {@link ../examples/scaleselector.html}
+ * See our live example: [../examples/scaleselector.html](../examples/scaleselector.html)
  *
  * @htmlAttribute {Object.<string, string>} ngeo-scaleselector-scales The available scales (key: scale, value: display text).
  * @htmlAttribute {ol.Map} ngeo-scaleselector-map The map.
@@ -104632,7 +104586,7 @@ goog.require('ngeo');
  *        ngeo-search-datasets="ctrl.typeaheadDatasets"
  *        ngeo-search-listeners="crtl.typeaheadListeners">
  *
- * See our live example: {@link ../examples/search.html}
+ * See our live example: [../examples/search.html](../examples/search.html)
  *
  * @htmlAttribute {TypeaheadOptions} ngeo-search The options.
  * @htmlAttribute {Array.<TypeaheadDataset>} ngeo-search-datasets The sources datasets.
@@ -111241,7 +111195,7 @@ ngeo.SortableOptions;
  * if some outside code adds/removes elements to/from the "sortable" array,
  * the "ngeoSortable" directive will pick it up.
  *
- * See our live example: {@link ../examples/layerorder.html}
+ * See our live example: [../examples/layerorder.html](../examples/layerorder.html)
  *
  * @htmlAttribute {Array.<ol.layer.Base>} ngeo-sortable The layers to sort.
  * @htmlAttribute {!ngeo.SortableOptions} ngeo-sortable-options The options.
@@ -115225,14 +115179,18 @@ ngeo.interaction.ModifyRectangle.prototype.calculateNewPixel_ = function(
   origin, destination, point) {
 
   var aVector = [destination[0] - origin[0], destination[1] - origin[1]];
-  var bVector = [point[0] - origin[0],
-                 point[1] - origin[1]];
+  var bVector = [
+    point[0] - origin[0],
+    point[1] - origin[1]
+  ];
 
   var abScalarProduct = aVector[0] * bVector[0] + aVector[1] * bVector[1];
   var bDivisor = Math.pow(bVector[0], 2) + Math.pow(bVector[1], 2);
 
-  var b2Vector = [(bVector[0] * abScalarProduct) / bDivisor,
-                  (bVector[1] * abScalarProduct) / bDivisor];
+  var b2Vector = [
+    (bVector[0] * abScalarProduct) / bDivisor,
+    (bVector[1] * abScalarProduct) / bDivisor
+  ];
 
   return [b2Vector[0] + origin[0], b2Vector[1] + origin[1]];
 };
@@ -117261,8 +117219,8 @@ ol.inherits(ngeo.BackgroundEvent, ol.events.Event);
  *     });
  *
  * See our live examples:
- * {@link ../examples/backgroundlayer.html}
- * {@link ../examples/backgroundlayerdropdown.html}
+ * [../examples/backgroundlayer.html](../examples/backgroundlayer.html)
+ * [../examples/backgroundlayerdropdown.html](../examples/backgroundlayerdropdown.html)
  *
  * @extends {ol.Observable}
  * @constructor
@@ -121839,7 +121797,7 @@ ngeo.MockLocationProvider;
  *
  * The ngeo Location type.
  *
- * See our live example: {@link ../examples/permalink.html}
+ * See our live example: [../examples/permalink.html](../examples/permalink.html)
  *
  * @param {Location} location Location.
  * @param {History} history History.
@@ -122802,7 +122760,7 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
  *       'rotation': 45 // degree
  *     });
  *
- * See our live example: {@link ../examples/mapfishprint.html}
+ * See our live example: [../examples/mapfishprint.html](../examples/mapfishprint.html)
  *
  * TODO and limitations:
  *
@@ -124578,8 +124536,8 @@ goog.require('ngeo');
  * A simple object that can be managed by `ngeo.ToolActivateMgr`.
  *
  * See our live examples:
- * {@link ../examples/mapquery.html}
- * {@link ../examples/toolActivate.html}
+ * [../examples/mapquery.html](../examples/mapquery.html)
+ * [../examples/toolActivate.html](../examples/toolActivate.html)
  *
  * @param {Object} toolContext An object which acts as the context for the tool.
  * @param {string} activePropertyName The name of a boolean property on
@@ -124643,8 +124601,8 @@ ngeo.ToolMgrEntry;
  *     ngeoToolActivateMgr.deactivateTool(tool);
  *
  * See our live examples:
- * {@link ../examples/mapquery.html}
- * {@link ../examples/toolActivate.html}
+ * [../examples/mapquery.html](../examples/mapquery.html)
+ * [../examples/toolActivate.html](../examples/toolActivate.html)
  *
  * @param {angular.Scope} $rootScope The rootScope provider.
  * @constructor
