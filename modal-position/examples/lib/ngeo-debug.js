@@ -80412,12 +80412,12 @@ ngeo.Query.prototype.getQueryableSources_ = function(map, wfsOnly) {
             'validateLayerParams option.'
         );
         var layerLayers = layerSource.getParams()['LAYERS'].split(',');
-        var cfgLayer = item.source.wmsSource.getParams()['LAYERS'].split(',');
+        var cfgLayer = item.source.layers.split(',');
 
-        var every = cfgLayer.every(function(layer) {
-          return layerLayers.indexOf(layer) != -1;
+        var layerIsOnTheMap = cfgLayer.some(function(layer) {
+          return layerLayers.indexOf(layer) > -1;
         });
-        if (!every) {
+        if (!layerIsOnTheMap) {
           continue;
         }
       }
@@ -80817,7 +80817,7 @@ goog.require('ol.interaction.DragBox');
  *        ngeo-bbox-query-autoclear="ctrl.queryAutoClear">
  *      </span>
  *
- * See the live example: {@link ../examples/bboxquery.html}
+ * See the live example: [../examples/bboxquery.html](../examples/bboxquery.html)
  *
  * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
@@ -80901,7 +80901,7 @@ goog.require('ngeo');
  *
  *     <div ngeo-btn-group ngeo-btn-group-active="ctrl.drawToolActive">
  *
- * See our live example: {@link ../examples/interactionbtngroup.html}
+ * See our live example: [../examples/interactionbtngroup.html](../examples/interactionbtngroup.html)
  *
  * @htmlAttribute {*} ngeo-btn-group-active Any property of the scope.
  * Tells whether at least one button of the group is active.
@@ -81179,7 +81179,7 @@ goog.require('ol.control.Control');
  * instance, and the expression passed to "ngeo-control-map" should
  * evaluate to a map instance.
  *
- * See our live example: {@link ../examples/control.html}
+ * See our live example: [../examples/control.html](../examples/control.html)
  *
  * @htmlAttribute {ol.Map} ngeo-control-map The map.
  * @return {angular.Directive} The directive specs.
@@ -94023,7 +94023,7 @@ goog.require('ol.interaction.Draw');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -94103,7 +94103,7 @@ goog.require('ol.interaction.Draw');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -94712,7 +94712,7 @@ goog.require('ngeo');
  *
  *      <input type="checkbox" ngModel="geolocation.tracking" />
  *
- * See our live example: {@link ../examples/geolocation.html}
+ * See our live example: [../examples/geolocation.html](../examples/geolocation.html)
  *
  * @typedef {function(ol.Geolocation)}
  * @ngdoc service
@@ -95407,7 +95407,7 @@ ngeo.DesktopGeolocationEventType = {
  *        ngeo-desktop-geolocation-options="ctrl.desktopGeolocationOptions">
  *      </button>
  *
- * See our live example: {@link ../examples/desktopgeolocation.html}
+ * See our live example: [../examples/desktopgeolocation.html](../examples/desktopgeolocation.html)
  *
  * @htmlAttribute {ol.Map} gmf-geolocation-map The map.
  * @htmlAttribute {ngeox.DesktopGeolocationDirectiveOptions} gmf-geolocation-options The options.
@@ -95621,7 +95621,7 @@ goog.require('ngeo');
  *
  *      <input type="checkbox" ngModel="interaction.active" />
  *
- * See our live example: {@link ../examples/interactiontoggle.html}
+ * See our live example: [../examples/interactiontoggle.html](../examples/interactiontoggle.html)
  *
  * @typedef {function(ol.interaction.Interaction)}
  * @ngdoc service
@@ -96131,7 +96131,7 @@ goog.require('ol.source.Vector');
  * @classdesc
  * Interaction dedicated to measure length.
  *
- * See our live example: {@link ../examples/measure.html}
+ * See our live example: [../examples/measure.html](../examples/measure.html)
  *
  * @constructor
  * @struct
@@ -98444,7 +98444,7 @@ goog.require('ngeo');
  *      <input type="file" ngeo-filereader="ctrl.fileContent"
  *        ngeo-filereader-supported="ctrl.supported"/>
  *
- * See our live example: {@link ../examples/importfeatures.html}
+ * See our live example: [../examples/importfeatures.html](../examples/importfeatures.html)
  *
  * @htmlAttribute {string} ngeo-filereader The content of the file read.
  * @htmlAttribute {boolean=} ngeo-filereader-supported Whether the FileReader API is supported.
@@ -98918,8 +98918,8 @@ goog.require('ngeo');
  *      <input type="checkbox" ngModel="layer.visible" />
  *
  * See our live examples:
- * {@link ../examples/layeropacity.html}
- * {@link ../examples/layervisibility.html}
+ * [../examples/layeropacity.html](../examples/layeropacity.html)
+ * [../examples/layervisibility.html](../examples/layervisibility.html)
  *
  * @typedef {function(ol.layer.Base)}
  * @ngdoc service
@@ -99183,7 +99183,7 @@ ngeo.module.value('ngeoLayertreeTemplateUrl',
  * controller: "layertreeCtrl". You can refer to that property in a custom
  * template for example.
  *
- * See our live example: {@link ../examples/layertree.html}
+ * See our live example: [../examples/layertree.html](../examples/layertree.html)
  *
  * @htmlAttribute {Object} ngeo-layertree One theme (JSON).
  * @htmlAttribute {string} ngeo-layertree-templateurl The template URL.
@@ -99588,8 +99588,8 @@ goog.require('ol.Map');
  *      <div ngeo-map="ctrl.map"></div>
  *
  * See our live examples:
- * {@link ../examples/permalink.html}
- * {@link ../examples/simple.html}
+ * [../examples/permalink.html](../examples/permalink.html)
+ * [../examples/simple.html](../examples/simple.html)
  *
  * @htmlAttribute {ol.Map} ngeo-map The map.
  * @return {angular.Directive} Directive Definition Object.
@@ -99646,7 +99646,7 @@ goog.require('ngeo.Query');
  *        ngeo-map-query-autoclear="ctrl.queryAutoClear">
  *      </span>
  *
- * See our live example: {@link ../examples/mapquery.html}
+ * See our live example: [../examples/mapquery.html](../examples/mapquery.html)
  *
  * @param {ngeo.Query} ngeoQuery The ngeo Query service.
  * @return {angular.Directive} The Directive Definition Object.
@@ -99745,7 +99745,7 @@ ngeo.MobileGeolocationEventType = {
  *        ngeo-mobile-geolocation-options="ctrl.mobileGeolocationOptions">
  *      </button>
  *
- * See our live example: {@link ../examples/mobilegeolocation.html}
+ * See our live example: [../examples/mobilegeolocation.html](../examples/mobilegeolocation.html)
  *
  * @htmlAttribute {ol.Map} ngeo-mobile-geolocation-map The map.
  * @htmlAttribute {ngeox.MobileGeolocationDirectiveOptions} ngeo-mobile-geolocation-options The options.
@@ -100034,7 +100034,7 @@ goog.require('ngeo');
  * Note: for z-indexing purpose, the modal DOM element is automatically moved
  * to document body element.
  *
- * See our live example: {@link ../examples/modal.html}
+ * See our live example: [../examples/modal.html](../examples/modal.html)
  *
  * @param {angular.$parse} $parse Angular parse service.
  * @return {angular.Directive} The directive specs.
@@ -103715,7 +103715,7 @@ goog.require('ngeo');
  * Provides a debounce service. That service is a function
  * used to debounce calls to a user-provided function.
  *
- * See our live example: {@link ../examples/permalink.html}
+ * See our live example: [../examples/permalink.html](../examples/permalink.html)
  *
  * @typedef {function(function(?), number, boolean):function()}
  * @ngdoc service
@@ -103787,7 +103787,7 @@ goog.require('ngeo.Debounce');
  * processed by {@link ngeox.profile.ElevationExtractor} and
  * {@link ngeox.profile.PoiExtractor}.
  *
- * See our live example: {@link ../examples/profile.html}
+ * See our live example: [../examples/profile.html](../examples/profile.html)
  *
  * @htmlAttribute {?Object} ngeo-profile The profile data.
  * @htmlAttribute {ngeox.profile.ProfileOptions} ngeo-profile-options The options.
@@ -103920,7 +103920,7 @@ goog.require('ngeo');
  *        <option ngeo-extent="[727681, 5784754, 1094579, 6029353]">B</option>
  *      </select>
  *
- * See our live example: {@link ../examples/locationchooser.html}
+ * See our live example: [../examples/locationchooser.html](../examples/locationchooser.html)
  *
  * @htmlAttribute {ol.Map} ngeo-recenter-map The map.
  * @return {angular.Directive} Directive Definition Object.
@@ -104242,7 +104242,7 @@ goog.require('ol.Map');
  *      <div>
  *      <input type="checkbox" ng-model="ctrl.open" />
  *
- * See our live example: {@link ../examples/animation.html}
+ * See our live example: [../examples/animation.html](../examples/animation.html)
  *
  * @param {angular.$window} $window Angular window service.
  * @return {angular.Directive} The directive specs.
@@ -104365,7 +104365,7 @@ ngeo.ScaleselectorOptions;
  * The directive doesn't create any watcher. In particular the object including
  * the scales information is now watched.
  *
- * See our live example: {@link ../examples/scaleselector.html}
+ * See our live example: [../examples/scaleselector.html](../examples/scaleselector.html)
  *
  * @htmlAttribute {Object.<string, string>} ngeo-scaleselector-scales The available scales (key: scale, value: display text).
  * @htmlAttribute {ol.Map} ngeo-scaleselector-map The map.
@@ -104586,7 +104586,7 @@ goog.require('ngeo');
  *        ngeo-search-datasets="ctrl.typeaheadDatasets"
  *        ngeo-search-listeners="crtl.typeaheadListeners">
  *
- * See our live example: {@link ../examples/search.html}
+ * See our live example: [../examples/search.html](../examples/search.html)
  *
  * @htmlAttribute {TypeaheadOptions} ngeo-search The options.
  * @htmlAttribute {Array.<TypeaheadDataset>} ngeo-search-datasets The sources datasets.
@@ -111195,10 +111195,15 @@ ngeo.SortableOptions;
  * if some outside code adds/removes elements to/from the "sortable" array,
  * the "ngeoSortable" directive will pick it up.
  *
- * See our live example: {@link ../examples/layerorder.html}
+ * See our live example: [../examples/layerorder.html](../examples/layerorder.html)
  *
  * @htmlAttribute {Array.<ol.layer.Base>} ngeo-sortable The layers to sort.
- * @htmlAttribute {!ngeo.SortableOptions} ngeo-sortable The options.
+ * @htmlAttribute {!ngeo.SortableOptions} ngeo-sortable-options The options.
+ * @htmlAttribute {Function(angular.JQLite, Array)?} ngeo-sortable-callback
+ *     Callback function called after the move end. The Function will be called
+ *     with the element and the sort array as arguments.
+ * @htmlAttribute {Object?} ngeo-sortable-callback-ctx Context to apply at
+ *     the call of the callback function.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @return {angular.Directive} The directive specs.
  * @ngInject
@@ -111222,6 +111227,9 @@ ngeo.sortableDirective = function($timeout) {
 
           var optionsObject = scope.$eval(attrs['ngeoSortableOptions']);
           var options = getOptions(optionsObject);
+
+          var callbackFn = scope.$eval(attrs['ngeoSortableCallback']);
+          var callbackCtx = scope.$eval(attrs['ngeoSortableCallbackCtx']);
 
           /**
            * @type {goog.fx.DragListGroup}
@@ -111326,6 +111334,10 @@ ngeo.sortableDirective = function($timeout) {
                 scope.$apply(function() {
                   sortable.push(sortable.splice(idx, 1)[0]);
                 });
+              }
+              // Call the callback function if it exists.
+              if (callbackFn instanceof Function) {
+                callbackFn.apply(callbackCtx, [element, sortable]);
               }
             });
 
@@ -115167,14 +115179,18 @@ ngeo.interaction.ModifyRectangle.prototype.calculateNewPixel_ = function(
   origin, destination, point) {
 
   var aVector = [destination[0] - origin[0], destination[1] - origin[1]];
-  var bVector = [point[0] - origin[0],
-                 point[1] - origin[1]];
+  var bVector = [
+    point[0] - origin[0],
+    point[1] - origin[1]
+  ];
 
   var abScalarProduct = aVector[0] * bVector[0] + aVector[1] * bVector[1];
   var bDivisor = Math.pow(bVector[0], 2) + Math.pow(bVector[1], 2);
 
-  var b2Vector = [(bVector[0] * abScalarProduct) / bDivisor,
-                  (bVector[1] * abScalarProduct) / bDivisor];
+  var b2Vector = [
+    (bVector[0] * abScalarProduct) / bDivisor,
+    (bVector[1] * abScalarProduct) / bDivisor
+  ];
 
   return [b2Vector[0] + origin[0], b2Vector[1] + origin[1]];
 };
@@ -117203,8 +117219,8 @@ ol.inherits(ngeo.BackgroundEvent, ol.events.Event);
  *     });
  *
  * See our live examples:
- * {@link ../examples/backgroundlayer.html}
- * {@link ../examples/backgroundlayerdropdown.html}
+ * [../examples/backgroundlayer.html](../examples/backgroundlayer.html)
+ * [../examples/backgroundlayerdropdown.html](../examples/backgroundlayerdropdown.html)
  *
  * @extends {ol.Observable}
  * @constructor
@@ -117945,10 +117961,10 @@ ngeo.Disclaimer.prototype.showMessage = function(message) {
     return;
   }
 
-  var showInModal = message.modal === true;
+  var showInPopup = message.popup === true;
 
-  if (showInModal) {
-    // display the message in a modal, i.e. using the ngeo create popup
+  if (showInPopup) {
+    // display the message in a popup, i.e. using the ngeo create popup
     var popup = this.createPopup_();
     var content = this.sce_.trustAsHtml(message.msg);
     popup.open({
@@ -121749,12 +121765,33 @@ goog.Uri.QueryData.prototype.extend = function(var_args) {
   }
 };
 
+goog.provide('ngeo.string');
+
+
+/**
+ * @param {*} str The string to url-encode.
+ * @return {string} The encoded string.
+ */
+ngeo.string.urlEncode = function(str) {
+  return encodeURIComponent(String(str));
+};
+
+
+/**
+ * @param {string} str The string to url decode.
+ * @return {string} The decoded string.
+ */
+ngeo.string.urlDecode = function(str) {
+  return decodeURIComponent(str.replace(/\+/g, ' '));
+};
+
 goog.provide('ngeo.Location');
 goog.provide('ngeo.MockLocationProvider');
 
 goog.require('goog.Uri');
 goog.require('goog.object');
 goog.require('ngeo');
+goog.require('ngeo.string');
 
 
 /**
@@ -121781,7 +121818,7 @@ ngeo.MockLocationProvider;
  *
  * The ngeo Location type.
  *
- * See our live example: {@link ../examples/permalink.html}
+ * See our live example: [../examples/permalink.html](../examples/permalink.html)
  *
  * @param {Location} location Location.
  * @param {History} history History.
@@ -121879,11 +121916,12 @@ ngeo.Location.prototype.getParam = function(key) {
 /**
  * Get a param from the fragment of the location's URI.
  * @param {string} key Param key.
- * @return {string} Param value.
+ * @return {string|undefined} Param value.
  * @export
  */
 ngeo.Location.prototype.getFragmentParam = function(key) {
-  return /** @type {string} */ (this.getFragmentUri_().getQueryData().get(key));
+  var val = /** @type {string} */ (this.getFragmentUri_().getQueryData().get(key));
+  return val !== undefined ? ngeo.string.urlDecode(val) : undefined;
 };
 
 
@@ -121991,6 +122029,7 @@ ngeo.Location.prototype.updateFragmentParams = function(params) {
   var fragmentUri = this.getFragmentUri_();
   var qd = fragmentUri.getQueryData();
   goog.object.forEach(params, function(val, key) {
+    val = val !== undefined ? ngeo.string.urlEncode(val) : undefined;
     qd.set(key, val);
   });
   this.updateFragmentFromUri_(fragmentUri);
@@ -122744,7 +122783,7 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
  *       'rotation': 45 // degree
  *     });
  *
- * See our live example: {@link ../examples/mapfishprint.html}
+ * See our live example: [../examples/mapfishprint.html](../examples/mapfishprint.html)
  *
  * TODO and limitations:
  *
@@ -124520,8 +124559,8 @@ goog.require('ngeo');
  * A simple object that can be managed by `ngeo.ToolActivateMgr`.
  *
  * See our live examples:
- * {@link ../examples/mapquery.html}
- * {@link ../examples/toolActivate.html}
+ * [../examples/mapquery.html](../examples/mapquery.html)
+ * [../examples/toolActivate.html](../examples/toolActivate.html)
  *
  * @param {Object} toolContext An object which acts as the context for the tool.
  * @param {string} activePropertyName The name of a boolean property on
@@ -124585,8 +124624,8 @@ ngeo.ToolMgrEntry;
  *     ngeoToolActivateMgr.deactivateTool(tool);
  *
  * See our live examples:
- * {@link ../examples/mapquery.html}
- * {@link ../examples/toolActivate.html}
+ * [../examples/mapquery.html](../examples/mapquery.html)
+ * [../examples/toolActivate.html](../examples/toolActivate.html)
  *
  * @param {angular.Scope} $rootScope The rootScope provider.
  * @constructor
@@ -125097,6 +125136,159 @@ ngeo.WfsPermalink.prototype.clearResult_ = function() {
 };
 
 ngeo.module.service('ngeoWfsPermalink', ngeo.WfsPermalink);
+
+goog.provide('ngeo.source.AsitVD');
+
+goog.require('ol.Attribution');
+goog.require('ol.source.WMTS');
+goog.require('ol.tilegrid.WMTS');
+
+
+/**
+ * @const {!Array.<number>}
+ * @private
+ */
+ngeo.source.AsitVDResolutions_ = [
+  4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250, 2000, 1750, 1500, 1250,
+  1000, 750, 650, 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5
+];
+
+
+/**
+ * @const {ol.tilegrid.WMTS}
+ * @private
+ */
+ngeo.source.AsitVDTileGrid_ = new ol.tilegrid.WMTS({
+  extent: [420000, 30000, 900000, 350000],
+  resolutions: ngeo.source.AsitVDResolutions_,
+  matrixIds: ngeo.source.AsitVDResolutions_.map(function(value, index) {
+    return String(index);
+  })
+});
+
+
+/**
+ * Layer source for the ASIT VD tile server.
+ * @see https://www.asitvd.ch/chercher/geoservices/fond-de-plan-asit-vd.html
+ *
+ * @constructor
+ * @extends {ol.source.WMTS}
+ * @param {ngeox.source.AsitVDOptions} options WMTS options.
+ * @export
+ */
+ngeo.source.AsitVD = function(options) {
+
+  ol.source.WMTS.call(this, {
+    attributions: [ngeo.source.AsitVD.ATTRIBUTION_],
+    url: 'https://ows{1-4}.asitvd.ch/wmts/1.0.0/{Layer}/default/default/0/' +
+        '21781/{TileMatrix}/{TileRow}/{TileCol}.png',
+    projection: 'EPSG:21781',
+    requestEncoding: 'REST',
+    layer: options.layer,
+    style: 'default',
+    matrixSet: '21781',
+    format: 'image/png',
+    tileGrid: ngeo.source.AsitVDTileGrid_
+  });
+};
+ol.inherits(ngeo.source.AsitVD, ol.source.WMTS);
+
+
+/**
+ * @const {ol.Attribution}
+ * @private
+ */
+ngeo.source.AsitVD.ATTRIBUTION_ = new ol.Attribution({
+  html: 'géodonnées &copy; Etat de Vaud & &copy; contributeurs OpenStreetMap'
+});
+
+goog.provide('ngeo.source.Swisstopo');
+
+goog.require('ol.Attribution');
+goog.require('ol.source.WMTS');
+goog.require('ol.tilegrid.WMTS');
+
+
+/**
+ * @const {!Array.<number>}
+ * @private
+ */
+ngeo.source.SwisstopoResolutions_ = [
+  4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250, 2000, 1750, 1500, 1250,
+  1000, 750, 650, 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5
+];
+
+
+/**
+ * @const {ol.tilegrid.WMTS}
+ * @private
+ */
+ngeo.source.SwisstopoTileGrid2056_ = new ol.tilegrid.WMTS({
+  extent: [1420000, 130000, 1900000, 1350000],
+  resolutions: ngeo.source.SwisstopoResolutions_,
+  matrixIds: ngeo.source.SwisstopoResolutions_.map(function(value, index) {
+    return String(index);
+  })
+});
+
+
+/**
+ * @const {ol.tilegrid.WMTS}
+ * @private
+ */
+ngeo.source.SwisstopoTileGrid21781_ = new ol.tilegrid.WMTS({
+  extent: [420000, 30000, 900000, 350000],
+  resolutions: ngeo.source.SwisstopoResolutions_,
+  matrixIds: ngeo.source.SwisstopoResolutions_.map(function(value, index) {
+    return String(index);
+  })
+});
+
+
+/**
+ * Layer source for the Swisstopo tile server.
+ * WARNING: This tile server is not publicly available: you have to be
+ *          registered by Swisstopo to use the service.
+ * @see https://api3.geo.admin.ch/services/sdiservices.html#wmts
+ *
+ * @constructor
+ * @extends {ol.source.WMTS}
+ * @param {ngeox.source.SwisstopoOptions} options WMTS options.
+ * @export
+ */
+ngeo.source.Swisstopo = function(options) {
+
+  var format = options.format ? options.format : 'png';
+  var projection = (options.projection || 'EPSG:21781').toUpperCase();
+  var tilegrid = projection === 'EPSG:21781' ? ngeo.source.SwisstopoTileGrid21781_ :
+    ngeo.source.SwisstopoTileGrid2056_;
+
+  ol.source.WMTS.call(this, {
+    attributions: [ngeo.source.Swisstopo.ATTRIBUTION_],
+    url: 'https://wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}' +
+        '/' + projection + '/{TileMatrix}/{TileRow}/{TileCol}.' + format,
+    dimensions: {
+      'Time': options.timestamp
+    },
+    projection: projection,
+    requestEncoding: 'REST',
+    layer: options.layer,
+    style: 'default',
+    matrixSet: projection.split(':')[1],
+    format: 'image/' + format,
+    tileGrid: tilegrid
+  });
+};
+ol.inherits(ngeo.source.Swisstopo, ol.source.WMTS);
+
+
+/**
+ * @const {ol.Attribution}
+ * @private
+ */
+ngeo.source.Swisstopo.ATTRIBUTION_ = new ol.Attribution({
+  html: '&copy; <a href="http://www.swisstopo.admin.ch">swisstopo</a>'
+});
 
 
 /**
