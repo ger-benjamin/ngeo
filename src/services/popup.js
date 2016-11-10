@@ -10,6 +10,12 @@ goog.require('ngeo');
  */
 goog.require('ngeo.popupDirective');
 
+/**
+ * This goog.require is needed because of 'ngeo-modal' used in
+ * the template.
+ * @suppress {extraRequire}
+ */
+goog.require('ngeo.modalDirective');
 
 /**
  * @typedef {function():!ngeo.Popup}
@@ -34,10 +40,12 @@ ngeo.CreatePopup;
  * @param {angular.Scope} $rootScope The rootScope provider.
  * @param {angular.$sce} $sce Angular sce service.
  * @param {angular.$timeout} $timeout Angular timeout service.
+ * @param {boolean=} opt_createModal True to create a modal. Otherwhise a popup
+ *     will be created.
  * @ngdoc service
  * @ngname ngeoCreatePopup
  */
-ngeo.Popup = function($compile, $rootScope, $sce, $timeout) {
+ngeo.Popup = function($compile, $rootScope, $sce, $timeout, opt_createModal) {
 
   /**
    * The scope the compiled element is link to.
@@ -73,11 +81,18 @@ ngeo.Popup = function($compile, $rootScope, $sce, $timeout) {
   this.timeout_ = $timeout;
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.isModal_ = opt_createModal === true;
+
+  /**
    * The element.
    * @type {angular.JQLite}
    * @private
    */
-  this.element_ = angular.element('<div ngeo-popup></div>');
+  this.element_ = this.isModal_  ? this.createModal_() :
+      angular.element('<div ngeo-popup></div>');
 
   /**
    * @type {boolean}
@@ -89,6 +104,23 @@ ngeo.Popup = function($compile, $rootScope, $sce, $timeout) {
   // Compile the element, link it to the scope and add it to the document.
   $compile(this.element_)(this.scope);
   angular.element(document.body).append(this.element_);
+};
+
+
+/**
+ * @return {angular.JQLite} A ngeo.Modal element.
+ * @private
+ */
+ngeo.Popup.prototype.createModal_ = function() {
+  var el = angular.element('<ngeo-modal ng-model="ngModelController.open"></ngeo-modal>');
+  var header = angular.element('<div class="modal-header"></div>');
+  var closeBtn = angular.element('<button type="button" class="close"' +
+          'data-dismiss="modal" aria-hidden="true">&times;</button>');
+  var title = angular.element('<h4 class="modal-title"></h4>');
+  var body = angular.element('<div class="modal-body"></div>');
+  header.append(closeBtn).append(title);
+  el.append(header).append(body);
+  return el;
 };
 
 
@@ -264,10 +296,13 @@ ngeo.createPopupServiceFactory = function($compile, $rootScope, $sce,
     $timeout) {
   return (
       /**
+       * @param {boolean=} opt_createModal True to create a modal. Otherwhise
+       *     a popup will be created.
        * @return {!ngeo.Popup} The popup instance.
        */
-      function() {
-        return new ngeo.Popup($compile, $rootScope, $sce, $timeout);
+      function(opt_createModal) {
+        return new ngeo.Popup($compile, $rootScope, $sce, $timeout,
+                opt_createModal);
       });
 };
 ngeo.module.factory('ngeoCreatePopup', ngeo.createPopupServiceFactory);

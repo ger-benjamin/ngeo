@@ -17,7 +17,9 @@ goog.require('ngeo.LayerHelper');
  *        gmf-disclaimer-map="::ctrl.map">
  *      </gmf-disclaimer>
  *
- * @htmlAttribute {boolean} gmf-disclaimer-modal Whether to show the disclaimer
+ * @htmlAttribute {boolean} gmf-disclaimer-popup Whether to show the disclaimer
+ *     messages in popups or not. Defaults to `false`.
+ * * @htmlAttribute {boolean} gmf-disclaimer-modal Whether to show the disclaimer
  *     messages in modals or not. Defaults to `false`.
  * @htmlAttribute {ol.Map=} gmf-disclaimer-map The map.
  * @return {angular.Directive} The Directive Definition Object.
@@ -30,6 +32,7 @@ gmf.disclaimerDirective = function() {
   return {
     restrict: 'E',
     scope: {
+      'popupIn': '<?gmfDisclaimerPopup',
       'modalIn': '<?gmfDisclaimerModal',
       'map': '=gmfDisclaimerMap'
     },
@@ -47,7 +50,6 @@ gmf.module.directive('gmfDisclaimer', gmf.disclaimerDirective);
  * @constructor
  * @param {angular.JQLite} $element Element.
  * @param {!angular.Scope} $scope Angular scope.
- * @param {ngeo.CreatePopup} ngeoCreatePopup Popup service.
  * @param {ngeo.Disclaimer} ngeoDisclaimer Ngeo Disclaimer service.
  * @param {ngeo.EventHelper} ngeoEventHelper Ngeo Event Helper.
  * @param {ngeo.LayerHelper} ngeoLayerHelper Ngeo Layer Helper.
@@ -56,8 +58,14 @@ gmf.module.directive('gmfDisclaimer', gmf.disclaimerDirective);
  * @ngdoc controller
  * @ngname GmfDisclaimerController
  */
-gmf.DisclaimerController = function($element, $scope, ngeoCreatePopup,
-    ngeoDisclaimer, ngeoEventHelper, ngeoLayerHelper) {
+gmf.DisclaimerController = function($element, $scope, ngeoDisclaimer,
+    ngeoEventHelper, ngeoLayerHelper) {
+
+  /**
+   * @type {boolean}
+   * @export
+   */
+  this.popup = this['popupIn'] === true;
 
   /**
    * @type {boolean}
@@ -76,12 +84,6 @@ gmf.DisclaimerController = function($element, $scope, ngeoCreatePopup,
    * @private
    */
   this.element_ = $element;
-
-  /**
-   * @private
-   * @type {ngeo.CreatePopup}
-   */
-  this.createPopup_ = ngeoCreatePopup;
 
   /**
    * @type {ngeo.Disclaimer}
@@ -222,6 +224,7 @@ gmf.DisclaimerController.prototype.handleDestroy_ = function() {
  */
 gmf.DisclaimerController.prototype.showDisclaimerMessage_ = function(msg) {
   this.disclaimer_.alert({
+    popup: this.popup,
     modal: this.modal,
     msg: msg,
     target: this.element_,
@@ -236,6 +239,7 @@ gmf.DisclaimerController.prototype.showDisclaimerMessage_ = function(msg) {
  */
 gmf.DisclaimerController.prototype.closeDisclaimerMessage_ = function(msg) {
   this.disclaimer_.close({
+    popup: this.popup,
     modal: this.modal,
     msg: msg,
     target: this.element_,

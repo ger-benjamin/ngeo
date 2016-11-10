@@ -141,6 +141,7 @@ ngeox.MenuActionOptions.prototype.name;
  * @typedef {{
  *     delay: (number|undefined),
  *     modal: (boolean|undefined),
+ *     popup: (boolean|undefined),
  *     msg: (string),
  *     target: (angular.JQLite|Element|string|undefined),
  *     type: (string|undefined)
@@ -157,8 +158,18 @@ ngeox.Message.prototype.delay;
 
 
 /**
+ * Whether the message should be displayed inside a popup window or not.
+ * Defaults to `false`. If both modal and popup properties are true, a modal
+ * will be created.
+ * @type {boolean|undefined}
+ */
+ngeox.Message.prototype.popup;
+
+
+/**
  * Whether the message should be displayed inside a modal window or not.
- * Defaults to `false`.
+ * Defaults to `false`. If both modal and popup properties are true, a modal
+ * will be created.
  * @type {boolean|undefined}
  */
 ngeox.Message.prototype.modal;

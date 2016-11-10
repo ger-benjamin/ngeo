@@ -103,74 +103,98 @@ ngeo.Disclaimer.prototype.showMessage = function(message) {
     return;
   }
 
-  var showInModal = message.modal === true;
-
-  if (showInModal) {
-    // display the message in a modal, i.e. using the ngeo create popup
-    var popup = this.createPopup_();
-    var content = this.sce_.trustAsHtml(message.msg);
-    popup.open({
-      autoDestroy: true,
-      content: content,
-      title: '&nbsp;'
-    });
-
-    // Watch the open property
-    popup.scope.$watch('open', function(newVal, oldVal) {
-      if (!newVal) {
-        this.closeMessage_(message);
-      }
-    }.bind(this));
-
-    this.messages_[uid] =  popup;
-
+  var result;
+  var createModal = message.modal === true;
+  if (createModal || message.popup === true) {
+    result = this.showMessageInPopup_(message, createModal);
   } else {
-    // display the message using a boostrap dismissible alert
-    var classNames = ['alert', 'fade', 'alert-dismissible'];
-    switch (type) {
-      case ngeo.MessageType.ERROR:
-        classNames.push('alert-danger');
-        break;
-      case ngeo.MessageType.INFORMATION:
-        classNames.push('alert-info');
-        break;
-      case ngeo.MessageType.SUCCESS:
-        classNames.push('alert-success');
-        break;
-      case ngeo.MessageType.WARNING:
-        classNames.push('alert-warning');
-        break;
-      default:
-        break;
-    }
-
-    var el = angular.element(
-      '<div role="alert" class="' + classNames.join(' ') + '"></div>');
-    var button = angular.element(
-      '<button type="button" class="close" data-dismiss="alert" aria-label="' +
-        this.gettextCatalog_.getString('Close') +
-        '"><span aria-hidden="true" class="fa fa-times"></span></button>');
-    var msg = angular.element('<span />').html(message.msg);
-    el.append(button).append(msg);
-
-    var container;
-
-    if (message.target) {
-      container = angular.element(message.target);
-    } else {
-      container = this.container_;
-    }
-
-    container.append(el);
-    el.addClass('in');
-
-    // Listen when the message gets closed to cleanup the cache of messages
-    el.on('closed.bs.alert', function() {
-      this.closeMessage_(message);
-    }.bind(this));
-
-    this.messages_[uid] =  el;
+    result = this.showMessageInAlert_(message);
   }
+  this.messages_[uid] = result;
+};
+
+
+/**
+ * Display the message in a popup, i.e. using the ngeo create popup
+ * @param {ngeox.Message} message Message.
+ * @param {boolean=} opt_createModal True to create a modal, Otherwise a popup
+ *     will be created.
+ * @return {ngeo.Popup} the popup.
+ * @private
+ */
+ngeo.Disclaimer.prototype.showMessageInPopup_ = function(message,
+        opt_createModal) {
+  var popup = this.createPopup_(opt_createModal);
+  var content = this.sce_.trustAsHtml(message.msg);
+  popup.open({
+    autoDestroy: true,
+    content: content,
+    title: '&nbsp;'
+  });
+
+  // Watch the open property
+  popup.scope.$watch('open', function(newVal, oldVal) {
+    if (!newVal) {
+      this.closeMessage_(message);
+    }
+  }.bind(this));
+
+  return popup;
+};
+
+
+/**
+ * Display the message using a boostrap dismissible alert
+ * @param {ngeox.Message} message Message.
+ * @return {angular.JQLite} the element.
+ * @private
+ */
+ngeo.Disclaimer.prototype.showMessageInAlert_ = function(message) {
+  var type = message.type;
+  var classNames = ['alert', 'fade', 'alert-dismissible'];
+  switch (type) {
+    case ngeo.MessageType.ERROR:
+      classNames.push('alert-danger');
+      break;
+    case ngeo.MessageType.INFORMATION:
+      classNames.push('alert-info');
+      break;
+    case ngeo.MessageType.SUCCESS:
+      classNames.push('alert-success');
+      break;
+    case ngeo.MessageType.WARNING:
+      classNames.push('alert-warning');
+      break;
+    default:
+      break;
+  }
+
+  var el = angular.element(
+    '<div role="alert" class="' + classNames.join(' ') + '"></div>');
+  var button = angular.element(
+    '<button type="button" class="close" data-dismiss="alert" aria-label="' +
+      this.gettextCatalog_.getString('Close') +
+      '"><span aria-hidden="true" class="fa fa-times"></span></button>');
+  var msg = angular.element('<span />').html(message.msg);
+  el.append(button).append(msg);
+
+  var container;
+
+  if (message.target) {
+    container = angular.element(message.target);
+  } else {
+    container = this.container_;
+  }
+
+  container.append(el);
+  el.addClass('in');
+
+  // Listen when the message gets closed to cleanup the cache of messages
+  el.on('closed.bs.alert', function() {
+    this.closeMessage_(message);
+  }.bind(this));
+
+  return el;
 };
 
 
@@ -198,9 +222,9 @@ ngeo.Disclaimer.prototype.closeMessage_ = function(message) {
     return;
   }
 
-  // (2) Close message (popup or alert)
-  if (obj instanceof ngeo.Popup) {
-    // (2.1) Close popup, if not already closed
+  // (2) Close message (popup, modal or alert)
+  if (obj instanceof ngeo.Popup || obj instanceof ngeo.Modal) {
+    // (2.1) Close popup or modal, if not already closed
     if (obj.getOpen()) {
       obj.setOpen(false);
     }
