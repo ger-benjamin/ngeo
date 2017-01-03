@@ -608,14 +608,15 @@ ngeo.Print.prototype.encodeVectorStylePoint_ = function(symbolizers, imageStyle)
   } else if (imageStyle instanceof ol.style.Icon) {
     var src = imageStyle.getSrc();
     if (src !== undefined) {
+      var mimeType = mime.lookup(src);
+      if (mimeType === 'application/octet-stream') {
+        console.warn('The mime type is not defined for ' + src);
+        mimeType = 'image/png';
+      }
       symbolizer = /** @type {MapFishPrintSymbolizerPoint} */ ({
         type: 'point',
         externalGraphic: src,
-        /**
-         * TODO: Need a way to find the mime type of the image.
-         * Providing a fake mimetype works but it's not the right way to do.
-         */
-        graphicFormat: 'image/png'
+        graphicFormat: mimeType
       });
       var opacity = imageStyle.getOpacity();
       if (opacity !== null) {
