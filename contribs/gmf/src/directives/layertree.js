@@ -99,6 +99,7 @@ gmf.layertreeComponent = {
   bindings: {
     'map': '=gmfLayertreeMap',
     'dimensions': '=?gmfLayertreeDimensions',
+    'dimensionsForTimesLayers': '<?gmfLayertreeDimensionsfortimeslayers',
     'openLinksInNewWindow': '<?gmfLayertreeOpenlinksinnewwindow'
   },
   template: gmfLayertreeTemplate
@@ -145,6 +146,12 @@ gmf.LayertreeController = function($element, $http, $sce, $scope, ngeoCreatePopu
    * @export
    */
   this.dimensions;
+
+  /**
+   * @type {?Object<string, string>}
+   * @private
+   */
+  this.dimensionsForTimesLayers;
 
   /**
    * @type {!angular.Scope}
@@ -437,7 +444,16 @@ gmf.LayertreeController.prototype.updateWMSTimeLayerState = function(
   }
   const dataSource = layertreeCtrl.getDataSource();
   if (dataSource) {
-    dataSource.timeRangeValue = time;
+    // FIXME support multiple dim per layers
+    const layername = dataSource.name;
+    if (this.dimensionsForTimesLayers
+        && Object.keys(this.dimensionsForTimesLayers).indexOf(layername) > -1) {
+        //FIXME set time
+      this.dimensions[this.dimensionsForTimesLayers[layername]] = '2001/2003'; //time;
+    } else {
+      // Update time value to use WMT-T
+      dataSource.timeRangeValue = time;
+    }
   } else if (layertreeCtrl.children) {
     for (let i = 0, ii = layertreeCtrl.children.length; i < ii; i++) {
       this.updateWMSTimeLayerState(layertreeCtrl.children[i], time);

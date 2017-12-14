@@ -182,6 +182,14 @@ gmf.AbstractController = function(config, $scope, $injector) {
    */
   this.dimensions = {};
 
+  /**
+   * @type {!Object.<string, string>}
+   * @export
+   */
+  this.dimensionsForTimesLayers = {
+    'osm_time_r_s': 'TimeForOsmTimeRS'
+  };
+
   // watch any change on dimensions object to refresh the url
   this.permalink_.setDimensions(this.dimensions);
 
