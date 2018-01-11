@@ -1,21 +1,9 @@
 goog.provide('gmf.lidarProfileComponent');
 
 goog.require('gmf');
-/** @suppress {extraRequire} */
-goog.require('ol.events');
-goog.require('ol.Feature');
-goog.require('ol.Overlay');
 goog.require('ol.geom.LineString');
-goog.require('ol.geom.Point');
-goog.require('ol.obj');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Style');
 
 goog.require('ngeo.lidarProfile.loader');
-goog.require('ngeo.lidarProfile.utils');
-goog.require('ngeo.lidarProfile.measure');
-goog.require('ngeo.lidarProfile.plot2canvas');
 
 ngeo.module.value('gmfLidarProfileTemplateUrl',
   /**
@@ -93,7 +81,7 @@ gmf.module.component('gmfLidarProfile', gmf.lidarProfileComponent);
  * @param {angular.$window} $window Angular window service.
  * @param {angularGettext.Catalog} gettextCatalog Gettext catalog.
  * @param {string} pytreeLidarProfileJsonUrl URL of GMF service JSON profile.
- * @param {gmf.gmfLidarProfileConfig} gmfLidarProfileConfig LiDAR Profile Configuration Service
+ * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig LiDAR Profile Configuration Service
  * @constructor
  * @private
  * @ngInject
@@ -192,11 +180,6 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
   this.measureTooltipElement_ = null;
 
   /**
-   * @type {ol.Feature}
-   * @private
-   */
-
-  /**
    * @type {ngeox.profile.I18n}
    * @private
    */
@@ -204,13 +187,6 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
     xAxis: gettextCatalog.getString('Distance'),
     yAxis: gettextCatalog.getString('Elevation')
   };
-
-
-  /**
-   * @type {?ngeox.profile.LidarProfileOptions}
-   * @export
-   */
-  this.lidarProfileOptions = null;
 
   /**
    * @type {boolean}

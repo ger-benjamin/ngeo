@@ -1,6 +1,4 @@
 goog.provide('ngeo.lidarProfile.loader');
-goog.require('ol.interaction.Select');
-goog.require('ol.interaction.Modify');
 
 ngeo.lidarProfile.options = {};
 

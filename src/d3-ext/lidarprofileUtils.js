@@ -139,8 +139,8 @@ ngeo.lidarProfile.utils.getNiceLOD = function(span) {
     }
   }
   return {
-    maxLOD: maxLOD,
-    width: width
+    maxLOD,
+    width
   };
 };
 

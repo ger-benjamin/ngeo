@@ -1,16 +1,8 @@
 goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
-/** @suppress {extraRequire} */
-goog.require('ol.events');
-goog.require('ol.Feature');
-goog.require('ol.Overlay');
+goog.require('ngeo.lidarProfile.loader');
 goog.require('ol.geom.LineString');
-goog.require('ol.geom.Point');
-goog.require('ol.obj');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Style');
 
 
 ngeo.module.value('gmfLidarPanelTemplateUrl',
@@ -75,7 +67,7 @@ gmf.lidarPanelComponent = {
   bindings: {
     'active': '=gmfLidarPanelActive',
     'map': '=gmfLidarPanelMap',
-    'line': '=gmfLidarPanelLine',
+    'line': '=gmfLidarPanelLine'
   },
   templateUrl: gmfLidarPanelTemplateUrl
 };
@@ -85,13 +77,7 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
 
 
 /**
- * @param {gmf.gmfLidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
- * @param {angular.Scope} $scope Angular scope.
- * @param {angular.$http} $http Angular http service.
- * @param {angular.JQLite} $element Element.
- * @param {angular.$filter} $filter Angular filter
- * @param {angularGettext.Catalog} gettextCatalog Gettext catalog.
- * @param {string} pytreeLidarProfileJsonUrl URL of Pytree service arraybuffer profile.
+ * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
  * @constructor
  * @private
  * @ngInject
@@ -108,7 +94,7 @@ gmf.LidarPanelController = function(gmfLidarProfileConfig) {
   this.line;
 
   /**
-  * @type {int}
+  * @type {number}
   * @export
   */
   this.profilWidth;
