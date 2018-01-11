@@ -1,6 +1,7 @@
 goog.provide('ngeo.lidarProfile');
 
 ngeo.lidarProfile.options = {};
+ngeo.lidarProfile.loader = function() {};
 
 ngeo.lidarProfile.setOptions = function(options) {
   ngeo.lidarProfile.options = options;
