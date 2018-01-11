@@ -193,6 +193,9 @@ ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
 
   let file = 'data:text/csv;charset=utf-8,';
 
+  /**
+   * @type {Array.<ngeox.LidarProfilePoint>}
+   */
   const points = [];
   for (let i = 0; i < profilePoints.distance.length; i++) {
 

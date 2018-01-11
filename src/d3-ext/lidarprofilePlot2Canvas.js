@@ -1,4 +1,5 @@
 goog.provide('ngeo.lidarProfile.plot2canvas');
+goog.require('ngeo.lidarProfile.measure');
 
 /*
  * @SITN/OM 2017

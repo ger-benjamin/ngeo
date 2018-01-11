@@ -1,7 +1,9 @@
 goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
-goog.require('ngeo.lidarProfile.loader');
+goog.require('ngeo.lidarProfile');
+goog.require('ngeo.lidarProfile.plot2canvas');
+goog.require('ngeo.lidarProfile.utils');
 goog.require('ol.geom.LineString');
 
 
@@ -104,6 +106,11 @@ gmf.LidarPanelController = function(gmfLidarProfileConfig) {
   * @export
   */
   this.autoWidth = true;
+
+  /**
+   * @type {ol.Map}
+   */
+  this.map = null;
 
 };
 

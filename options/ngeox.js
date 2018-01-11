@@ -2495,3 +2495,10 @@ ngeox.ImportWmsGetCapItemOptions;
  * }}
  */
 ngeox.ImportWmtsGetCapItemOptions;
+
+/**
+ * @typedef {{
+ * returnNumber: (number|undefined)
+ * }}
+ */
+ngeox.LidarProfilePoint;

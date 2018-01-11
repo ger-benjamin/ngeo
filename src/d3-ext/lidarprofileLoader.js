@@ -1,4 +1,4 @@
-goog.provide('ngeo.lidarProfile.loader');
+goog.provide('ngeo.lidarProfile');
 
 ngeo.lidarProfile.options = {};
 

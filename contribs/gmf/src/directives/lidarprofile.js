@@ -3,7 +3,7 @@ goog.provide('gmf.lidarProfileComponent');
 goog.require('gmf');
 goog.require('ol.geom.LineString');
 
-goog.require('ngeo.lidarProfile.loader');
+goog.require('ngeo.lidarProfile');
 
 ngeo.module.value('gmfLidarProfileTemplateUrl',
   /**
@@ -133,7 +133,7 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
 
   /**
-   * @type {string}
+   * @type {gmf.LidarProfileConfig}
    * @private
    */
   this.gmfLidarProfileConfig_ = gmfLidarProfileConfig;
