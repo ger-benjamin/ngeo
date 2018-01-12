@@ -285,7 +285,7 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
   }
 };
 
-ngeo.lidarProfile.drawProfilePosition = function(distance, closestPoint) {
+ngeo.lidarProfile.drawProfilePosition = function(distance) {
 
   const margin = ngeo.lidarProfile.options.profileConfig.margin;
   const sx = ngeo.lidarProfile.options.profileConfig.scaleX;

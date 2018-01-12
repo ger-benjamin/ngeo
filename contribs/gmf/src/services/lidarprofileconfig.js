@@ -19,6 +19,14 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @private
    */
   this.$http_ = $http;
+  /**
+   * @type {ol.geom.LineString}
+   */
+  this.olLinestring = null;
+  /**
+   * @type {ol.Map}
+   */
+  this.map = null;
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
   this.profileConfig = {};
   this.profileConfig.scaleX = {};

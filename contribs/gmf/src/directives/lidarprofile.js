@@ -251,14 +251,6 @@ gmf.LidarProfileController.prototype.$onInit = function() {
       })
     });
   }
-
-  const optionsFn = this['getOptionsFn'];
-  if (optionsFn) {
-    const options = optionsFn();
-    goog.asserts.assertObject(options);
-    ol.obj.assign(this.profileOptions, options);
-  }
-
 };
 
 
