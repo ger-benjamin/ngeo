@@ -250,7 +250,18 @@ ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
     file += `${header.substr(2)} \n`;
   }
 
-  for (const of points) {
+  let point = {
+    distance: -1,
+    altitude: -1,
+    color_packed: [],
+    intensity: -1,
+    classification: -1,
+    numberOfReturns: -1,
+    pointSourceID: -1,
+    returnNumber: -1
+  };
+
+  for (point of points) {
     let line = `${point.distance.toFixed(4)}, `;
     line += `${point.altitude.toFixed(4)}, `;
 

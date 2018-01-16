@@ -155,12 +155,25 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
     if (isEmpty != -1) {
       return;
     }
-    const jHeader = JSON.parse(strHeaderLocal);
+
+    // TODO define this in externs ?
+    let jHeader = {
+      bytesPerPoint: -1,
+      boundingBox: {
+        ly: -1,
+        lx: -1,
+        lz: -1,
+        uz: -1
+      }
+    };
+
+    jHeader = JSON.parse(strHeaderLocal);
     ngeo.lidarProfile.options.profileConfig.pointSum += jHeader.points;
     if (ngeo.lidarProfile.options.profileConfig.pointSum > ngeo.lidarProfile.options.profileConfig.maxPoints) {
       ngeo.lidarProfile.loader.abortPendingRequests();
       console.log('points limit reached. canceling pending requests');
     }
+
     const attr = jHeader.pointAttributes;
     const attributes = [];
     for (let j = 0; j < attr.length; j++) {
@@ -187,7 +200,12 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
       let aoffset = 0;
       for (let k = 0; k < attributes.length; k++) {
 
-        const attribute = attributes[k];
+
+        let attribute = {
+          value: '',
+          bytes: -1
+        };
+        attribute = attributes[k];
 
         if (attribute.value == 'POSITION_PROJECTED_PROFILE') {
 
@@ -201,19 +219,19 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
           ngeo.lidarProfile.loader.profilePoints.altitude.push(Math.round(100 * alti) / 100);
 
         } else if (attribute.value == 'CLASSIFICATION') {
-          const classif = view.getUint8(aoffset, true);
+          const classif = view.getUint8(aoffset);
           points.classification.push(classif);
           ngeo.lidarProfile.loader.profilePoints.classification.push(classif);
 
         } else if (attribute.value == 'INTENSITY') {
-          const intensity = view.getUint8(aoffset, true);
+          const intensity = view.getUint8(aoffset);
           points.intensity.push(intensity);
           ngeo.lidarProfile.loader.profilePoints.intensity.push(intensity);
 
         } else if (attribute.value == 'COLOR_PACKED') {
-          const r = view.getUint8(aoffset, true);
-          const g = view.getUint8(aoffset + 1, true);
-          const b = view.getUint8(aoffset + 2, true);
+          const r = view.getUint8(aoffset);
+          const g = view.getUint8(aoffset + 1);
+          const b = view.getUint8(aoffset + 2);
           points.color_packed.push([r, g, b]);
           ngeo.lidarProfile.loader.profilePoints.color_packed.push([r, g, b]);
 
