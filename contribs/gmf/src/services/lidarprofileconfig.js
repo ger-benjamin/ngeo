@@ -15,7 +15,7 @@ goog.require('gmf');
  */
 gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
   /**
-   * @type {angular.$timeout}
+   * @type {angular.$http}
    * @private
    */
   this.$http_ = $http;
