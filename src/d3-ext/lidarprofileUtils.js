@@ -2,7 +2,7 @@ goog.provide('ngeo.lidarProfile.utils');
 
 ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
 
-  const clippedLine = new ol.geom.LineString();
+  const clippedLine = new ol.geom.LineString([]);
   let mileage_start = 0;
   let mileage_end = 0;
 
@@ -249,7 +249,8 @@ ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
     }
     file += `${header.substr(2)} \n`;
   }
-  for (const point of points) {
+
+  for (const of points) {
     let line = `${point.distance.toFixed(4)}, `;
     line += `${point.altitude.toFixed(4)}, `;
 
