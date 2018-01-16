@@ -253,7 +253,7 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
 
     d3.select('#profileInfo')
       .html(html);
-    ngeo.lidarProfile.loader.cartoHighlight.setElement('');
+    ngeo.lidarProfile.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
     el.className += 'tooltip ngeo-tooltip-measure';
     el.innerHTML = html;
