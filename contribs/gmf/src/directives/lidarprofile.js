@@ -31,30 +31,7 @@ function gmfLidarProfileTemplateUrl($element, $attrs, gmfLidarProfileTemplateUrl
 
 
 /**
- * Provide a component that display a lidar profile panel. This profile use the given
- * The 'map' attribute is optional and are only used to display on the map the
- * information that concern the hovered point (in the profile and on the map)
- * of the line.
- * This profile relies on the ngeo.profile (d3) and ngeo.ProfileComponent.
- *
- * Example:
- *
- *      <gmf-profile
- *        gmf-profile-active="ctrl.profileActive"
- *        gmf-profile-line="ctrl.profileLine"
- *        gmf-profile-map="::ctrl.map"
- *      </gmf-profile>
- *
- *
- * @htmlAttribute {boolean} gmf-profile-active Active the component.
- * @htmlAttribute {ol.geom.LineString} gmf-profile-line The linestring geometry
- *     to use to draw the profile.
- * @htmlAttribute {ol.Map?} gmf-profile-map An optional map.
- * @htmlAttribute {Object.<string, *>?} gmf-lidar-profile-options Optional options
- *     object like {@link ngeox.profile.ProfileOptions} but without any
- *     mandatory value. Will be passed to the ngeo profile component. Providing
-*     i18n will override native gmf profile values.
- *
+ * Provide a component that display a lidar profile panel.
  * @ngdoc component
  * @ngname gmfLidarProfile
  */
@@ -88,8 +65,7 @@ gmf.module.component('gmfLidarProfile', gmf.lidarProfileComponent);
  * @ngdoc controller
  * @ngname GmfLidarProfileController
  */
-gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window,
-  gettextCatalog, pytreeLidarProfileJsonUrl, gmfLidarProfileConfig) {
+gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, gmfLidarProfileConfig) {
 
   /**
    * @type {angular.Scope}
@@ -102,29 +78,6 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
    * @private
    */
   this.$http_ = $http;
-
-  /**
-   * @type {angular.JQLite}
-   * @private
-   */
-  this.$element_ = $element;
-
-  /**
-   * @type {angular.$filter}
-   * @export
-   */
-  this.$filter_ = $filter;
-  /**
-   * @type {angular.$window}
-   * @export
-   */
-  this.$window_ = $window;
-
-  /**
-   * @type {angularGettext.Catalog}
-   * @private
-   */
-  this.gettextCatalog_ = gettextCatalog;
 
   /**
    * @type {string}
@@ -144,13 +97,11 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
    */
   this.map_ = null;
 
-
   /**
    * @type {ol.geom.LineString}
    * @export
    */
   this.line;
-
 
   /**
    * Distance to highlight on the profile. (Property used in ngeo.Profile.)
@@ -164,29 +115,6 @@ gmf.LidarProfileController = function($scope, $http, $element, $filter,  $window
    * @export
    */
   this.lidarProfileMeasureActive = false;
-
-  /**
-   * Overlay to show the measurement.
-   * @type {ol.Overlay}
-   * @private
-   */
-  this.measureTooltip_ = null;
-
-  /**
-   * The measure tooltip element.
-   * @type {Element}
-   * @private
-   */
-  this.measureTooltipElement_ = null;
-
-  /**
-   * @type {ngeox.profile.I18n}
-   * @private
-   */
-  this.profileLabels_ = {
-    xAxis: gettextCatalog.getString('Distance'),
-    yAxis: gettextCatalog.getString('Elevation')
-  };
 
   /**
    * @type {boolean}
@@ -284,63 +212,6 @@ gmf.LidarProfileController.prototype.updateEventsListening_ = function() {
   } else {
     ol.Observable.unByKey(this.pointerMoveKey_);
   }
-};
-
-
-/**
- * @param {ol.MapBrowserPointerEvent} e An ol map browser pointer event.
- * @private
- */
-gmf.LidarProfileController.prototype.onPointerMove_ = function(e) {
-  if (e.dragging || !this.line) {
-    return;
-  }
-  const coordinate = this.map_.getEventCoordinate(e.originalEvent);
-  const closestPoint = this.line.getClosestPoint(coordinate);
-  const eventToLine = new ol.geom.LineString([closestPoint, coordinate]);
-  const pixelDist = eventToLine.getLength() / this.map_.getView().getResolution();
-
-  if (pixelDist < 16) {
-    this.profileHighlight = this.getDistanceOnALine_(closestPoint, this.line);
-    ngeo.lidarProfile.drawProfilePosition(this.profileHighlight);
-  } else {
-    this.profileHighlight = -1;
-    ngeo.lidarProfile.clearProfilePosition();
-  }
-  this.$scope_.$apply();
-};
-
-
-/**
- * Return the distance between the beginning of the line and the given point.
- * The point must be on the line. If not, this function will return the total
- * length of the line.
- * @param {ol.Coordinate} pointOnLine A point on the given line.
- * @param {ol.geom.LineString} line A line.
- * @return {number} A distance.
- * @private
- */
-gmf.LidarProfileController.prototype.getDistanceOnALine_ = function(pointOnLine,
-  line) {
-  let segment;
-  let distOnLine = 0;
-  const fakeExtent = [
-    pointOnLine[0] - 0.5,
-    pointOnLine[1] - 0.5,
-    pointOnLine[0] + 0.5,
-    pointOnLine[1] + 0.5
-  ];
-  this.line.forEachSegment((firstPoint, lastPoint) => {
-    segment = new ol.geom.LineString([firstPoint, lastPoint]);
-    if (segment.intersectsExtent(fakeExtent)) {
-
-      segment.setCoordinates([firstPoint, pointOnLine]);
-      return distOnLine += segment.getLength();
-    } else {
-      distOnLine += segment.getLength();
-    }
-  });
-  return distOnLine;
 };
 
 

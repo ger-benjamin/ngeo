@@ -4,7 +4,6 @@ goog.require('gmf');
 
 
 /**
- * TODO
  * @constructor
  * @struct
  * @param {angular.$http} $http Angular http service.
