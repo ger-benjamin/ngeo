@@ -50,10 +50,9 @@ ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, m
   } else {
 
     const domain = ngeo.lidarProfile.options.profileConfig.scaleX.domain();
-    console.log('initial clip');
     const clip = ngeo.lidarProfile.utils.clipLineByMeasure(domain[0], domain[1]);
     profileLine = '';
-    for (const i in clip.clippedLine) {
+    for (let i = 0; i < clip.clippedLine.length; i++) {
       profileLine += `{${clip.clippedLine[i][0]},${clip.clippedLine[i][1]}},`;
     }
     profileLine = profileLine.substr(0, profileLine.length - 1);
@@ -246,7 +245,7 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
     }
 
     const rangeX = [0, ngeo.lidarProfile.options.olLinestring.getLength()];
-    // let rangeY = [ngeo.lidarProfile.plot2canvas.arrayMin(points.altitude), ngeo.lidarProfile.plot2canvas.arrayMax(points.altitude)];
+    // let rangeY = [ngeo.lidarProfile.loader.arrayMin(points.altitude), ngeo.lidarProfile.loader.arrayMax(points.altitude)];
     let rangeY = [jHeader.boundingBox.lz, jHeader.boundingBox.uz];
 
     // TODO fix z offset issue in cPotree here is an hugly fix:
@@ -255,7 +254,7 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
     //   ngeo.lidarProfile.loader.profilePoints.altitude[b] = ngeo.lidarProfile.loader.profilePoints.altitude[b] - rangeY[0] + jHeader.boundingBox.lz;
     // }
 
-    rangeY = [ngeo.lidarProfile.plot2canvas.arrayMin(points.altitude), ngeo.lidarProfile.plot2canvas.arrayMax(points.altitude)];
+    rangeY = [ngeo.lidarProfile.loader.arrayMin(points.altitude), ngeo.lidarProfile.loader.arrayMax(points.altitude)];
 
     if (iter == 0 && resetPlot) {
       ngeo.lidarProfile.plot2canvas.setupPlot(rangeX, rangeY);
@@ -277,7 +276,6 @@ ngeo.lidarProfile.loader.updateData = function() {
   const scaleY = ngeo.lidarProfile.options.profileConfig.scaleY;
   const domainX = scaleX.domain();
   const domainY = scaleY.domain();
-  console.log('updateData clip', domainX[0], domainX[1]);
 
   const clip = ngeo.lidarProfile.utils.clipLineByMeasure(domainX[0], domainX[1]);
   const span = domainX[1] - domainX[0];
@@ -286,7 +284,6 @@ ngeo.lidarProfile.loader.updateData = function() {
 
   if (Math.abs(domainX[0] - ngeo.lidarProfile.options.profileConfig.previousDomainX[0]) < xTolerance &&
       Math.abs(domainX[1] - ngeo.lidarProfile.options.profileConfig.previousDomainX[1]) < xTolerance) {
-    console.log('only drawpoints 2');
 
     ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints,
       ngeo.lidarProfile.options.profileConfig.defaultAttribute,
@@ -294,18 +291,10 @@ ngeo.lidarProfile.loader.updateData = function() {
   } else {
     console.log(maxLODWidth.maxLOD, ngeo.lidarProfile.options.profileConfig.initialLOD);
     if (maxLODWidth.maxLOD <= ngeo.lidarProfile.options.profileConfig.initialLOD) {
-      console.log('only drawpoints 2');
       ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints,
         ngeo.lidarProfile.options.profileConfig.defaultAttribute,
         ngeo.lidarProfile.options.profileConfig.currentZoom);
     } else {
-      console.log('get more lod');
-
-      //let cPotreeLineStr = '';
-      //for (const i in clip.clippedLine) {
-      //  cPotreeLineStr += `{${clip.clippedLine[i][0]} + ',' + ${clip.clippedLine[i][1]}},`;
-      //}
-      //cPotreeLineStr = cPotreeLineStr.substr(0, cPotreeLineStr.length - 1);
       ngeo.lidarProfile.loader.getProfileByLOD(clip.distanceOffset, false, 0);
 
     }
@@ -316,10 +305,39 @@ ngeo.lidarProfile.loader.updateData = function() {
 
 };
 
+
+/**
+* @export
+*/
 ngeo.lidarProfile.loader.abortPendingRequests = function() {
 
   for (let i = 0; i < ngeo.lidarProfile.loader.requestsQueue.length; i++) {
     ngeo.lidarProfile.loader.requestsQueue[i].abort();
     ngeo.lidarProfile.loader.requestsQueue.splice(i, 1);
   }
+};
+
+/**
+* @param {Array.<number>} array of number
+* @return {number} the maximum of input array
+* @private
+*/
+ngeo.lidarProfile.loader.arrayMax = function(array) {
+  return array.reduce((a, b) => Math.max(a, b));
+};
+
+/**
+* @param {Array.<number>} array of number
+* @return {number} the minimum of input array
+* @private
+*/
+ngeo.lidarProfile.loader.arrayMin = function(array) {
+
+  let minVal = Infinity;
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] < minVal) {
+      minVal = array[i];
+    }
+  }
+  return minVal;
 };

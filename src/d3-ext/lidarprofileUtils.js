@@ -1,5 +1,11 @@
 goog.provide('ngeo.lidarProfile.utils');
 
+/**
+* @param {number} dLeft domain minimum
+* @param {number} dRight domain maximum
+* @return {{clippedLine: Array.<ol.Coordinate>, distanceOffset: number}} Object with clipped lined coordinates and left domain value
+* @export
+*/
 ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
 
   const clippedLine = new ol.geom.LineString([]);
@@ -114,7 +120,6 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
       })
     })
   );
-  console.log('icirr');
   const vectorSource = new ol.source.Vector({
     features: [feat]
   });

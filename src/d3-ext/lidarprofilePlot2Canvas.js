@@ -2,11 +2,12 @@ goog.provide('ngeo.lidarProfile.plot2canvas');
 goog.require('ngeo.lidarProfile.measure');
 goog.require('ngeo.lidarProfile');
 
-/*
- * @SITN/OM 2017
- * LiDAR profile from protreeViewer adapated for new d3 API after d3 4.0 API break
+/**
+ * @param {Object} points Object containing arrays of point properties
+ * @param {string} material material used to determine point color
+ * TODO add d3.sacleLinear type for param
+ * @export
 */
-
 ngeo.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
   let i = -1;
   const n = points.distance.length;
@@ -43,6 +44,11 @@ ngeo.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
   }
 };
 
+/**
+ * @param {Array.<number>} rangeX range of the x scale
+ * @param {Array.<number>} rangeY range of the y scale
+ * @export
+*/
 ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
   const canvasEl = d3.select('#profileCanvas').node();
   const ctx = d3.select('#profileCanvas')
@@ -72,7 +78,6 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
   const rangeRatio = rangeProfileWidth / rangeProfileHeight;
 
   let sx, sy, domainScale;
-  // TODO: FIX PAN
   if (domainRatio < rangeRatio) {
     const domainScale = rangeRatio / domainRatio;
     const domainScaledWidth = domainProfileWidth * domainScale;
@@ -178,6 +183,14 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
 
 };
 
+/**
+ * @param {Object} points Object containing points properties as arrays
+ * @param {number} xs mouse x coordinate on canvas element
+ * @param {number} ys mouse y coordinate on canvas element
+ * @param {number} tolerance snap sensibility
+ * @return {Object} closestPoint the closest point to the clicked coordinates
+ * @export
+*/
 ngeo.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, tolerance) {
   const d = points;
   const tol = tolerance;
@@ -217,9 +230,9 @@ ngeo.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, toleran
   return closestPoint;
 };
 
-/***
-Find the closest neighboor of the mouse coordinates within tolerance
-***/
+/**
+ * @private
+*/
 ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
 
   const svg = d3.select('svg#profileSVG');
@@ -285,28 +298,10 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
   }
 };
 
-ngeo.lidarProfile.drawProfilePosition = function(distance) {
-
-  const margin = ngeo.lidarProfile.options.profileConfig.margin;
-  const sx = ngeo.lidarProfile.options.profileConfig.scaleX;
-  const cx = sx(distance) + margin.left;
-  const svgHeight = d3.select('svg#profileSVG').node().getBoundingClientRect().height;
-  d3.select('svg#profileSVG').selectAll('#highlightBar').remove();
-
-  d3.select('svg#profileSVG').append('line')
-    .attr('id', 'highlightBar')
-    .attr('x1', cx)
-    .attr('y1', margin.top)
-    .attr('x2', cx)
-    .attr('y2', svgHeight - margin.bottom)
-    .attr('stroke-width', 2)
-    .attr('stroke', 'gray');
-};
-
-ngeo.lidarProfile.clearProfilePosition = function() {
-  d3.select('svg#profileSVG').selectAll('#highlightBar').remove();
-};
-
+/**
+* @param {string} material sets profile points colors
+* @export
+*/
 ngeo.lidarProfile.plot2canvas.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
@@ -314,25 +309,15 @@ ngeo.lidarProfile.plot2canvas.changeStyle = function(material) {
   ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints, material, ngeo.lidarProfile.options.profileConfig.currentZoom);
 };
 
+/**
+* @param {Object} classification classification object
+* @param {string} material sets profile points colors
+* @export
+*/
 ngeo.lidarProfile.plot2canvas.setClassActive = function(classification, material) {
   ngeo.lidarProfile.options.profileConfig.classification = classification;
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
   ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints, material, ngeo.lidarProfile.options.profileConfig.currentZoom);
-};
-
-ngeo.lidarProfile.plot2canvas.arrayMax = function(array) {
-  return array.reduce((a, b) => Math.max(a, b));
-};
-
-ngeo.lidarProfile.plot2canvas.arrayMin = function(array) {
-
-  let minVal = Infinity;
-  for (let i = 0; i < array.length; i++) {
-    if (array[i] < minVal) {
-      minVal = array[i];
-    }
-  }
-  return minVal;
 };
