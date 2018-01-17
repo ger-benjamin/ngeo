@@ -53,10 +53,6 @@ gmf.module.component('gmfLidarProfile', gmf.lidarProfileComponent);
 /**
  * @param {angular.Scope} $scope Angular scope.
  * @param {angular.$http} $http Angular http service.
- * @param {angular.JQLite} $element Element.
- * @param {angular.$filter} $filter Angular filter
- * @param {angular.$window} $window Angular window service.
- * @param {angularGettext.Catalog} gettextCatalog Gettext catalog.
  * @param {string} pytreeLidarProfileJsonUrl URL of GMF service JSON profile.
  * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig LiDAR Profile Configuration Service
  * @constructor
@@ -122,20 +118,6 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
    */
   this.active = false;
 
-  /**
-   * @type {ol.EventsKey}
-   * @private
-   */
-  this.pointerMoveKey_;
-
-  // Watch the active value to activate/deactive events listening.
-  $scope.$watch(
-    () => this.active,
-    (newValue, oldValue) => {
-      if (oldValue !== newValue) {
-        this.updateEventsListening_();
-      }
-    });
 
   // Watch the line to update the profileData (data for the chart).
   $scope.$watch(
@@ -155,7 +137,6 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
     }
   );
 
-  this.updateEventsListening_();
 };
 
 
@@ -199,19 +180,6 @@ gmf.LidarProfileController.prototype.update_ = function() {
     ngeo.lidarProfile.loader.cartoHighlight.setPosition(undefined);
   }
   this.active = !!this.line;
-};
-
-
-/**
- * @private
- */
-gmf.LidarProfileController.prototype.updateEventsListening_ = function() {
-  if (this.active && this.map_ !== null) {
-    this.pointerMoveKey_ = ol.events.listen(this.map_, 'pointermove',
-      this.onPointerMove_.bind(this));
-  } else {
-    ol.Observable.unByKey(this.pointerMoveKey_);
-  }
 };
 
 
