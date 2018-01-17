@@ -1,8 +1,6 @@
 goog.provide('gmf.lidarProfileComponent');
-
 goog.require('gmf');
 goog.require('ol.geom.LineString');
-
 goog.require('ngeo.lidarProfile');
 
 ngeo.module.value('gmfLidarProfileTemplateUrl',
@@ -141,25 +139,10 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
 
 
 /**
- * Init the controller
+ * @private
  */
 gmf.LidarProfileController.prototype.$onInit = function() {
   this.map_ = this['getMapFn'] ? this['getMapFn']() : null;
-  this.nbPoints_ = this['getNbPointsFn'] ? this['getNbPointsFn']() : 100;
-
-  let hoverPointStyle;
-  const hoverPointStyleFn = this['getHoverPointStyleFn'];
-  if (hoverPointStyleFn) {
-    hoverPointStyle = hoverPointStyleFn();
-    goog.asserts.assertInstanceof(hoverPointStyle, ol.style.Style);
-  } else {
-    hoverPointStyle = new ol.style.Style({
-      image: new ol.style.Circle({
-        fill: new ol.style.Fill({color: '#ffffff'}),
-        radius: 3
-      })
-    });
-  }
 };
 
 
