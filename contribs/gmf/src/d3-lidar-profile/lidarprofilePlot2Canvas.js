@@ -1,6 +1,6 @@
-goog.provide('ngeo.lidarProfile.plot2canvas');
-goog.require('ngeo.lidarProfile.measure');
-goog.require('ngeo.lidarProfile');
+goog.provide('gmf.lidarProfile.plot2canvas');
+goog.require('gmf.lidarProfile.measure');
+goog.require('gmf.lidarProfile');
 
 /**
  * @param {Object} points Object containing arrays of point properties
@@ -8,12 +8,12 @@ goog.require('ngeo.lidarProfile');
  * @param {Object} scale d3.scaleLinear => TODO: update externs typedefs
  * @export
 */
-ngeo.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
+gmf.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
   let i = -1;
   const n = points.distance.length;
   let cx, cy;
   const ctx = d3.select('#profileCanvas').node().getContext('2d');
-  const profileConfig = ngeo.lidarProfile.options.profileConfig;
+  const profileConfig = gmf.lidarProfile.options.profileConfig;
 
   while (++i < n) {
 
@@ -49,13 +49,13 @@ ngeo.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
  * @param {Array.<number>} rangeY range of the y scale
  * @export
 */
-ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
+gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
   const canvasEl = d3.select('#profileCanvas').node();
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, canvasEl.getBoundingClientRect().width, canvasEl.getBoundingClientRect().height);
 
-  const margin = ngeo.lidarProfile.options.profileConfig.margin;
+  const margin = gmf.lidarProfile.options.profileConfig.margin;
   const containerWidth = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().width;
   const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
   const width = containerWidth - (margin.left + margin.right);
@@ -101,8 +101,8 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
       .range([height, 0]);
   }
 
-  ngeo.lidarProfile.options.profileConfig.scaleX = sx;
-  ngeo.lidarProfile.options.profileConfig.scaleY = sy;
+  gmf.lidarProfile.options.profileConfig.scaleX = sx;
+  gmf.lidarProfile.options.profileConfig.scaleY = sy;
 
   function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
@@ -110,7 +110,7 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
         return;
       }
     }
-    ngeo.lidarProfile.measure.clearMeasure();
+    gmf.lidarProfile.measure.clearMeasure();
 
     const tr = d3.event.transform;
     const svg = d3.select('svg#profileSVG');
@@ -125,9 +125,9 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
       .style('opacity', '0.5')
       .style('stroke', '#b7cff7');
 
-    ngeo.lidarProfile.options.profileConfig.currentZoom = tr.k;
-    ngeo.lidarProfile.options.profileConfig.scaleX = tr.rescaleX(sx);
-    ngeo.lidarProfile.options.profileConfig.scaleY = tr.rescaleY(sy);
+    gmf.lidarProfile.options.profileConfig.currentZoom = tr.k;
+    gmf.lidarProfile.options.profileConfig.scaleX = tr.rescaleX(sx);
+    gmf.lidarProfile.options.profileConfig.scaleY = tr.rescaleY(sy);
   }
 
   const zoom = d3.zoom()
@@ -138,10 +138,10 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
 
   function zoomEnd() {
     ctx.clearRect(0, 0, width, height);
-    ngeo.lidarProfile.loader.updateData();
+    gmf.lidarProfile.loader.updateData();
   }
   zoom.on('end', zoomEnd);
-  zoom.on('start', ngeo.lidarProfile.loader.abortPendingRequests);
+  zoom.on('start', gmf.lidarProfile.loader.abortPendingRequests);
 
   d3.select('svg#profileSVG')
     .call(zoom)
@@ -155,7 +155,7 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
     .attr('height', height + margin.top + margin.bottom);
 
   d3.select('svg#profileSVG')
-    .on('mousemove', ngeo.lidarProfile.plot2canvas.pointHighlight);
+    .on('mousemove', gmf.lidarProfile.plot2canvas.pointHighlight);
 
   const xAxis = d3.axisBottom(sx);
   const yAxis = d3.axisLeft(sy)
@@ -178,8 +178,8 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
     .style('opacity', '0.5')
     .style('stroke', '#b7cff7');
 
-  ngeo.lidarProfile.options.profileConfig.previousDomainX = sx.domain();
-  ngeo.lidarProfile.options.profileConfig.previousDomainY = sy.domain();
+  gmf.lidarProfile.options.profileConfig.previousDomainX = sx.domain();
+  gmf.lidarProfile.options.profileConfig.previousDomainY = sy.domain();
 
 };
 
@@ -191,11 +191,11 @@ ngeo.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
  * @return {Object} closestPoint the closest point to the clicked coordinates
  * @export
 */
-ngeo.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, tolerance) {
+gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, tolerance) {
   const d = points;
   const tol = tolerance;
-  const sx = ngeo.lidarProfile.options.profileConfig.scaleX;
-  const sy = ngeo.lidarProfile.options.profileConfig.scaleY;
+  const sx = gmf.lidarProfile.options.profileConfig.scaleX;
+  const sy = gmf.lidarProfile.options.profileConfig.scaleY;
   const distances = [];
   const hP = [];
 
@@ -233,18 +233,18 @@ ngeo.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, toleran
 /**
  * @private
 */
-ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
+gmf.lidarProfile.plot2canvas.pointHighlight = function() {
 
   const svg = d3.select('svg#profileSVG');
-  const pointSize = ngeo.lidarProfile.options.profileConfig.pointSize;
-  const margin = ngeo.lidarProfile.options.profileConfig.margin;
-  const tolerance = ngeo.lidarProfile.options.profileConfig.tolerance;
+  const pointSize = gmf.lidarProfile.options.profileConfig.pointSize;
+  const margin = gmf.lidarProfile.options.profileConfig.margin;
+  const tolerance = gmf.lidarProfile.options.profileConfig.tolerance;
 
   const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-  const sx = ngeo.lidarProfile.options.profileConfig.scaleX;
-  const sy = ngeo.lidarProfile.options.profileConfig.scaleY;
+  const sx = gmf.lidarProfile.options.profileConfig.scaleX;
+  const sy = gmf.lidarProfile.options.profileConfig.scaleY;
   let cx, cy;
-  const p = ngeo.lidarProfile.plot2canvas.getClosestPoint(ngeo.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = gmf.lidarProfile.plot2canvas.getClosestPoint(gmf.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
   if (p != undefined) {
 
     cx = sx(p.distance) + margin.left;
@@ -261,20 +261,20 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
 
     const html = `Distance: ${Math.round(10 * p.distance) / 10}<br>
     Altitude: ${Math.round(10 * p.altitude) / 10}<br>
-    Classification: ${ngeo.lidarProfile.options.profileConfig.classification[p.classification].name}<br>
+    Classification: ${gmf.lidarProfile.options.profileConfig.classification[p.classification].name}<br>
     Intensity: ${p.intensity}<br>`;
 
     d3.select('#profileInfo')
       .html(html);
-    ngeo.lidarProfile.loader.cartoHighlight.setElement(null);
+    gmf.lidarProfile.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
-    el.className += 'tooltip ngeo-tooltip-measure';
+    el.className += 'tooltip gmf-tooltip-measure';
     el.innerHTML = html;
 
-    ngeo.lidarProfile.loader.cartoHighlight.setElement(el);
-    ngeo.lidarProfile.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
-    const classifColor = ngeo.lidarProfile.options.profileConfig.classification[p.classification].color;
-    ngeo.lidarProfile.loader.lidarPointHighlight.getSource().clear();
+    gmf.lidarProfile.loader.cartoHighlight.setElement(el);
+    gmf.lidarProfile.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
+    const classifColor = gmf.lidarProfile.options.profileConfig.classification[p.classification].color;
+    gmf.lidarProfile.loader.lidarPointHighlight.getSource().clear();
     const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
     const lidarPointFeature = new ol.Feature(lidarPointGeom);
     if (typeof (classifColor) !== undefined) {
@@ -289,12 +289,12 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
       }));
     }
 
-    ngeo.lidarProfile.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
+    gmf.lidarProfile.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
   } else {
-    ngeo.lidarProfile.loader.lidarPointHighlight.getSource().clear();
+    gmf.lidarProfile.loader.lidarPointHighlight.getSource().clear();
     svg.select('#highlightCircle').remove();
     d3.select('#profileInfo').html('');
-    ngeo.lidarProfile.loader.cartoHighlight.setPosition(undefined);
+    gmf.lidarProfile.loader.cartoHighlight.setPosition(undefined);
   }
 };
 
@@ -302,11 +302,11 @@ ngeo.lidarProfile.plot2canvas.pointHighlight = function() {
 * @param {string} material sets profile points colors
 * @export
 */
-ngeo.lidarProfile.plot2canvas.changeStyle = function(material) {
+gmf.lidarProfile.plot2canvas.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints, material, ngeo.lidarProfile.options.profileConfig.currentZoom);
+  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material, gmf.lidarProfile.options.profileConfig.currentZoom);
 };
 
 /**
@@ -314,10 +314,10 @@ ngeo.lidarProfile.plot2canvas.changeStyle = function(material) {
 * @param {string} material sets profile points colors
 * @export
 */
-ngeo.lidarProfile.plot2canvas.setClassActive = function(classification, material) {
-  ngeo.lidarProfile.options.profileConfig.classification = classification;
+gmf.lidarProfile.plot2canvas.setClassActive = function(classification, material) {
+  gmf.lidarProfile.options.profileConfig.classification = classification;
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints, material, ngeo.lidarProfile.options.profileConfig.currentZoom);
+  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material, gmf.lidarProfile.options.profileConfig.currentZoom);
 };

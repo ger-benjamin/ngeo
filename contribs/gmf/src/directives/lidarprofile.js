@@ -1,9 +1,9 @@
 goog.provide('gmf.lidarProfileComponent');
 goog.require('gmf');
 goog.require('ol.geom.LineString');
-goog.require('ngeo.lidarProfile');
+// goog.require('gmf.lidarProfile');
 
-ngeo.module.value('gmfLidarProfileTemplateUrl',
+gmf.module.value('gmfLidarProfileTemplateUrl',
   /**
      * @param {!angular.JQLite} $element Element.
      * @param {!angular.Attributes} $attrs Attributes.
@@ -98,7 +98,7 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.line;
 
   /**
-   * Distance to highlight on the profile. (Property used in ngeo.Profile.)
+   * Distance to highlight on the profile. (Property used in gmf.Profile.)
    * @type {number}
    * @export
    */
@@ -151,16 +151,16 @@ gmf.LidarProfileController.prototype.$onInit = function() {
  */
 gmf.LidarProfileController.prototype.update_ = function() {
   this.isErrored = false;
-  ngeo.lidarProfile.loader.clearBuffer();
+  gmf.lidarProfile.loader.clearBuffer();
   if (this.line) {
     this.gmfLidarProfileConfig_.olLinestring = this.line;
     this.gmfLidarProfileConfig_.map = this.map_;
-    ngeo.lidarProfile.setOptions(this.gmfLidarProfileConfig_);
-    ngeo.lidarProfile.loader.getProfileByLOD(0,
+    gmf.lidarProfile.setOptions(this.gmfLidarProfileConfig_);
+    gmf.lidarProfile.loader.getProfileByLOD(0,
       true,
       this.gmfLidarProfileConfig_.profileConfig.minLOD);
   } else {
-    ngeo.lidarProfile.loader.cartoHighlight.setPosition(undefined);
+    gmf.lidarProfile.loader.cartoHighlight.setPosition(undefined);
   }
   this.active = !!this.line;
 };

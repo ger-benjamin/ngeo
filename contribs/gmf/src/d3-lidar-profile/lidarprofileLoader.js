@@ -1,19 +1,19 @@
-goog.provide('ngeo.lidarProfile');
+goog.provide('gmf.lidarProfile');
 
-ngeo.lidarProfile.loader = function() {};
+gmf.lidarProfile.loader = function() {};
 
-ngeo.lidarProfile.options = {};
+gmf.lidarProfile.options = {};
 
-ngeo.lidarProfile.setOptions = function(options) {
-  ngeo.lidarProfile.options = options;
+gmf.lidarProfile.setOptions = function(options) {
+  gmf.lidarProfile.options = options;
 
-  ngeo.lidarProfile.loader.cartoHighlight = new ol.Overlay({
+  gmf.lidarProfile.loader.cartoHighlight = new ol.Overlay({
     offset: [0, -15],
     positioning: 'bottom-center'
   });
-  ngeo.lidarProfile.loader.cartoHighlight.setMap(options.map);
+  gmf.lidarProfile.loader.cartoHighlight.setMap(options.map);
 
-  ngeo.lidarProfile.loader.lidarPointHighlight = new ol.layer.Vector({
+  gmf.lidarProfile.loader.lidarPointHighlight = new ol.layer.Vector({
     source: new ol.source.Vector({
     }),
     style: new ol.style.Style({
@@ -26,23 +26,23 @@ ngeo.lidarProfile.setOptions = function(options) {
     })
   });
 
-  ngeo.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
+  gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
 
-  ngeo.lidarProfile.loader.lidarPointHighlight.setMap(options.map);
-  ngeo.lidarProfile.loader.lidarBuffer.setMap(options.map);
+  gmf.lidarProfile.loader.lidarPointHighlight.setMap(options.map);
+  gmf.lidarProfile.loader.lidarBuffer.setMap(options.map);
 };
 
 /**
 * @type {Array}
 */
-ngeo.lidarProfile.loader.requestsQueue = [];
+gmf.lidarProfile.loader.requestsQueue = [];
 
 /**
 * @export
 */
-ngeo.lidarProfile.loader.clearBuffer = function() {
-  if (ngeo.lidarProfile.loader.lidarBuffer) {
-    ngeo.lidarProfile.loader.lidarBuffer.setSource(null);
+gmf.lidarProfile.loader.clearBuffer = function() {
+  if (gmf.lidarProfile.loader.lidarBuffer) {
+    gmf.lidarProfile.loader.lidarBuffer.setSource(null);
   }
 };
 
@@ -53,31 +53,31 @@ ngeo.lidarProfile.loader.clearBuffer = function() {
 * @param {number} minLOD minimum level of detail
 * @export
 */
-ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
-  ngeo.lidarProfile.loader.clearBuffer();
-  ngeo.lidarProfile.options.pytreeLinestring =  ngeo.lidarProfile.loader.getPytreeLinestring(ngeo.lidarProfile.options.olLinestring);
+gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
+  gmf.lidarProfile.loader.clearBuffer();
+  gmf.lidarProfile.options.pytreeLinestring =  gmf.lidarProfile.loader.getPytreeLinestring(gmf.lidarProfile.options.olLinestring);
   let profileLine;
   let maxLODWith;
   if (distanceOffset == 0) {
-    profileLine = ngeo.lidarProfile.options.pytreeLinestring;
-    maxLODWith = ngeo.lidarProfile.utils.getNiceLOD(ngeo.lidarProfile.options.olLinestring.getLength());
+    profileLine = gmf.lidarProfile.options.pytreeLinestring;
+    maxLODWith = gmf.lidarProfile.utils.getNiceLOD(gmf.lidarProfile.options.olLinestring.getLength());
   } else {
 
-    const domain = ngeo.lidarProfile.options.profileConfig.scaleX.domain();
-    const clip = ngeo.lidarProfile.utils.clipLineByMeasure(domain[0], domain[1]);
+    const domain = gmf.lidarProfile.options.profileConfig.scaleX.domain();
+    const clip = gmf.lidarProfile.utils.clipLineByMeasure(domain[0], domain[1]);
     profileLine = '';
     for (let i = 0; i < clip.clippedLine.length; i++) {
       profileLine += `{${clip.clippedLine[i][0]},${clip.clippedLine[i][1]}},`;
     }
     profileLine = profileLine.substr(0, profileLine.length - 1);
-    maxLODWith = ngeo.lidarProfile.utils.getNiceLOD(domain[1] - domain[0]);
+    maxLODWith = gmf.lidarProfile.utils.getNiceLOD(domain[1] - domain[0]);
   }
 
-  const uuid = ngeo.lidarProfile.loader.UUID();
-  ngeo.lidarProfile.loader.lastUuid = uuid;
+  const uuid = gmf.lidarProfile.loader.UUID();
+  gmf.lidarProfile.loader.lastUuid = uuid;
   let lastLOD = false;
 
-  ngeo.lidarProfile.loader.profilePoints = {
+  gmf.lidarProfile.loader.profilePoints = {
     distance: [],
     altitude: [],
     color_packed: [],
@@ -86,25 +86,25 @@ ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, m
     coords: []
   };
   d3.select('#lodInfo').html('');
-  ngeo.lidarProfile.options.profileConfig.pointSum = 0;
+  gmf.lidarProfile.options.profileConfig.pointSum = 0;
   let profileWidth = 0;
-  if (ngeo.lidarProfile.options.profileConfig.autoWidth) {
+  if (gmf.lidarProfile.options.profileConfig.autoWidth) {
     profileWidth = maxLODWith.width;
   } else {
-    profileWidth = ngeo.lidarProfile.options.profileConfig.profilWidth;
+    profileWidth = gmf.lidarProfile.options.profileConfig.profilWidth;
   }
 
   d3.select('#widthInfo').html(`Profile width: ${profileWidth}m`);
 
   for (let i = 0; i < maxLODWith.maxLOD; i++) {
     if (i == 0) {
-      ngeo.lidarProfile.loader.xhrRequest(ngeo.lidarProfile.options, minLOD, ngeo.lidarProfile.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
-      i += ngeo.lidarProfile.options.profileConfig.initialLOD - 1;
+      gmf.lidarProfile.loader.xhrRequest(gmf.lidarProfile.options, minLOD, gmf.lidarProfile.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
+      i += gmf.lidarProfile.options.profileConfig.initialLOD - 1;
     } else if (i < maxLODWith.maxLOD - 1) {
-      ngeo.lidarProfile.loader.xhrRequest(ngeo.lidarProfile.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+      gmf.lidarProfile.loader.xhrRequest(gmf.lidarProfile.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
     } else {
       lastLOD = true;
-      ngeo.lidarProfile.loader.xhrRequest(ngeo.lidarProfile.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+      gmf.lidarProfile.loader.xhrRequest(gmf.lidarProfile.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
     }
   }
 
@@ -123,18 +123,18 @@ ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, m
 * @param {string} uuid the unique identifier the current profile requests cycle
 * @private
 */
-ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
+gmf.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
   let html = d3.select('#lodInfo').html();
   html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
   d3.select('#lodInfo').html(html);
-  const pointCloudName = ngeo.lidarProfile.options.profileConfig.defaultPointCloud;
+  const pointCloudName = gmf.lidarProfile.options.profileConfig.defaultPointCloud;
   const hurl = `${options.pytreeLidarProfileJsonUrl_}/get_profile?minLOD=${minLOD}
     &maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pointCloudName}&attributes='`;
 
-  for (let i = 0; i < ngeo.lidarProfile.loader.requestsQueue.length; i++) {
-    if (ngeo.lidarProfile.loader.requestsQueue[i].uuid != ngeo.lidarProfile.loader.lastUuid) {
-      ngeo.lidarProfile.loader.requestsQueue[i].abort();
-      ngeo.lidarProfile.loader.requestsQueue.splice(i, 1);
+  for (let i = 0; i < gmf.lidarProfile.loader.requestsQueue.length; i++) {
+    if (gmf.lidarProfile.loader.requestsQueue[i].uuid != gmf.lidarProfile.loader.lastUuid) {
+      gmf.lidarProfile.loader.requestsQueue[i].abort();
+      gmf.lidarProfile.loader.requestsQueue.splice(i, 1);
     }
   }
 
@@ -146,19 +146,19 @@ ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, co
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        if (this.uuid == ngeo.lidarProfile.loader.lastUuid) {
+        if (this.uuid == gmf.lidarProfile.loader.lastUuid) {
           let html = d3.select('#lodInfo').html();
           html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
           d3.select('#lodInfo').html(html);
           const xhrresponse = /** @type {!ArrayBuffer}*/(xhr.response);
-          ngeo.lidarProfile.loader.processBuffer(options, xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
+          gmf.lidarProfile.loader.processBuffer(options, xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
         }
       }
     }
   };
 
   try {
-    ngeo.lidarProfile.loader.requestsQueue.push(xhr);
+    gmf.lidarProfile.loader.requestsQueue.push(xhr);
     xhr.send(null);
   } catch (e) {
     console.log(e);
@@ -174,7 +174,7 @@ ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, co
 * @param {boolean} resetPlot weather to reset d3 plot or not
 * @private
 */
-ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distanceOffset, lastLOD, resetPlot) {
+gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanceOffset, lastLOD, resetPlot) {
 
   try {
 
@@ -193,17 +193,17 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
     }
 
     const jHeader = JSON.parse(strHeaderLocal);
-    ngeo.lidarProfile.options.profileConfig.pointSum += jHeader['points'];
-    if (ngeo.lidarProfile.options.profileConfig.pointSum > ngeo.lidarProfile.options.profileConfig.maxPoints) {
-      ngeo.lidarProfile.loader.abortPendingRequests();
+    gmf.lidarProfile.options.profileConfig.pointSum += jHeader['points'];
+    if (gmf.lidarProfile.options.profileConfig.pointSum > gmf.lidarProfile.options.profileConfig.maxPoints) {
+      gmf.lidarProfile.loader.abortPendingRequests();
       console.log('points limit reached. canceling pending requests');
     }
 
     const attr = jHeader['pointAttributes'];
     const attributes = [];
     for (let j = 0; j < attr.length; j++) {
-      if (ngeo.lidarProfile.options.profileConfig.pointAttributes[attr[j]] != undefined) {
-        attributes.push(ngeo.lidarProfile.options.profileConfig.pointAttributes[attr[j]]);
+      if (gmf.lidarProfile.options.profileConfig.pointAttributes[attr[j]] != undefined) {
+        attributes.push(gmf.lidarProfile.options.profileConfig.pointAttributes[attr[j]]);
       }
     }
 
@@ -239,57 +239,57 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
           const dist = udist * scale;
           const alti = ualti * scale;
           points.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
-          ngeo.lidarProfile.loader.profilePoints.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
+          gmf.lidarProfile.loader.profilePoints.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
           points.altitude.push(Math.round(100 * alti) / 100);
-          ngeo.lidarProfile.loader.profilePoints.altitude.push(Math.round(100 * alti) / 100);
+          gmf.lidarProfile.loader.profilePoints.altitude.push(Math.round(100 * alti) / 100);
 
         } else if (attribute.value == 'CLASSIFICATION') {
           const classif = view.getUint8(aoffset);
           points.classification.push(classif);
-          ngeo.lidarProfile.loader.profilePoints.classification.push(classif);
+          gmf.lidarProfile.loader.profilePoints.classification.push(classif);
 
         } else if (attribute.value == 'INTENSITY') {
           const intensity = view.getUint8(aoffset);
           points.intensity.push(intensity);
-          ngeo.lidarProfile.loader.profilePoints.intensity.push(intensity);
+          gmf.lidarProfile.loader.profilePoints.intensity.push(intensity);
 
         } else if (attribute.value == 'COLOR_PACKED') {
           const r = view.getUint8(aoffset);
           const g = view.getUint8(aoffset + 1);
           const b = view.getUint8(aoffset + 2);
           points.color_packed.push([r, g, b]);
-          ngeo.lidarProfile.loader.profilePoints.color_packed.push([r, g, b]);
+          gmf.lidarProfile.loader.profilePoints.color_packed.push([r, g, b]);
 
         } else if (attribute.value == 'POSITION_CARTESIAN') {
           const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
           const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
           points.coords.push([x, y]);
-          ngeo.lidarProfile.loader.profilePoints.coords.push([x, y]);
+          gmf.lidarProfile.loader.profilePoints.coords.push([x, y]);
         }
         aoffset = aoffset + attribute.bytes;
       }
     }
 
-    const rangeX = [0, ngeo.lidarProfile.options.olLinestring.getLength()];
-    // let rangeY = [ngeo.lidarProfile.loader.arrayMin(points.altitude), ngeo.lidarProfile.loader.arrayMax(points.altitude)];
+    const rangeX = [0, gmf.lidarProfile.options.olLinestring.getLength()];
+    // let rangeY = [gmf.lidarProfile.loader.arrayMin(points.altitude), gmf.lidarProfile.loader.arrayMax(points.altitude)];
     let rangeY = [jHeader['boundingBox']['lz'], jHeader['boundingBox']['uz']];
 
     // TODO fix z offset issue in cPotree here is an hugly fix:
     // for (let b = 0; b < points.altitude.length; b++) {
     //   points.altitude[b] = points.altitude[b] - rangeY[0] + jHeader.boundingBox.lz;
-    //   ngeo.lidarProfile.loader.profilePoints.altitude[b] = ngeo.lidarProfile.loader.profilePoints.altitude[b] - rangeY[0] + jHeader.boundingBox.lz;
+    //   gmf.lidarProfile.loader.profilePoints.altitude[b] = gmf.lidarProfile.loader.profilePoints.altitude[b] - rangeY[0] + jHeader.boundingBox.lz;
     // }
 
-    rangeY = [ngeo.lidarProfile.loader.arrayMin(points.altitude), ngeo.lidarProfile.loader.arrayMax(points.altitude)];
+    rangeY = [gmf.lidarProfile.loader.arrayMin(points.altitude), gmf.lidarProfile.loader.arrayMax(points.altitude)];
 
     if (iter == 0 && resetPlot) {
-      ngeo.lidarProfile.plot2canvas.setupPlot(rangeX, rangeY);
-      ngeo.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
-        ngeo.lidarProfile.options.profileConfig.currentZoom);
+      gmf.lidarProfile.plot2canvas.setupPlot(rangeX, rangeY);
+      gmf.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
+        gmf.lidarProfile.options.profileConfig.currentZoom);
 
     } else {
-      ngeo.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
-        ngeo.lidarProfile.options.profileConfig.currentZoom);
+      gmf.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
+        gmf.lidarProfile.options.profileConfig.currentZoom);
     }
 
   } catch (e) {
@@ -300,37 +300,36 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
 /**
 * @export
 */
-ngeo.lidarProfile.loader.updateData = function() {
-  const scaleX = ngeo.lidarProfile.options.profileConfig.scaleX;
-  const scaleY = ngeo.lidarProfile.options.profileConfig.scaleY;
+gmf.lidarProfile.loader.updateData = function() {
+  const scaleX = gmf.lidarProfile.options.profileConfig.scaleX;
+  const scaleY = gmf.lidarProfile.options.profileConfig.scaleY;
   const domainX = scaleX.domain();
   const domainY = scaleY.domain();
 
-  const clip = ngeo.lidarProfile.utils.clipLineByMeasure(domainX[0], domainX[1]);
+  const clip = gmf.lidarProfile.utils.clipLineByMeasure(domainX[0], domainX[1]);
   const span = domainX[1] - domainX[0];
-  const maxLODWidth = ngeo.lidarProfile.utils.getNiceLOD(span);
+  const maxLODWidth = gmf.lidarProfile.utils.getNiceLOD(span);
   const xTolerance = 0.2;
 
-  if (Math.abs(domainX[0] - ngeo.lidarProfile.options.profileConfig.previousDomainX[0]) < xTolerance &&
-      Math.abs(domainX[1] - ngeo.lidarProfile.options.profileConfig.previousDomainX[1]) < xTolerance) {
+  if (Math.abs(domainX[0] - gmf.lidarProfile.options.profileConfig.previousDomainX[0]) < xTolerance &&
+      Math.abs(domainX[1] - gmf.lidarProfile.options.profileConfig.previousDomainX[1]) < xTolerance) {
 
-    ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints,
-      ngeo.lidarProfile.options.profileConfig.defaultAttribute,
-      ngeo.lidarProfile.options.profileConfig.currentZoom);
+    gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints,
+      gmf.lidarProfile.options.profileConfig.defaultAttribute,
+      gmf.lidarProfile.options.profileConfig.currentZoom);
   } else {
-    console.log(maxLODWidth.maxLOD, ngeo.lidarProfile.options.profileConfig.initialLOD);
-    if (maxLODWidth.maxLOD <= ngeo.lidarProfile.options.profileConfig.initialLOD) {
-      ngeo.lidarProfile.plot2canvas.drawPoints(ngeo.lidarProfile.loader.profilePoints,
-        ngeo.lidarProfile.options.profileConfig.defaultAttribute,
-        ngeo.lidarProfile.options.profileConfig.currentZoom);
+    if (maxLODWidth.maxLOD <= gmf.lidarProfile.options.profileConfig.initialLOD) {
+      gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints,
+        gmf.lidarProfile.options.profileConfig.defaultAttribute,
+        gmf.lidarProfile.options.profileConfig.currentZoom);
     } else {
-      ngeo.lidarProfile.loader.getProfileByLOD(clip.distanceOffset, false, 0);
+      gmf.lidarProfile.loader.getProfileByLOD(clip.distanceOffset, false, 0);
 
     }
   }
 
-  ngeo.lidarProfile.options.profileConfig.previousDomainX = domainX;
-  ngeo.lidarProfile.options.profileConfig.previousDomainY = domainY;
+  gmf.lidarProfile.options.profileConfig.previousDomainX = domainX;
+  gmf.lidarProfile.options.profileConfig.previousDomainY = domainY;
 
 };
 
@@ -338,11 +337,11 @@ ngeo.lidarProfile.loader.updateData = function() {
 /**
 * @export
 */
-ngeo.lidarProfile.loader.abortPendingRequests = function() {
+gmf.lidarProfile.loader.abortPendingRequests = function() {
 
-  for (let i = 0; i < ngeo.lidarProfile.loader.requestsQueue.length; i++) {
-    ngeo.lidarProfile.loader.requestsQueue[i].abort();
-    ngeo.lidarProfile.loader.requestsQueue.splice(i, 1);
+  for (let i = 0; i < gmf.lidarProfile.loader.requestsQueue.length; i++) {
+    gmf.lidarProfile.loader.requestsQueue[i].abort();
+    gmf.lidarProfile.loader.requestsQueue.splice(i, 1);
   }
 };
 
@@ -351,7 +350,7 @@ ngeo.lidarProfile.loader.abortPendingRequests = function() {
 * @return {number} the maximum of input array
 * @private
 */
-ngeo.lidarProfile.loader.arrayMax = function(array) {
+gmf.lidarProfile.loader.arrayMax = function(array) {
   return array.reduce((a, b) => Math.max(a, b));
 };
 
@@ -360,7 +359,7 @@ ngeo.lidarProfile.loader.arrayMax = function(array) {
 * @return {number} the minimum of input array
 * @private
 */
-ngeo.lidarProfile.loader.arrayMin = function(array) {
+gmf.lidarProfile.loader.arrayMin = function(array) {
 
   let minVal = Infinity;
   for (let i = 0; i < array.length; i++) {
@@ -375,7 +374,7 @@ ngeo.lidarProfile.loader.arrayMin = function(array) {
 * @private
 * @return {string} uuid
 */
-ngeo.lidarProfile.loader.UUID = function() {
+gmf.lidarProfile.loader.UUID = function() {
   let nbr, randStr = '';
   do {
     randStr += (nbr = Math.random()).toString(16).substr(2);
@@ -395,7 +394,7 @@ ngeo.lidarProfile.loader.UUID = function() {
 * @param {ol.geom.LineString} line the profile 2D line
 * @return {string} linestring in a cPotree/pytree compatible string definition
 */
-ngeo.lidarProfile.loader.getPytreeLinestring = function(line) {
+gmf.lidarProfile.loader.getPytreeLinestring = function(line) {
   const coords = line.getCoordinates();
   let pytreeLineString = '';
   for (let i = 0; i < coords.length; i++) {

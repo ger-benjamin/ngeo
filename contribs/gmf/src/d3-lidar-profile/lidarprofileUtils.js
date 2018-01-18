@@ -1,4 +1,4 @@
-goog.provide('ngeo.lidarProfile.utils');
+goog.provide('gmf.lidarProfile.utils');
 
 /**
 * @param {number} dLeft domain minimum
@@ -6,17 +6,17 @@ goog.provide('ngeo.lidarProfile.utils');
 * @return {{clippedLine: Array.<ol.Coordinate>, distanceOffset: number}} Object with clipped lined coordinates and left domain value
 * @export
 */
-ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
+gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
 
   const clippedLine = new ol.geom.LineString([]);
   let mileage_start = 0;
   let mileage_end = 0;
 
-  const totalLength = ngeo.lidarProfile.options.olLinestring.getLength();
+  const totalLength = gmf.lidarProfile.options.olLinestring.getLength();
   const fractionStart = dLeft / totalLength;
   const fractionEnd = dRight / totalLength;
 
-  ngeo.lidarProfile.options.olLinestring.forEachSegment((segStart, segEnd) => {
+  gmf.lidarProfile.options.olLinestring.forEachSegment((segStart, segEnd) => {
 
     const segLine = new ol.geom.LineString([segStart, segEnd]);
     mileage_end += segLine.getLength();
@@ -24,7 +24,7 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
     if (dLeft == mileage_start) {
       clippedLine.appendCoordinate(segStart);
     } else if (dLeft > mileage_start && dLeft < mileage_end) {
-      clippedLine.appendCoordinate(ngeo.lidarProfile.options.olLinestring.getCoordinateAt(fractionStart));
+      clippedLine.appendCoordinate(gmf.lidarProfile.options.olLinestring.getCoordinateAt(fractionStart));
     }
 
     if (mileage_start > dLeft && mileage_start < dRight) {
@@ -34,7 +34,7 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
     if (dRight == mileage_end) {
       clippedLine.appendCoordinate(segEnd);
     } else if (dRight > mileage_start && dRight < mileage_end) {
-      clippedLine.appendCoordinate(ngeo.lidarProfile.options.olLinestring.getCoordinateAt(fractionEnd));
+      clippedLine.appendCoordinate(gmf.lidarProfile.options.olLinestring.getCoordinateAt(fractionEnd));
     }
 
     mileage_start += segLine.getLength();
@@ -42,16 +42,16 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   });
 
   let profileWidth;
-  if (ngeo.lidarProfile.options.profileConfig.autoWidth) {
-    profileWidth = ngeo.lidarProfile.utils.getNiceLOD(clippedLine.getLength()).width;
+  if (gmf.lidarProfile.options.profileConfig.autoWidth) {
+    profileWidth = gmf.lidarProfile.utils.getNiceLOD(clippedLine.getLength()).width;
   } else {
-    profileWidth = ngeo.lidarProfile.options.profileConfig.profilWidth;
+    profileWidth = gmf.lidarProfile.options.profileConfig.profilWidth;
   }
   const feat = new ol.Feature({
     geometry: clippedLine
   });
 
-  const widthInMapsUnits = profileWidth / ngeo.lidarProfile.options.map.getView().getResolution();
+  const widthInMapsUnits = profileWidth / gmf.lidarProfile.options.map.getView().getResolution();
 
   const lineStyle = new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -122,9 +122,9 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   const vectorSource = new ol.source.Vector({
     features: [feat]
   });
-  ngeo.lidarProfile.loader.lidarBuffer.setSource(null);
-  ngeo.lidarProfile.loader.lidarBuffer.setSource(vectorSource);
-  ngeo.lidarProfile.loader.lidarBuffer.setStyle(styles);
+  gmf.lidarProfile.loader.lidarBuffer.setSource(null);
+  gmf.lidarProfile.loader.lidarBuffer.setSource(vectorSource);
+  gmf.lidarProfile.loader.lidarBuffer.setStyle(styles);
 
   return {
     clippedLine: clippedLine.getCoordinates(),
@@ -137,10 +137,10 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
 * @return {{maxLOD: number, width: number}} Object with optimized LOD and width for this profile span
 * @export
 */
-ngeo.lidarProfile.utils.getNiceLOD = function(span) {
+gmf.lidarProfile.utils.getNiceLOD = function(span) {
   let maxLOD = 0;
   let width;
-  const levels = ngeo.lidarProfile.options.profileConfig.maxLevels;
+  const levels = gmf.lidarProfile.options.profileConfig.maxLevels;
   for (const key in levels) {
     if (span < key && levels[key].max > maxLOD) {
       maxLOD = levels[key].max;
@@ -158,7 +158,7 @@ ngeo.lidarProfile.utils.getNiceLOD = function(span) {
 * @param {string} dataUrl fake url from which to download the csv file
 * @export
 */
-ngeo.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataUrl) {
+gmf.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataUrl) {
 
   const link = document.createElement('a');
   link.download = filename;
@@ -172,8 +172,8 @@ ngeo.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataU
 /**
 * @export
 */
-ngeo.lidarProfile.utils.exportToImageFile = function() {
-  const margin = ngeo.lidarProfile.options.profileConfig.margin;
+gmf.lidarProfile.utils.exportToImageFile = function() {
+  const margin = gmf.lidarProfile.options.profileConfig.margin;
   const svg = d3.select('#profileSVG').node();
   const img = new Image();
   const DOMURL = window.URL || window.webkitURL || window;
@@ -197,22 +197,22 @@ ngeo.lidarProfile.utils.exportToImageFile = function() {
     canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
     ctx.drawImage(img, 0, 0, w, h);
     const dataURL = canvas.toDataURL();
-    ngeo.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+    gmf.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
     DOMURL.revokeObjectURL(url);
   };
   img.src = url;
 };
 
 /**
-* @param {ngeox.LidarProfilePoint} profilePoints points
+* @param {gmfx.LidarProfilePoint} profilePoints points
 * @export
 */
-ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
+gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
 
   let file = 'data:text/csv;charset=utf-8,';
 
   /**
-   * @type {Array.<ngeox.LidarProfilePoint>}
+   * @type {Array.<gmfx.LidarProfilePoint>}
    */
   const points = [];
   for (let i = 0; i < profilePoints.distance.length; i++) {
@@ -313,6 +313,6 @@ ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
   }
 
   const encodedUri = encodeURI(file);
-  ngeo.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
+  gmf.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
 
 };

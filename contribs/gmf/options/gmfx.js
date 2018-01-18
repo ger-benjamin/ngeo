@@ -114,6 +114,14 @@ gmfx.GridMergeTabs;
 
 
 /**
+ * @typedef {{
+ * returnNumber: (number|undefined)
+ * }}
+ */
+gmfx.LidarProfilePoint;
+
+
+/**
  * Projection object for the MousePositionDirective. Define a label and a filter
  * to use to display coordinates for a projection.
  * @typedef {{
