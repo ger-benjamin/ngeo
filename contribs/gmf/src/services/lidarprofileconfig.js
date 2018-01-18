@@ -26,26 +26,62 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {ol.Map}
    */
   this.map = null;
+  /**
+   * @type {string}
+   */
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
+  /**
+   * @type {Object}
+   */
   this.profileConfig = {};
+  /**
+   * @type {Object}
+   */
   this.profileConfig.scaleX = {};
+  /**
+   * @type {Object}
+   */
   this.profileConfig.currentScaleY = {};
+  /**
+   * @type {Array.<number>}
+   */
   this.profileConfig.previousDomainX = [];
+  /**
+   * @type {Array.<number>}
+   */
   this.profileConfig.previousDomainY = [];
+  /**
+   * @type {number}
+   */
   this.profileConfig.currentZoom = 1;
+  /**
+   * @type {number}
+   */
   this.profileConfig.distanceOffset = 0;
+  /**
+   * @type {{left: number, top: number, right: number, bottom: number}}
+   */
   this.profileConfig.margin = {
     'left': 40,
     'top': 10,
     'right': 200,
     'bottom': 40
   };
-
+  /**
+   * @type {number}
+   */
   this.profileConfig.tolerance = 5;
+  /**
+   * @type {boolean}
+   */
   this.profileConfig.configLoaded = false;
 
 };
 
+/**
+* @export
+* @return {Object} configuration values
+*/
 gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
   return this.$http_.get(`${this.pytreeLidarProfileJsonUrl_}/profile_config_gmf2`).then((resp) => {
 
@@ -57,7 +93,6 @@ gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
     this.profileConfig.pointSize = resp.data['point_size'];
     this.profileConfig.pointAttributes = resp.data['point_attributes'];
     this.profileConfig.defaultPointAttribute = resp.data['default_point_attribute'];
-    console.log('attributes from pytree', this.profileConfig.pointAttributes);
     this.profileConfig.maxLevels = resp.data['max_levels'];
     this.profileConfig.maxPoints = resp.data['max_point_number'];
     this.profileConfig.pointSum = 0;
@@ -67,10 +102,6 @@ gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
     this.profileConfig.pointClouds = resp.data['pointclouds'];
 
   });
-};
-
-gmf.LidarProfileConfig.prototype.getConfig = function() {
-
 };
 
 gmf.module.service('gmfLidarProfileConfig', gmf.LidarProfileConfig);

@@ -65,7 +65,7 @@ gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, mi
 
     const domain = gmf.lidarProfile.options.profileConfig.scaleX.domain();
     const clip = gmf.lidarProfile.utils.clipLineByMeasure(domain[0], domain[1]);
-    profileLine = '';
+    profileLine = '';initProfileConfig
     for (let i = 0; i < clip.clippedLine.length; i++) {
       profileLine += `{${clip.clippedLine[i][0]},${clip.clippedLine[i][1]}},`;
     }
