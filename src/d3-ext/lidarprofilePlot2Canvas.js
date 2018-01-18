@@ -5,7 +5,7 @@ goog.require('ngeo.lidarProfile');
 /**
  * @param {Object} points Object containing arrays of point properties
  * @param {string} material material used to determine point color
- * TODO add d3.sacleLinear type for param
+ * @param {Object} scale d3.scaleLinear => TODO: update externs typedefs
  * @export
 */
 ngeo.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {

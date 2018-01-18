@@ -1,7 +1,8 @@
 goog.provide('ngeo.lidarProfile');
 
-ngeo.lidarProfile.options = {};
 ngeo.lidarProfile.loader = function() {};
+
+ngeo.lidarProfile.options = {};
 
 ngeo.lidarProfile.setOptions = function(options) {
   ngeo.lidarProfile.options = options;
@@ -31,14 +32,27 @@ ngeo.lidarProfile.setOptions = function(options) {
   ngeo.lidarProfile.loader.lidarBuffer.setMap(options.map);
 };
 
+/**
+* @type {Array}
+*/
+ngeo.lidarProfile.loader.requestsQueue = [];
+
+/**
+* @export
+*/
 ngeo.lidarProfile.loader.clearBuffer = function() {
   if (ngeo.lidarProfile.loader.lidarBuffer) {
     ngeo.lidarProfile.loader.lidarBuffer.setSource(null);
   }
 };
 
-ngeo.lidarProfile.loader.requestsQueue = [];
 
+/**
+* @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
+* @param {boolean} resetPlot weather to reset d3 plot or not
+* @param {number} minLOD minimum level of detail
+* @export
+*/
 ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
   ngeo.lidarProfile.loader.clearBuffer();
   ngeo.lidarProfile.options.pytreeLinestring =  ngeo.lidarProfile.loader.getPytreeLinestring(ngeo.lidarProfile.options.olLinestring);
@@ -96,6 +110,19 @@ ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, m
 
 };
 
+/**
+* @param {Object} options the profile Options
+* @param {number} minLOD minimum level of detail
+* @param {number} maxLOD maximum level of detail
+* @param {number} iter the iteration in profile requests cycle
+* @param {string} coordinates linestring in cPotree format
+* @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
+* @param {boolean} lastLOD the deepest level to retrieve for this profile
+* @param {number} width the width of the profile
+* @param {boolean} resetPlot weather to reset d3 plot or not
+* @param {string} uuid the unique identifier the current profile requests cycle
+* @private
+*/
 ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
   let html = d3.select('#lodInfo').html();
   html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
@@ -123,7 +150,8 @@ ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, co
           let html = d3.select('#lodInfo').html();
           html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
           d3.select('#lodInfo').html(html);
-          ngeo.lidarProfile.loader.processBuffer(options, xhr.response, iter, distanceOffset, lastLOD, resetPlot);
+          const xhrresponse = /** @type {!ArrayBuffer}*/(xhr.response);
+          ngeo.lidarProfile.loader.processBuffer(options, xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
         }
       }
     }
@@ -137,6 +165,15 @@ ngeo.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, co
   }
 };
 
+/**
+* @param {Object} options the profile Options
+* @param {ArrayBuffer} profile binary array returned by cPotree executable called by Pytree
+* @param {number} iter the iteration in profile requests cycle
+* @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
+* @param {boolean} lastLOD the deepest level to retrieve for this profile
+* @param {boolean} resetPlot weather to reset d3 plot or not
+* @private
+*/
 ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distanceOffset, lastLOD, resetPlot) {
 
   try {
@@ -155,25 +192,14 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
       return;
     }
 
-    // TODO define this in externs ?
-    let jHeader = {
-      bytesPerPoint: -1,
-      boundingBox: {
-        ly: -1,
-        lx: -1,
-        lz: -1,
-        uz: -1
-      }
-    };
-
-    jHeader = JSON.parse(strHeaderLocal);
-    ngeo.lidarProfile.options.profileConfig.pointSum += jHeader.points;
+    const jHeader = JSON.parse(strHeaderLocal);
+    ngeo.lidarProfile.options.profileConfig.pointSum += jHeader['points'];
     if (ngeo.lidarProfile.options.profileConfig.pointSum > ngeo.lidarProfile.options.profileConfig.maxPoints) {
       ngeo.lidarProfile.loader.abortPendingRequests();
       console.log('points limit reached. canceling pending requests');
     }
 
-    const attr = jHeader.pointAttributes;
+    const attr = jHeader['pointAttributes'];
     const attributes = [];
     for (let j = 0; j < attr.length; j++) {
       if (ngeo.lidarProfile.options.profileConfig.pointAttributes[attr[j]] != undefined) {
@@ -181,7 +207,7 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
       }
     }
 
-    const scale = jHeader.scale;
+    const scale = jHeader['scale'];
     const points = {
       distance: [],
       altitude: [],
@@ -190,9 +216,9 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
       color_packed: [],
       coords: []
     };
-    const bytesPerPoint = jHeader.bytesPerPoint;
+    const bytesPerPoint = jHeader['bytesPerPoint'];
     const buffer = profile.slice(4 + headerSize);
-    for (let i = 0; i < jHeader.points; i++) {
+    for (let i = 0; i < jHeader['points']; i++) {
 
       const byteOffset = bytesPerPoint * i;
       const view = new DataView(buffer, byteOffset, bytesPerPoint);
@@ -235,8 +261,8 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
           ngeo.lidarProfile.loader.profilePoints.color_packed.push([r, g, b]);
 
         } else if (attribute.value == 'POSITION_CARTESIAN') {
-          const x = view.getInt32(aoffset, true) * scale + jHeader.boundingBox.lx;
-          const y = view.getInt32(aoffset + 4, true) * scale + jHeader.boundingBox.ly;
+          const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
+          const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
           points.coords.push([x, y]);
           ngeo.lidarProfile.loader.profilePoints.coords.push([x, y]);
         }
@@ -246,7 +272,7 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
 
     const rangeX = [0, ngeo.lidarProfile.options.olLinestring.getLength()];
     // let rangeY = [ngeo.lidarProfile.loader.arrayMin(points.altitude), ngeo.lidarProfile.loader.arrayMax(points.altitude)];
-    let rangeY = [jHeader.boundingBox.lz, jHeader.boundingBox.uz];
+    let rangeY = [jHeader['boundingBox']['lz'], jHeader['boundingBox']['uz']];
 
     // TODO fix z offset issue in cPotree here is an hugly fix:
     // for (let b = 0; b < points.altitude.length; b++) {
@@ -271,6 +297,9 @@ ngeo.lidarProfile.loader.processBuffer = function(options, profile, iter, distan
   }
 };
 
+/**
+* @export
+*/
 ngeo.lidarProfile.loader.updateData = function() {
   const scaleX = ngeo.lidarProfile.options.profileConfig.scaleX;
   const scaleY = ngeo.lidarProfile.options.profileConfig.scaleY;
@@ -344,7 +373,7 @@ ngeo.lidarProfile.loader.arrayMin = function(array) {
 
 /**
 * @private
-* @return {string}
+* @return {string} uuid
 */
 ngeo.lidarProfile.loader.UUID = function() {
   let nbr, randStr = '';
@@ -364,7 +393,7 @@ ngeo.lidarProfile.loader.UUID = function() {
 /**
 * @private
 * @param {ol.geom.LineString} line the profile 2D line
-* @return {string}
+* @return {string} linestring in a cPotree/pytree compatible string definition
 */
 ngeo.lidarProfile.loader.getPytreeLinestring = function(line) {
   const coords = line.getCoordinates();
