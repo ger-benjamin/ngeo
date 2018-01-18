@@ -41,7 +41,7 @@ ngeo.lidarProfile.loader.requestsQueue = [];
 
 ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
   ngeo.lidarProfile.loader.clearBuffer();
-  ngeo.lidarProfile.options.pytreeLinestring =  ngeo.lidarProfile.utils.getPytreeLinestring(ngeo.lidarProfile.options.olLinestring);
+  ngeo.lidarProfile.options.pytreeLinestring =  ngeo.lidarProfile.loader.getPytreeLinestring(ngeo.lidarProfile.options.olLinestring);
   let profileLine;
   let maxLODWith;
   if (distanceOffset == 0) {
@@ -59,7 +59,7 @@ ngeo.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, m
     maxLODWith = ngeo.lidarProfile.utils.getNiceLOD(domain[1] - domain[0]);
   }
 
-  const uuid = ngeo.lidarProfile.utils.UUID();
+  const uuid = ngeo.lidarProfile.loader.UUID();
   ngeo.lidarProfile.loader.lastUuid = uuid;
   let lastLOD = false;
 
@@ -340,4 +340,39 @@ ngeo.lidarProfile.loader.arrayMin = function(array) {
     }
   }
   return minVal;
+};
+
+/**
+* @private
+* @return {string}
+*/
+ngeo.lidarProfile.loader.UUID = function() {
+  let nbr, randStr = '';
+  do {
+    randStr += (nbr = Math.random()).toString(16).substr(2);
+  } while (randStr.length < 30);
+  return [
+    randStr.substr(0, 8), '-',
+    randStr.substr(8, 4), '-4',
+    randStr.substr(12, 3), '-',
+    ((nbr * 4 | 0) + 8).toString(16),
+    randStr.substr(15, 3), '-',
+    randStr.substr(18, 12)
+  ].join('');
+};
+
+/**
+* @private
+* @param {ol.geom.LineString} line the profile 2D line
+* @return {string}
+*/
+ngeo.lidarProfile.loader.getPytreeLinestring = function(line) {
+  const coords = line.getCoordinates();
+  let pytreeLineString = '';
+  for (let i = 0; i < coords.length; i++) {
+    const px = coords[i][0];
+    const py = coords[i][1];
+    pytreeLineString += `{${Math.round(100 * px) / 100}, ${Math.round(100 * py) / 100}},`;
+  }
+  return pytreeLineString.substr(0, pytreeLineString.length - 1);
 };

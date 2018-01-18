@@ -82,8 +82,7 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   const styles = [lineStyle];
   const lineEnd = clippedLine.getLastCoordinate();
   const lineStart = clippedLine.getFirstCoordinate();
-  console.log(lineEnd);
-  console.log(firstSegmentAngle, lastSegementAngle);
+
   styles.push(
     new ol.style.Style({
       geometry: new ol.geom.Point(lineEnd),
@@ -133,6 +132,11 @@ ngeo.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   };
 };
 
+/**
+* @param {number} span domain extent
+* @return {{maxLOD: number, width: number}} Object with optimized LOD and width for this profile span
+* @export
+*/
 ngeo.lidarProfile.utils.getNiceLOD = function(span) {
   let maxLOD = 0;
   let width;
@@ -149,6 +153,11 @@ ngeo.lidarProfile.utils.getNiceLOD = function(span) {
   };
 };
 
+/**
+* @param {string} filename csv file name
+* @param {string} dataUrl fake url from which to download the csv file
+* @export
+*/
 ngeo.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataUrl) {
 
   const link = document.createElement('a');
@@ -160,7 +169,10 @@ ngeo.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataU
   document.body.removeChild(link);
 };
 
-ngeo.lidarProfile.utils.exportToImageFile = function(format) {
+/**
+* @export
+*/
+ngeo.lidarProfile.utils.exportToImageFile = function() {
   const margin = ngeo.lidarProfile.options.profileConfig.margin;
   const svg = d3.select('#profileSVG').node();
   const img = new Image();
@@ -191,10 +203,11 @@ ngeo.lidarProfile.utils.exportToImageFile = function(format) {
   img.src = url;
 };
 
+/**
+* @param {ngeox.LidarProfilePoint} profilePoints points
+* @export
+*/
 ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
-  if (profilePoints.distance.length === 0) {
-    return;
-  }
 
   let file = 'data:text/csv;charset=utf-8,';
 
@@ -302,31 +315,4 @@ ngeo.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
   const encodedUri = encodeURI(file);
   ngeo.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
 
-};
-
-ngeo.lidarProfile.utils.UUID = function() {
-  let nbr, randStr = '';
-  do {
-    randStr += (nbr = Math.random()).toString(16).substr(2);
-  } while (randStr.length < 30);
-  return [
-    randStr.substr(0, 8), '-',
-    randStr.substr(8, 4), '-4',
-    randStr.substr(12, 3), '-',
-    ((nbr * 4 | 0) + 8).toString(16),
-    randStr.substr(15, 3), '-',
-    randStr.substr(18, 12)
-  ].join('');
-};
-
-ngeo.lidarProfile.utils.getPytreeLinestring = function(line) {
-  const flat = line.flatCoordinates;
-  let pytreeLineString = '';
-  for (let i = 0; i < flat.length; i++) {
-    const px = flat[i];
-    const py = flat[i + 1];
-    pytreeLineString += `{${Math.round(100 * px) / 100}, ${Math.round(100 * py) / 100}},`;
-    i += 1;
-  }
-  return pytreeLineString.substr(0, pytreeLineString.length - 1);
 };

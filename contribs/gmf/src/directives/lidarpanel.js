@@ -200,7 +200,7 @@ gmf.LidarPanelController.prototype.csvExport = function() {
  */
 gmf.LidarPanelController.prototype.pngExport = function() {
   if (this.line) {
-    ngeo.lidarProfile.utils.exportToImageFile('png');
+    ngeo.lidarProfile.utils.exportToImageFile();
   }
 };
 
