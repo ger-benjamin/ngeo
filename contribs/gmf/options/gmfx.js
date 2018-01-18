@@ -172,7 +172,6 @@ gmfx.ObjectEditingToolsOptions;
 gmfx.ObjectEditingToolsOptions.prototype.regularPolygonRadius;
 
 
-
 /**
  * Configuration options for the permalink service.
  * @typedef {{
@@ -692,7 +691,7 @@ cgxp.tools.openInfoWindow;
  * @param {string=} opt_width CSS width.
  * @param {string=} opt_height CSS height.
  */
-gmfx.openPopup_
+gmfx.openPopup_;
 
 /**
  * @typedef {{
