@@ -1,5 +1,8 @@
 goog.provide('gmf.lidarProfile.measure');
 
+/**
+* @export
+*/
 gmf.lidarProfile.measure.clearMeasure = function() {
   gmf.lidarProfile.measure.profileMeasure = {
     pStart: {
@@ -20,6 +23,10 @@ gmf.lidarProfile.measure.clearMeasure = function() {
 
 };
 
+/**
+* @param {Element} el used to draw the measure
+* @export
+*/
 gmf.lidarProfile.measure.setMeasureActive = function(el) {
   if (el.className.indexOf('active') == -1) {
     gmf.lidarProfile.measure.clearMeasure();
@@ -35,6 +42,9 @@ gmf.lidarProfile.measure.startMeasure = function() {
   d3.select('svg#profileSVG').on('click', gmf.lidarProfile.measure.measureHeight);
 };
 
+/**
+* @private
+*/
 gmf.lidarProfile.measure.measureHeight = function() {
 
   const margin = gmf.lidarProfile.options.profileConfig.margin;
