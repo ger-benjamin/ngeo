@@ -5,10 +5,9 @@ goog.require('gmf.lidarProfile');
 /**
  * @param {Object} points Object containing arrays of point properties
  * @param {string} material material used to determine point color
- * @param {Object} scale d3.scaleLinear => TODO: update externs typedefs
  * @export
 */
-gmf.lidarProfile.plot2canvas.drawPoints = function(points, material, scale) {
+gmf.lidarProfile.plot2canvas.drawPoints = function(points, material) {
   let i = -1;
   const n = points.distance.length;
   let cx, cy;
@@ -306,7 +305,7 @@ gmf.lidarProfile.plot2canvas.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material, gmf.lidarProfile.options.profileConfig.currentZoom);
+  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material);
 };
 
 /**
@@ -319,5 +318,5 @@ gmf.lidarProfile.plot2canvas.setClassActive = function(classification, material)
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material, gmf.lidarProfile.options.profileConfig.currentZoom);
+  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material);
 };

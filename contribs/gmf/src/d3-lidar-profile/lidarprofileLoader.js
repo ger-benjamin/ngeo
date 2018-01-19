@@ -306,12 +306,10 @@ gmf.lidarProfile.loader.processBuffer = function(profile, iter, distanceOffset, 
 
     if (iter == 0 && resetPlot) {
       gmf.lidarProfile.plot2canvas.setupPlot(rangeX, rangeY);
-      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute,
-        gmf.lidarProfile.options.profileConfig.currentZoom);
+      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute);
 
     } else {
-      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute,
-        gmf.lidarProfile.options.profileConfig.currentZoom);
+      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute);
     }
 
   } catch (e) {
@@ -337,13 +335,11 @@ gmf.lidarProfile.loader.updateData = function() {
       Math.abs(domainX[1] - gmf.lidarProfile.options.profileConfig.previousDomainX[1]) < xTolerance) {
 
     gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints,
-      gmf.lidarProfile.options.profileConfig.defaultAttribute,
-      gmf.lidarProfile.options.profileConfig.currentZoom);
+      gmf.lidarProfile.options.profileConfig.defaultAttribute);
   } else {
     if (maxLODWidth.maxLOD <= gmf.lidarProfile.options.profileConfig.initialLOD) {
       gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints,
-        gmf.lidarProfile.options.profileConfig.defaultAttribute,
-        gmf.lidarProfile.options.profileConfig.currentZoom);
+        gmf.lidarProfile.options.profileConfig.defaultAttribute);
     } else {
       gmf.lidarProfile.loader.getProfileByLOD(clip.distanceOffset, false, 0);
 
