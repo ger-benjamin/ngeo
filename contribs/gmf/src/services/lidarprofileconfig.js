@@ -75,6 +75,10 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {boolean}
    */
   this.profileConfig.configLoaded = false;
+  /**
+   * @type {Object}
+   */
+  this.profileConfig.pointAttributes = {};
 
 };
 

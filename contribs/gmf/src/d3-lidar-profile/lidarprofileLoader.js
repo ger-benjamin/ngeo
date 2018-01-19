@@ -70,7 +70,7 @@ gmf.lidarProfile.loader.clearBuffer = function() {
 
 /**
 * @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
-* @param {boolean} resetPlot weather to reset d3 plot or not
+* @param {boolean} resetPlot wether to reset d3 plot or not
 * @param {number} minLOD minimum level of detail
 * @export
 */

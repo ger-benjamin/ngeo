@@ -86,6 +86,27 @@ gmf.LidarPanelController = function(gmfLidarProfileConfig) {
    */
   this.map = null;
 
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.pointAttributes = {
+    availableOptions: [],
+    selectedOption: {}
+  };
+
+  /**
+  * @type {{bytes: number, elements: number, name: string, value: string, visible: number}}
+  * @export
+  */
+  this.pointAttributes.selectedOption = {
+    bytes: -1,
+    elements: -1,
+    name: '',
+    value: '',
+    visible: 0
+  };
+
 };
 
 /**
@@ -97,6 +118,8 @@ gmf.LidarPanelController.prototype.$onInit = function() {
     this.line = this.line;
     this.active = this.active;
     this.map = this.map;
+    this.pointAttributes = this.gmfLidarProfileConfig.profileConfig.pointAttributes;
+    this.pointAttributes.selectedOption = this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
   });
 };
 
@@ -113,7 +136,15 @@ gmf.LidarPanelController.prototype.getClassification = function() {
  * @return {Object} this.pointAttributes
  */
 gmf.LidarPanelController.prototype.getPointAttributes = function() {
-  return this.gmfLidarProfileConfig.profileConfig.pointAttributes;
+  return this.gmfLidarProfileConfig.profileConfig.pointAttributes.availableOptions;
+};
+
+/**
+ * @export
+ * @return {Object} this.pointAttributes
+ */
+gmf.LidarPanelController.prototype.getSelectedAttribute = function() {
+  return this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
 };
 
 /**
