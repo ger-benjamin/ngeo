@@ -104,6 +104,7 @@ gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
     this.profileConfig.pointClouds = resp.data['pointclouds'];
     this.profileConfig.pointAttributesRaw = resp.data['point_attributes'];
     this.profileConfig.defaultPointAttribute = resp.data['default_point_attribute'];
+    this.profileConfig.debug = resp.data['debug'];
 
     const attr = [];
     for (const key in this.profileConfig.pointAttributesRaw) {

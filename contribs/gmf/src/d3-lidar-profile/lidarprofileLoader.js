@@ -156,9 +156,12 @@ gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, mi
 * @private
 */
 gmf.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
-  let html = d3.select('#lodInfo').html();
-  html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
-  d3.select('#lodInfo').html(html);
+
+  if (gmf.lidarProfile.options.profileConfig.debug) {
+    let html = d3.select('#lodInfo').html();
+    html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
+    d3.select('#lodInfo').html(html);
+  }
   const pointCloudName = gmf.lidarProfile.options.profileConfig.defaultPointCloud;
   const hurl = `${options.pytreeLidarProfileJsonUrl_}/get_profile?minLOD=${minLOD}
     &maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pointCloudName}&attributes='`;
@@ -179,9 +182,11 @@ gmf.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coo
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         if (this.uuid == gmf.lidarProfile.loader.lastUuid) {
-          let html = d3.select('#lodInfo').html();
-          html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
-          d3.select('#lodInfo').html(html);
+          if (gmf.lidarProfile.options.profileConfig.debug) {
+            let html = d3.select('#lodInfo').html();
+            html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
+            d3.select('#lodInfo').html(html);
+          }
           const xhrresponse = /** @type {!ArrayBuffer}*/(xhr.response);
           gmf.lidarProfile.loader.processBuffer(xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
         }
