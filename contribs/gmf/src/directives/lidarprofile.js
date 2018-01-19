@@ -1,7 +1,8 @@
 goog.provide('gmf.lidarProfileComponent');
 goog.require('gmf');
 goog.require('ol.geom.LineString');
-// goog.require('gmf.lidarProfile');
+goog.require('gmf.lidarProfile.options');
+
 
 gmf.module.value('gmfLidarProfileTemplateUrl',
   /**
@@ -155,7 +156,7 @@ gmf.LidarProfileController.prototype.update_ = function() {
   if (this.line) {
     this.gmfLidarProfileConfig_.olLinestring = this.line;
     this.gmfLidarProfileConfig_.map = this.map_;
-    gmf.lidarProfile.setOptions(this.gmfLidarProfileConfig_);
+    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig_);
     gmf.lidarProfile.loader.getProfileByLOD(0,
       true,
       this.gmfLidarProfileConfig_.profileConfig.minLOD);

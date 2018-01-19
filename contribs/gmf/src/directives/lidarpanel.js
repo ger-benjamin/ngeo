@@ -2,6 +2,8 @@ goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
 goog.require('gmf.lidarProfile');
+goog.require('gmf.lidarProfile.options');
+goog.require('gmf.lidarProfile.loader');
 goog.require('gmf.lidarProfile.plot2canvas');
 goog.require('gmf.lidarProfile.utils');
 goog.require('ol.geom.LineString');
@@ -189,7 +191,7 @@ gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
     this.gmfLidarProfileConfig.map = this.map;
-    gmf.lidarProfile.setOptions(this.gmfLidarProfileConfig);
+    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig);
     gmf.lidarProfile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
@@ -203,7 +205,7 @@ gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
     this.gmfLidarProfileConfig.map = this.map;
-    gmf.lidarProfile.setOptions(this.gmfLidarProfileConfig);
+    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig);
     gmf.lidarProfile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };

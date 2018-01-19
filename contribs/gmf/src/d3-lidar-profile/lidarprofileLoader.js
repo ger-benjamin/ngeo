@@ -1,23 +1,9 @@
-goog.provide('gmf.lidarProfile');
+goog.provide('gmf.lidarProfile.loader');
 
 /**
 * @constructor
 */
 gmf.lidarProfile.loader = function() {};
-
-/**
-* @type {Object}
-* @export
-*/
-gmf.lidarProfile.options = {};
-
-/**
-* @param {Object} options all lidar profile related options
-* @export
-*/
-gmf.lidarProfile.setOptions = function(options) {
-  gmf.lidarProfile.options = options;
-};
 
 /**
 * @type {ol.Overlay}
