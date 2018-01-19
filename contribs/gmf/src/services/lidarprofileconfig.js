@@ -91,8 +91,6 @@ gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
     this.profileConfig.minLOD = resp.data['minLOD'];
     this.profileConfig.initialLOD = resp.data['initialLOD'];
     this.profileConfig.pointSize = resp.data['point_size'];
-    this.profileConfig.pointAttributes = resp.data['point_attributes'];
-    this.profileConfig.defaultPointAttribute = resp.data['default_point_attribute'];
     this.profileConfig.maxLevels = resp.data['max_levels'];
     this.profileConfig.maxPoints = resp.data['max_point_number'];
     this.profileConfig.pointSum = 0;
@@ -100,7 +98,22 @@ gmf.LidarProfileConfig.prototype.initProfileConfig = function() {
     this.profileConfig.defaultPointCloud = resp.data['default_point_cloud'];
     this.profileConfig.defaultColor = resp.data['default_color'];
     this.profileConfig.pointClouds = resp.data['pointclouds'];
+    this.profileConfig.pointAttributesRaw = resp.data['point_attributes'];
+    this.profileConfig.defaultPointAttribute = resp.data['default_point_attribute'];
 
+    const attr = [];
+    for (const key in this.profileConfig.pointAttributesRaw) {
+      if (this.profileConfig.pointAttributesRaw[key].visible == 1) {
+        attr.push(this.profileConfig.pointAttributesRaw[key]);
+      }
+    }
+
+    const selectedMat = this.profileConfig.pointAttributesRaw[this.profileConfig.defaultPointAttribute];
+
+    this.profileConfig.pointAttributes = {
+      availableOptions: attr,
+      selectedOption: selectedMat
+    };
   });
 };
 

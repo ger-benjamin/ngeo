@@ -97,7 +97,6 @@ gmf.LidarPanelController.prototype.$onInit = function() {
     this.line = this.line;
     this.active = this.active;
     this.map = this.map;
-    this.getPointAttributes();
   });
 };
 
@@ -111,18 +110,10 @@ gmf.LidarPanelController.prototype.getClassification = function() {
 
 /**
  * @export
+ * @return {Object} this.pointAttributes
  */
 gmf.LidarPanelController.prototype.getPointAttributes = function() {
-  const attr = [];
-  for (const key in this.gmfLidarProfileConfig.profileConfig.pointAttributes) {
-    if (this.gmfLidarProfileConfig.profileConfig.pointAttributes[key].visible == 1) {
-      attr.push(this.gmfLidarProfileConfig.profileConfig.pointAttributes[key]);
-    }
-  }
-  this.pointAttributes = {
-    availableOptions: attr,
-    selectedOption: this.gmfLidarProfileConfig.profileConfig.pointAttributes[this.gmfLidarProfileConfig.profileConfig.defaultPointAttribute]
-  };
+  return this.gmfLidarProfileConfig.profileConfig.pointAttributes;
 };
 
 /**

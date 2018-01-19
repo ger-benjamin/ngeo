@@ -1,36 +1,62 @@
 goog.provide('gmf.lidarProfile');
 
+/**
+* @constructor
+*/
 gmf.lidarProfile.loader = function() {};
 
+/**
+* @type {Object}
+* @export
+*/
 gmf.lidarProfile.options = {};
 
+/**
+* @param {Object} options all lidar profile related options
+* @export
+*/
 gmf.lidarProfile.setOptions = function(options) {
   gmf.lidarProfile.options = options;
-
-  gmf.lidarProfile.loader.cartoHighlight = new ol.Overlay({
-    offset: [0, -15],
-    positioning: 'bottom-center'
-  });
-  gmf.lidarProfile.loader.cartoHighlight.setMap(options.map);
-
-  gmf.lidarProfile.loader.lidarPointHighlight = new ol.layer.Vector({
-    source: new ol.source.Vector({
-    }),
-    style: new ol.style.Style({
-      image: new ol.style.Circle({
-        fill: new ol.style.Fill({
-          color: 'rgba(0, 0, 255, 1)'
-        }),
-        radius: 3
-      })
-    })
-  });
-
-  gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
-
-  gmf.lidarProfile.loader.lidarPointHighlight.setMap(options.map);
-  gmf.lidarProfile.loader.lidarBuffer.setMap(options.map);
 };
+
+/**
+* @type {ol.Overlay}
+* @export
+*/
+gmf.lidarProfile.loader.cartoHighlight = new ol.Overlay({
+  offset: [0, -15],
+  positioning: 'bottom-center'
+});
+
+gmf.lidarProfile.loader.cartoHighlight.setMap(gmf.lidarProfile.options.map);
+
+/**
+* @type {ol.layer.Vector}
+* @export
+*/
+gmf.lidarProfile.loader.lidarPointHighlight = new ol.layer.Vector({
+  source: new ol.source.Vector({
+  }),
+  style: new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(0, 0, 255, 1)'
+      }),
+      radius: 3
+    })
+  })
+});
+
+gmf.lidarProfile.loader.lidarPointHighlight.setMap(gmf.lidarProfile.options.map);
+
+/**
+* @type {ol.layer.Vector}
+* @export
+*/
+gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
+
+
+gmf.lidarProfile.loader.lidarBuffer.setMap(gmf.lidarProfile.options.map);
 
 /**
 * @type {Array}
@@ -187,26 +213,19 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
       strHeaderLocal += String.fromCharCode(uInt8header[i]);
     }
 
-    const isEmpty = strHeaderLocal.indexOf('"points": 0');
-    if (isEmpty != -1) {
-      return;
-    }
-
     const jHeader = JSON.parse(strHeaderLocal);
     gmf.lidarProfile.options.profileConfig.pointSum += jHeader['points'];
     if (gmf.lidarProfile.options.profileConfig.pointSum > gmf.lidarProfile.options.profileConfig.maxPoints) {
       gmf.lidarProfile.loader.abortPendingRequests();
-      console.log('points limit reached. canceling pending requests');
     }
 
     const attr = jHeader['pointAttributes'];
     const attributes = [];
     for (let j = 0; j < attr.length; j++) {
-      if (gmf.lidarProfile.options.profileConfig.pointAttributes[attr[j]] != undefined) {
-        attributes.push(gmf.lidarProfile.options.profileConfig.pointAttributes[attr[j]]);
+      if (gmf.lidarProfile.options.profileConfig.pointAttributesRaw [attr[j]] != undefined) {
+        attributes.push(gmf.lidarProfile.options.profileConfig.pointAttributesRaw[attr[j]]);
       }
     }
-
     const scale = jHeader['scale'];
     const points = {
       distance: [],
@@ -231,7 +250,6 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
           bytes: -1
         };
         attribute = attributes[k];
-
         if (attribute.value == 'POSITION_PROJECTED_PROFILE') {
 
           const udist = view.getUint32(aoffset, true);

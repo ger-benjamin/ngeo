@@ -231,7 +231,7 @@ gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, toleranc
 };
 
 /**
- * @private
+ * @export
 */
 gmf.lidarProfile.plot2canvas.pointHighlight = function() {
 
