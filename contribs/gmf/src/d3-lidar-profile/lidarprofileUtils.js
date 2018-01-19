@@ -212,18 +212,23 @@ gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
   let file = 'data:text/csv;charset=utf-8,';
 
   /**
-   * @type {Array.<gmfx.LidarProfilePoint>}
+   * @type {Array}
    */
   const points = [];
   for (let i = 0; i < profilePoints.distance.length; i++) {
-
-    points.push({
+    /**
+     * @type {gmfx.lidarPoint}
+     */
+    const p = {
       distance: profilePoints.distance[i],
       altitude: profilePoints.altitude[i],
       color_packed: profilePoints.color_packed[i],
       intensity: profilePoints.intensity[i],
       classification: profilePoints.classification[i]
-    });
+    };
+
+    points.push(p);
+
   }
 
   points.sort((a, b) => (a.distance - b.distance));

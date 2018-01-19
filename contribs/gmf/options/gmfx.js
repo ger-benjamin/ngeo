@@ -115,11 +115,26 @@ gmfx.GridMergeTabs;
 
 /**
  * @typedef {{
- * returnNumber: (number|undefined)
+ * distance: Array.<(number|undefined)>,
+ * altitude: Array.<(number|undefined)>,
+ * color_packed: Array.<Array<(number|undefined)>>,
+ * intensity: Array.<(number|undefined)>,
+ * classification: Array.<(number|undefined)>,
+ * coords: Array.<Array<(number|undefined)>>
  * }}
  */
 gmfx.LidarProfilePoint;
 
+/**
+ * @typedef {{
+ * distance: (number|undefined),
+ * altitude: (number|undefined),
+ * color_packed: Array<(number|undefined)>,
+ * intensity: (number|undefined),
+ * classification: (number|undefined),
+ * }}
+ */
+gmfx.lidarPoint;
 
 /**
  * Projection object for the MousePositionDirective. Define a label and a filter

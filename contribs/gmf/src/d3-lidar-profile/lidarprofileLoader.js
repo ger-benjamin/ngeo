@@ -59,6 +59,19 @@ gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
 gmf.lidarProfile.loader.requestsQueue = [];
 
 /**
+* @type {gmfx.LidarProfilePoint}
+* @export
+*/
+gmf.lidarProfile.loader.profilePoints = {
+  altitude: [],
+  classification: [],
+  color_packed: [],
+  coords: [],
+  distance: [],
+  intensity: []
+};
+
+/**
 * @export
 */
 gmf.lidarProfile.loader.clearBuffer = function() {
@@ -75,10 +88,11 @@ gmf.lidarProfile.loader.clearBuffer = function() {
 * @export
 */
 gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
-  // TODO: setup is in a better way
+  // TODO: setup this in a better way
   gmf.lidarProfile.loader.cartoHighlight.setMap(gmf.lidarProfile.options.map);
   gmf.lidarProfile.loader.lidarPointHighlight.setMap(gmf.lidarProfile.options.map);
   gmf.lidarProfile.loader.lidarBuffer.setMap(gmf.lidarProfile.options.map);
+
 
   gmf.lidarProfile.loader.clearBuffer();
   gmf.lidarProfile.options.pytreeLinestring =  gmf.lidarProfile.loader.getPytreeLinestring(gmf.lidarProfile.options.olLinestring);
@@ -103,14 +117,6 @@ gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, mi
   gmf.lidarProfile.loader.lastUuid = uuid;
   let lastLOD = false;
 
-  gmf.lidarProfile.loader.profilePoints = {
-    distance: [],
-    altitude: [],
-    color_packed: [],
-    intensity: [],
-    classification: [],
-    coords: []
-  };
   d3.select('#lodInfo').html('');
   gmf.lidarProfile.options.profileConfig.pointSum = 0;
   let profileWidth = 0;
@@ -177,7 +183,7 @@ gmf.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coo
           html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
           d3.select('#lodInfo').html(html);
           const xhrresponse = /** @type {!ArrayBuffer}*/(xhr.response);
-          gmf.lidarProfile.loader.processBuffer(options, xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
+          gmf.lidarProfile.loader.processBuffer(xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
         }
       }
     }
@@ -192,15 +198,14 @@ gmf.lidarProfile.loader.xhrRequest = function(options, minLOD, maxLOD, iter, coo
 };
 
 /**
-* @param {Object} options the profile Options
 * @param {ArrayBuffer} profile binary array returned by cPotree executable called by Pytree
 * @param {number} iter the iteration in profile requests cycle
 * @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
 * @param {boolean} lastLOD the deepest level to retrieve for this profile
-* @param {boolean} resetPlot weather to reset d3 plot or not
+* @param {boolean} resetPlot wether to reset d3 plot or not
 * @private
 */
-gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanceOffset, lastLOD, resetPlot) {
+gmf.lidarProfile.loader.processBuffer = function(profile, iter, distanceOffset, lastLOD, resetPlot) {
 
   try {
 
@@ -227,14 +232,19 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
       }
     }
     const scale = jHeader['scale'];
+
+    /**
+    * @type {gmfx.LidarProfilePoint}
+    */
     const points = {
-      distance: [],
       altitude: [],
       classification: [],
-      intensity: [],
       color_packed: [],
-      coords: []
+      coords: [],
+      distance: [],
+      intensity: []
     };
+
     const bytesPerPoint = jHeader['bytesPerPoint'];
     const buffer = profile.slice(4 + headerSize);
     for (let i = 0; i < jHeader['points']; i++) {
@@ -244,13 +254,7 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
       let aoffset = 0;
       for (let k = 0; k < attributes.length; k++) {
 
-
-        let attribute = {
-          value: '',
-          bytes: -1
-        };
-        attribute = attributes[k];
-        if (attribute.value == 'POSITION_PROJECTED_PROFILE') {
+        if (attributes[k]['value'] == 'POSITION_PROJECTED_PROFILE') {
 
           const udist = view.getUint32(aoffset, true);
           const ualti = view.getUint32(aoffset + 4, true);
@@ -261,30 +265,30 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
           points.altitude.push(Math.round(100 * alti) / 100);
           gmf.lidarProfile.loader.profilePoints.altitude.push(Math.round(100 * alti) / 100);
 
-        } else if (attribute.value == 'CLASSIFICATION') {
+        } else if (attributes[k]['value']  == 'CLASSIFICATION') {
           const classif = view.getUint8(aoffset);
           points.classification.push(classif);
           gmf.lidarProfile.loader.profilePoints.classification.push(classif);
 
-        } else if (attribute.value == 'INTENSITY') {
+        } else if (attributes[k]['value']  == 'INTENSITY') {
           const intensity = view.getUint8(aoffset);
           points.intensity.push(intensity);
           gmf.lidarProfile.loader.profilePoints.intensity.push(intensity);
 
-        } else if (attribute.value == 'COLOR_PACKED') {
+        } else if (attributes[k]['value'] == 'COLOR_PACKED') {
           const r = view.getUint8(aoffset);
           const g = view.getUint8(aoffset + 1);
           const b = view.getUint8(aoffset + 2);
           points.color_packed.push([r, g, b]);
           gmf.lidarProfile.loader.profilePoints.color_packed.push([r, g, b]);
 
-        } else if (attribute.value == 'POSITION_CARTESIAN') {
+        } else if (attributes[k]['value']  == 'POSITION_CARTESIAN') {
           const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
           const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
           points.coords.push([x, y]);
           gmf.lidarProfile.loader.profilePoints.coords.push([x, y]);
         }
-        aoffset = aoffset + attribute.bytes;
+        aoffset = aoffset + attributes[k]['bytes'];
       }
     }
 
@@ -302,11 +306,11 @@ gmf.lidarProfile.loader.processBuffer = function(options, profile, iter, distanc
 
     if (iter == 0 && resetPlot) {
       gmf.lidarProfile.plot2canvas.setupPlot(rangeX, rangeY);
-      gmf.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
+      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute,
         gmf.lidarProfile.options.profileConfig.currentZoom);
 
     } else {
-      gmf.lidarProfile.plot2canvas.drawPoints(points, options.profileConfig.defaultAttribute,
+      gmf.lidarProfile.plot2canvas.drawPoints(points, gmf.lidarProfile.options.profileConfig.defaultAttribute,
         gmf.lidarProfile.options.profileConfig.currentZoom);
     }
 
