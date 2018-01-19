@@ -28,8 +28,6 @@ gmf.lidarProfile.loader.cartoHighlight = new ol.Overlay({
   positioning: 'bottom-center'
 });
 
-gmf.lidarProfile.loader.cartoHighlight.setMap(gmf.lidarProfile.options.map);
-
 /**
 * @type {ol.layer.Vector}
 * @export
@@ -47,7 +45,6 @@ gmf.lidarProfile.loader.lidarPointHighlight = new ol.layer.Vector({
   })
 });
 
-gmf.lidarProfile.loader.lidarPointHighlight.setMap(gmf.lidarProfile.options.map);
 
 /**
 * @type {ol.layer.Vector}
@@ -55,8 +52,6 @@ gmf.lidarProfile.loader.lidarPointHighlight.setMap(gmf.lidarProfile.options.map)
 */
 gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
 
-
-gmf.lidarProfile.loader.lidarBuffer.setMap(gmf.lidarProfile.options.map);
 
 /**
 * @type {Array}
@@ -80,6 +75,11 @@ gmf.lidarProfile.loader.clearBuffer = function() {
 * @export
 */
 gmf.lidarProfile.loader.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
+  // TODO: setup is in a better way
+  gmf.lidarProfile.loader.cartoHighlight.setMap(gmf.lidarProfile.options.map);
+  gmf.lidarProfile.loader.lidarPointHighlight.setMap(gmf.lidarProfile.options.map);
+  gmf.lidarProfile.loader.lidarBuffer.setMap(gmf.lidarProfile.options.map);
+
   gmf.lidarProfile.loader.clearBuffer();
   gmf.lidarProfile.options.pytreeLinestring =  gmf.lidarProfile.loader.getPytreeLinestring(gmf.lidarProfile.options.olLinestring);
   let profileLine;
