@@ -114,23 +114,25 @@ gmfx.GridMergeTabs;
 
 
 /**
+ * The object containing all points in profile
  * @typedef {{
- * distance: Array.<(number|undefined)>,
- * altitude: Array.<(number|undefined)>,
- * color_packed: Array.<Array<(number|undefined)>>,
- * intensity: Array.<(number|undefined)>,
- * classification: Array.<(number|undefined)>,
- * coords: Array.<Array<(number|undefined)>>
+ * distance:(Array.<number>|undefined),
+ * altitude: (Array.<number>|undefined),
+ * color_packed: (Array.<Array<number>>|undefined),
+ * intensity: (Array.<number>|undefined),
+ * classification: (Array.<number>|undefined),
+ * coords: (Array.<Array<number>>|undefined)
  * }}
  */
-gmfx.LidarProfilePoint;
+gmfx.LidarProfilePoints;
 
 /**
- * Profile points after parsing of the binary array returned by Pytree
+ * Profile point after parsing of the binary array returned by Pytree
  * @typedef {{
  * distance: (number|undefined),
  * altitude: (number|undefined),
  * color_packed: Array<(number|undefined)>,
+ * coords: Array<(number|undefined)>,
  * intensity: (number|undefined),
  * classification: (number|undefined),
  * }}
