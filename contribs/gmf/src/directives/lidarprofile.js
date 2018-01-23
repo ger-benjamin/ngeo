@@ -93,17 +93,19 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.map_ = null;
 
   /**
+   * The Openlayer LineStringt that defines the profile
    * @type {ol.geom.LineString}
    * @export
    */
   this.line;
 
   /**
-   * Distance to highlight on the profile. (Property used in gmf.Profile.)
+   * Tolerance distance to highlight on the profile
    * @type {number}
    * @export
    */
-  this.profileHighlight = -1;
+  this.profileHighlight;
+
   /**
    * Measure tool state
    * @type {boolean}
@@ -112,6 +114,7 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.lidarProfileMeasureActive = false;
 
   /**
+   * The profile active state
    * @type {boolean}
    * @export
    */
@@ -126,16 +129,6 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
         this.update_();
       }
     });
-
-  $scope.$watch(
-    () => this.gmfLidarProfileConfig_,
-    (newConfig, oldConfig) => {
-      if (oldConfig !== newConfig) {
-        this.update_();
-      }
-    }
-  );
-
 };
 
 
