@@ -204,7 +204,7 @@ gmf.lidarProfile.utils.exportToImageFile = function() {
 };
 
 /**
-* @param {gmfx.LidarProfilePoint} profilePoints points
+* @param {gmfx.LidarProfilePoints} profilePoints points
 * @export
 */
 gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
@@ -224,7 +224,8 @@ gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
       altitude: profilePoints.altitude[i],
       color_packed: profilePoints.color_packed[i],
       intensity: profilePoints.intensity[i],
-      classification: profilePoints.classification[i]
+      classification: profilePoints.classification[i],
+      coords: profilePoints.coords[i]
     };
 
     points.push(p);

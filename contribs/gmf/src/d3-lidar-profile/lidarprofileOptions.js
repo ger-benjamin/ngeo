@@ -1,4 +1,5 @@
 goog.provide('gmf.lidarProfile.options');
+goog.require('gmf.lidarProfile');
 
 /**
 * @type {Object}

@@ -1,9 +1,9 @@
 goog.provide('gmf.lidarProfile.plot2canvas');
 goog.require('gmf.lidarProfile.measure');
-goog.require('gmf.lidarProfile');
 
 /**
- * @param {Object} points Object containing arrays of point properties
+ * Draw the points to the canvas element
+ * @param {gmfx.LidarProfilePoints} points Object containing arrays of point properties
  * @param {string} material material used to determine point color
  * @export
 */
@@ -44,6 +44,7 @@ gmf.lidarProfile.plot2canvas.drawPoints = function(points, material) {
 };
 
 /**
+ * Setupt the SVG components of the d3 chart
  * @param {Array.<number>} rangeX range of the x scale
  * @param {Array.<number>} rangeY range of the y scale
  * @export
@@ -183,11 +184,12 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
 };
 
 /**
- * @param {Object} points Object containing points properties as arrays
+ * Fint the profile's closest point to the mouse position
+ * @param {gmfx.LidarProfilePoints} points Object containing points properties as arrays
  * @param {number} xs mouse x coordinate on canvas element
  * @param {number} ys mouse y coordinate on canvas element
  * @param {number} tolerance snap sensibility
- * @return {Object} closestPoint the closest point to the clicked coordinates
+ * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
  * @export
 */
 gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, tolerance) {
@@ -202,16 +204,19 @@ gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, toleranc
     if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
 
       const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
+      if (gmf.lidarProfile.options.profileConfig.classification[d.classification[i].toString()].visible == 1) {
 
-      hP.push({
-        distance: d.distance[i],
-        altitude: d.altitude[i],
-        classification: d.classification[i],
-        color_packed: d.color_packed[i],
-        intensity: d.intensity[i],
-        coords: d.coords[i]
-      });
-      distances.push(pDistance);
+        hP.push({
+          distance: d.distance[i],
+          altitude: d.altitude[i],
+          classification: d.classification[i],
+          color_packed: d.color_packed[i],
+          intensity: d.intensity[i],
+          coords: d.coords[i]
+        });
+        distances.push(pDistance);
+
+      }
     }
   }
 
@@ -230,6 +235,7 @@ gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, toleranc
 };
 
 /**
+ * Update the Openlayers overlay that shows point position and attributes
  * @export
 */
 gmf.lidarProfile.plot2canvas.pointHighlight = function() {
@@ -298,6 +304,7 @@ gmf.lidarProfile.plot2canvas.pointHighlight = function() {
 };
 
 /**
+* Change the profile style according to the material
 * @param {string} material sets profile points colors
 * @export
 */
@@ -309,7 +316,8 @@ gmf.lidarProfile.plot2canvas.changeStyle = function(material) {
 };
 
 /**
-* @param {Object} classification classification object
+* Show/Hide classes in the profile
+* @param {gmfx.lidarPointAttribute} classification classification object
 * @param {string} material sets profile points colors
 * @export
 */
