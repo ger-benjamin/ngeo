@@ -110,6 +110,7 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
         return;
       }
     }
+
     gmf.lidarProfile.measure.clearMeasure();
 
     const tr = d3.event.transform;

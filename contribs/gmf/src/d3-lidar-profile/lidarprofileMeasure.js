@@ -1,6 +1,7 @@
 goog.provide('gmf.lidarProfile.measure');
 
 /**
+* Clear the current measure
 * @export
 */
 gmf.lidarProfile.measure.clearMeasure = function() {
@@ -24,6 +25,7 @@ gmf.lidarProfile.measure.clearMeasure = function() {
 };
 
 /**
+* Activate the measure tool
 * @param {Element} el used to draw the measure
 * @export
 */
@@ -90,12 +92,12 @@ gmf.lidarProfile.measure.measureHeight = function() {
       gmf.lidarProfile.measure.profileMeasure.pEnd.altitude = p.altitude;
       gmf.lidarProfile.measure.profileMeasure.pEnd.cx = sx(p.distance) + margin.left;
       gmf.lidarProfile.measure.profileMeasure.pEnd.cy = sy(p.altitude) + margin.top;
-
     } else {
       gmf.lidarProfile.measure.profileMeasure.pEnd.distance = sx.invert(xs);
       gmf.lidarProfile.measure.profileMeasure.pEnd.altitude = sy.invert(ys);
       gmf.lidarProfile.measure.profileMeasure.pEnd.cx = xs;
       gmf.lidarProfile.measure.profileMeasure.pEnd.cy = ys;
+
     }
 
     gmf.lidarProfile.measure.profileMeasure.pEnd.set = true;
@@ -123,6 +125,7 @@ gmf.lidarProfile.measure.measureHeight = function() {
 
   const dH = gmf.lidarProfile.measure.profileMeasure.pEnd.altitude - gmf.lidarProfile.measure.profileMeasure.pStart.altitude;
   const dD = gmf.lidarProfile.measure.profileMeasure.pEnd.distance - gmf.lidarProfile.measure.profileMeasure.pStart.distance;
+
   const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
 
   if (!isNaN(height)) {
