@@ -126,6 +126,7 @@ gmfx.GridMergeTabs;
 gmfx.LidarProfilePoint;
 
 /**
+ * Profile points after parsing of the binary array returned by Pytree
  * @typedef {{
  * distance: (number|undefined),
  * altitude: (number|undefined),
@@ -135,6 +136,48 @@ gmfx.LidarProfilePoint;
  * }}
  */
 gmfx.lidarPoint;
+
+/**
+ * The lidar point attribute: describes the point binary property, material, visibility, ...
+ * @typedef {{
+ *   bytes: (string|undefined),
+ *   elements: (number|undefined),
+ *   name: (string|undefined),
+ *   value: (string|undefined),
+ *   visible: (number|undefined)
+ * }}
+ */
+gmfx.lidarPointAttribute;
+
+/**
+ * The lidar point attribute list width default option
+ * @typedef {{
+ *   availableOptions: (Array.<gmfx.lidarPointAttribute>|undefined),
+ *   selectedOption: (gmfx.lidarPointAttribute|undefined)
+ * }}
+ */
+gmfx.lidarPointAttributeList;
+
+
+/**
+ * The lidar point classification: describes the point binary property, material, visibility, ...
+ * @typedef {{
+ *   color: (Array.<number>|undefined),
+ *   name: (string|undefined),
+ *   value: (string|undefined),
+ *   visible: (number|undefined)
+ * }}
+ */
+gmfx.lidarPointClassification;
+
+
+/**
+ * The lidar point classification list
+ * @typedef {{
+ *   key: (Array.<gmfx.lidarPointClassification>|undefined)
+ * }}
+ */
+gmfx.lidarPointClassificationList;
 
 /**
  * Projection object for the MousePositionDirective. Define a label and a filter
