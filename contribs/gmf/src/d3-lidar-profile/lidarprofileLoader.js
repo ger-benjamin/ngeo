@@ -1,5 +1,6 @@
 goog.provide('gmf.lidarProfile.loader');
 
+
 /**
 * @constructor
 */
@@ -45,16 +46,16 @@ gmf.lidarProfile.loader.lidarBuffer = new ol.layer.Vector({});
 gmf.lidarProfile.loader.requestsQueue = [];
 
 /**
-* @type {gmfx.LidarProfilePoint}
+* @type {gmfx.LidarProfilePoints}
 * @export
 */
 gmf.lidarProfile.loader.profilePoints = {
-  altitude: [],
-  classification: [],
-  color_packed: [],
-  coords: [],
   distance: [],
-  intensity: []
+  altitude: [],
+  color_packed: [],
+  intensity: [],
+  classification: [],
+  coords: []
 };
 
 /**
@@ -225,15 +226,15 @@ gmf.lidarProfile.loader.processBuffer = function(profile, iter, distanceOffset, 
     const scale = jHeader['scale'];
 
     /**
-    * @type {gmfx.LidarProfilePoint}
+    * @type {gmfx.LidarProfilePoints}
     */
     const points = {
-      altitude: [],
-      classification: [],
-      color_packed: [],
-      coords: [],
       distance: [],
-      intensity: []
+      altitude: [],
+      color_packed: [],
+      intensity: [],
+      classification: [],
+      coords: []
     };
 
     const bytesPerPoint = jHeader['bytesPerPoint'];
@@ -355,7 +356,7 @@ gmf.lidarProfile.loader.abortPendingRequests = function() {
 };
 
 /**
-* @param {Array.<number>} array of number
+* @param {(Array.<number>|undefined)} array of number
 * @return {number} the maximum of input array
 * @private
 */
@@ -364,7 +365,7 @@ gmf.lidarProfile.loader.arrayMax = function(array) {
 };
 
 /**
-* @param {Array.<number>} array of number
+* @param {Array.<number>|undefined} array of number
 * @return {number} the minimum of input array
 * @private
 */
