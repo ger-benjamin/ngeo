@@ -118,7 +118,7 @@ gmf.LidarPanelController.prototype.$onInit = function() {
 /**
  * Gets the available classifications for this dataset
  * @export
- * @return {gmfx.lidarPointClassificationList} classification list
+ * @return {Object} classification list
  */
 gmf.LidarPanelController.prototype.getClassification = function() {
   return this.gmfLidarProfileConfig.profileConfig.classification;
