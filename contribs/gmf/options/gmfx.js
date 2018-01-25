@@ -172,42 +172,42 @@ gmfx.lidarPointAttributeList;
 gmfx.lidarPointClassification;
 
 
-/**
- * The object containing all points in profile
- * @typedef {{
- * scaleX: (Object|undefined),
- * currentScaleY: (Object|undefined),
- * previousDomainX: (Array.<number>|undefined),
- * previousDomainY: (Array.<number>|undefined),
- * currentZoom: (number|undefined),
- * distanceOffset: (number|undefined),
- * margin: {
- *  left: (number|undefined),
- *  top: (number|undefined),
- *  right: (number|undefined),
- *  bottom: (number|undefined)
- * },
- * tolerance: (number|undefined),
- * configLoaded: (boolean),
- * pointAttributes: (gmfx.lidarPointAttributeList),
- * classification: Object,
- * profilWidth: (number|undefined),
- * autoWidth: (boolean|undefined),
- * minLOD: (number),
- * initialLOD: (number|undefined),
- * pointSize: (number|undefined),
- * maxLevels: (Object|undefined),
- * maxPoints: (number|undefined),
- * defaultColor: (string|undefined),
- * pointClouds: (Object|undefined),
- * pointAttributesRaw: (gmfx.lidarPointAttributeList),
- * defaultAttribute: (gmfx.lidarPointAttribute),
- * defaultPointAttribute: (string|undefined),
- * debug: (boolean|undefined),
- * pytreeLinestring: (string|undefined)
- * }}
- */
-gmfx.LidarProfileConfig;
+// /**
+//  * The object containing all points in profile
+//  * @typedef {{
+//  * scaleX: (Object|undefined),
+//  * currentScaleY: (Object|undefined),
+//  * previousDomainX: (Array.<number>|undefined),
+//  * previousDomainY: (Array.<number>|undefined),
+//  * currentZoom: (number|undefined),
+//  * distanceOffset: (number|undefined),
+//  * margin: {
+//  *  left: (number|undefined),
+//  *  top: (number|undefined),
+//  *  right: (number|undefined),
+//  *  bottom: (number|undefined)
+//  * },
+//  * tolerance: (number|undefined),
+//  * configLoaded: (boolean),
+//  * pointAttributes: (gmfx.lidarPointAttributeList),
+//  * classification: Object,
+//  * profilWidth: (number|undefined),
+//  * autoWidth: (boolean|undefined),
+//  * minLOD: (number),
+//  * initialLOD: (number|undefined),
+//  * pointSize: (number|undefined),
+//  * maxLevels: (Object|undefined),
+//  * maxPoints: (number|undefined),
+//  * defaultColor: (string|undefined),
+//  * pointClouds: (Object|undefined),
+//  * pointAttributesRaw: (gmfx.lidarPointAttributeList),
+//  * defaultAttribute: (gmfx.lidarPointAttribute),
+//  * defaultPointAttribute: (string|undefined),
+//  * debug: (boolean|undefined),
+//  * pytreeLinestring: (string|undefined)
+//  * }}
+//  */
+// gmfx.LidarProfileConfig;
 
 /**
  * Projection object for the MousePositionDirective. Define a label and a filter
