@@ -4,7 +4,7 @@ goog.require('gmf');
 goog.require('gmf.lidarProfile');
 goog.require('gmf.lidarProfile.options');
 goog.require('gmf.lidarProfile.loader');
-goog.require('gmf.lidarProfile.plot2canvas');
+goog.require('gmf.lidarProfile.plot');
 goog.require('gmf.lidarProfile.utils');
 goog.require('ol.geom.LineString');
 
@@ -112,6 +112,7 @@ gmf.LidarPanelController.prototype.$onInit = function() {
     this.map = this.map;
     this.pointAttributes = this.gmfLidarProfileConfig.profileConfig.pointAttributes;
     this.pointAttributes.selectedOption = this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
+
   });
 };
 
@@ -150,7 +151,7 @@ gmf.LidarPanelController.prototype.getSelectedAttribute = function() {
 gmf.LidarPanelController.prototype.setDefaultAttribute = function(material) {
   this.gmfLidarProfileConfig.profileConfig.defaultAttribute = material;
   if (this.line) {
-    gmf.lidarProfile.plot2canvas.changeStyle(material);
+    this.plot.changeStyle(material);
   }
 };
 
@@ -173,7 +174,7 @@ gmf.LidarPanelController.prototype.getWidth = function() {
 gmf.LidarPanelController.prototype.setClassification = function(classification, key) {
   this.gmfLidarProfileConfig.profileConfig.classification[key].visible = classification.visible;
   if (this.line) {
-    gmf.lidarProfile.plot2canvas.setClassActive(this.gmfLidarProfileConfig.profileConfig.classification,
+    this.plot.setClassActive(this.gmfLidarProfileConfig.profileConfig.classification,
       this.gmfLidarProfileConfig.profileConfig.defaultAttribute);
   }
 };
@@ -189,8 +190,9 @@ gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
     this.gmfLidarProfileConfig.map = this.map;
-    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig);
-    gmf.lidarProfile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
+    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig);
+    profile.loader.clearBuffer();
+    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
 
@@ -204,8 +206,9 @@ gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
     this.gmfLidarProfileConfig.map = this.map;
-    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig);
-    gmf.lidarProfile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
+    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig);
+    profile.loader.clearBuffer();
+    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
 

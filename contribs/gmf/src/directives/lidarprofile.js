@@ -145,14 +145,14 @@ gmf.LidarProfileController.prototype.$onInit = function() {
  */
 gmf.LidarProfileController.prototype.update_ = function() {
   this.isErrored = false;
-  gmf.lidarProfile.loader.clearBuffer();
+
   if (this.line) {
     this.gmfLidarProfileConfig_.olLinestring = this.line;
     this.gmfLidarProfileConfig_.map = this.map_;
-    gmf.lidarProfile.options.setOptions(this.gmfLidarProfileConfig_);
-    gmf.lidarProfile.loader.getProfileByLOD(0,
-      true,
-      this.gmfLidarProfileConfig_.profileConfig.minLOD);
+    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig_);
+    profile.loader.clearBuffer();
+    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig_.profileConfig.minLOD);
+
   } else {
     gmf.lidarProfile.loader.cartoHighlight.setPosition(undefined);
   }

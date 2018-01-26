@@ -1,5 +1,23 @@
-goog.provide('gmf.lidarProfile.plot2canvas');
+goog.provide('gmf.lidarProfile.plot');
 goog.require('gmf.lidarProfile.measure');
+
+/**
+* @constructor
+* @param {Object} options to be defined in gmfx
+* @param {Class} parent to be defined in gmfx
+*/
+gmf.lidarProfile.plot = function(options, parent) {
+
+/**
+ * @type {Object}
+ */
+  this.options = options;
+
+  this.parent = parent;
+
+  this.utils = new gmf.lidarProfile.utils(options);
+
+};
 
 /**
  * Draw the points to the canvas element
@@ -7,12 +25,12 @@ goog.require('gmf.lidarProfile.measure');
  * @param {string} material material used to determine point color
  * @export
 */
-gmf.lidarProfile.plot2canvas.drawPoints = function(points, material) {
+gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
   let i = -1;
   const n = points.distance.length;
   let cx, cy;
   const ctx = d3.select('#profileCanvas').node().getContext('2d');
-  const profileConfig = gmf.lidarProfile.options.profileConfig;
+  const profileConfig = this.options.profileConfig;
 
   while (++i < n) {
 
@@ -49,13 +67,14 @@ gmf.lidarProfile.plot2canvas.drawPoints = function(points, material) {
  * @param {Array.<number>} rangeY range of the y scale
  * @export
 */
-gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
+gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
+
   const canvasEl = d3.select('#profileCanvas').node();
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, canvasEl.getBoundingClientRect().width, canvasEl.getBoundingClientRect().height);
 
-  const margin = gmf.lidarProfile.options.profileConfig.margin;
+  const margin = this.options.profileConfig.margin;
   const containerWidth = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().width;
   const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
   const width = containerWidth - (margin.left + margin.right);
@@ -101,9 +120,9 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
       .range([height, 0]);
   }
 
-  gmf.lidarProfile.options.profileConfig.scaleX = sx;
-  gmf.lidarProfile.options.profileConfig.scaleY = sy;
-
+  this.options.profileConfig.scaleX = sx;
+  this.options.profileConfig.scaleY = sy;
+  let that = this;
   function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
       if (d3.event.sourceEvent.movementX == 0 && d3.event.sourceEvent.movementY == 0) {
@@ -126,9 +145,9 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
       .style('opacity', '0.5')
       .style('stroke', '#b7cff7');
 
-    gmf.lidarProfile.options.profileConfig.currentZoom = tr.k;
-    gmf.lidarProfile.options.profileConfig.scaleX = tr.rescaleX(sx);
-    gmf.lidarProfile.options.profileConfig.scaleY = tr.rescaleY(sy);
+    that.options.profileConfig.currentZoom = tr.k;
+    that.options.profileConfig.scaleX = tr.rescaleX(sx);
+    that.options.profileConfig.scaleY = tr.rescaleY(sy);
   }
 
   const zoom = d3.zoom()
@@ -139,10 +158,11 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
 
   function zoomEnd() {
     ctx.clearRect(0, 0, width, height);
-    gmf.lidarProfile.loader.updateData();
+    that.parent.loader.updateData();
   }
   zoom.on('end', zoomEnd);
-  zoom.on('start', gmf.lidarProfile.loader.abortPendingRequests);
+  // TODO: check behaviour!!
+  // zoom.on('start', this.loader.abortPendingRequests);
 
   d3.select('svg#profileSVG')
     .call(zoom)
@@ -156,7 +176,9 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
     .attr('height', height + margin.top + margin.bottom);
 
   d3.select('svg#profileSVG')
-    .on('mousemove', gmf.lidarProfile.plot2canvas.pointHighlight);
+    .on('mousemove', function() {
+      that.pointHighlight(that);
+    });
 
   const xAxis = d3.axisBottom(sx);
   const yAxis = d3.axisLeft(sy)
@@ -179,78 +201,28 @@ gmf.lidarProfile.plot2canvas.setupPlot = function(rangeX, rangeY) {
     .style('opacity', '0.5')
     .style('stroke', '#b7cff7');
 
-  gmf.lidarProfile.options.profileConfig.previousDomainX = sx.domain();
-  gmf.lidarProfile.options.profileConfig.previousDomainY = sy.domain();
+  this.options.profileConfig.previousDomainX = sx.domain();
+  this.options.profileConfig.previousDomainY = sy.domain();
 
-};
-
-/**
- * Fint the profile's closest point to the mouse position
- * @param {gmfx.LidarProfilePoints} points Object containing points properties as arrays
- * @param {number} xs mouse x coordinate on canvas element
- * @param {number} ys mouse y coordinate on canvas element
- * @param {number} tolerance snap sensibility
- * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
- * @export
-*/
-gmf.lidarProfile.plot2canvas.getClosestPoint = function(points, xs, ys, tolerance) {
-  const d = points;
-  const tol = tolerance;
-  const sx = gmf.lidarProfile.options.profileConfig.scaleX;
-  const sy = gmf.lidarProfile.options.profileConfig.scaleY;
-  const distances = [];
-  const hP = [];
-
-  for (let i = 0; i < d.distance.length; i++) {
-    if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
-
-      const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
-      if (gmf.lidarProfile.options.profileConfig.classification[d.classification[i].toString()].visible == 1) {
-
-        hP.push({
-          distance: d.distance[i],
-          altitude: d.altitude[i],
-          classification: d.classification[i],
-          color_packed: d.color_packed[i],
-          intensity: d.intensity[i],
-          coords: d.coords[i]
-        });
-        distances.push(pDistance);
-
-      }
-    }
-  }
-
-  let closestPoint;
-
-  if (hP.length > 0) {
-    const minDist = Math.min(distances);
-    const indexMin = distances.indexOf(minDist);
-    if (indexMin != -1) {
-      closestPoint = hP[indexMin];
-    } else {
-      closestPoint = hP[0];
-    }
-  }
-  return closestPoint;
 };
 
 /**
  * Update the Openlayers overlay that shows point position and attributes
  * @export
+ * @param {Object} that scope of the plot class
 */
-gmf.lidarProfile.plot2canvas.pointHighlight = function() {
+gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 
   const svg = d3.select('svg#profileSVG');
-  const pointSize = gmf.lidarProfile.options.profileConfig.pointSize;
-  const margin = gmf.lidarProfile.options.profileConfig.margin;
-  const tolerance = gmf.lidarProfile.options.profileConfig.tolerance;
+  const pointSize = that.options.profileConfig.pointSize;
+  const margin = that.options.profileConfig.margin;
+  const tolerance = that.options.profileConfig.tolerance;
 
   const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-  const sx = gmf.lidarProfile.options.profileConfig.scaleX;
-  const sy = gmf.lidarProfile.options.profileConfig.scaleY;
+  const sx = that.options.profileConfig.scaleX;
+  const sy = that.options.profileConfig.scaleY;
   let cx, cy;
-  const p = gmf.lidarProfile.plot2canvas.getClosestPoint(gmf.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = that.utils.getClosestPoint(that.parent.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
   if (p != undefined) {
 
     cx = sx(p.distance) + margin.left;
@@ -267,20 +239,20 @@ gmf.lidarProfile.plot2canvas.pointHighlight = function() {
 
     const html = `Distance: ${Math.round(10 * p.distance) / 10}<br>
     Altitude: ${Math.round(10 * p.altitude) / 10}<br>
-    Classification: ${gmf.lidarProfile.options.profileConfig.classification[p.classification].name}<br>
+    Classification: ${this.options.profileConfig.classification[p.classification].name}<br>
     Intensity: ${p.intensity}<br>`;
 
     d3.select('#profileInfo')
       .html(html);
-    gmf.lidarProfile.loader.cartoHighlight.setElement(null);
+    this.parent.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
     el.className += 'tooltip gmf-tooltip-measure';
     el.innerHTML = html;
 
-    gmf.lidarProfile.loader.cartoHighlight.setElement(el);
-    gmf.lidarProfile.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
-    const classifColor = gmf.lidarProfile.options.profileConfig.classification[p.classification].color;
-    gmf.lidarProfile.loader.lidarPointHighlight.getSource().clear();
+    this.parent.loader.cartoHighlight.setElement(el);
+    this.parent.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
+    const classifColor = this.options.profileConfig.classification[p.classification].color;
+    this.parent.loader.lidarPointHighlight.getSource().clear();
     const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
     const lidarPointFeature = new ol.Feature(lidarPointGeom);
     if (typeof (classifColor) !== undefined) {
@@ -295,12 +267,12 @@ gmf.lidarProfile.plot2canvas.pointHighlight = function() {
       }));
     }
 
-    gmf.lidarProfile.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
+    this.parent.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
   } else {
-    gmf.lidarProfile.loader.lidarPointHighlight.getSource().clear();
+    this.parent.loader.lidarPointHighlight.getSource().clear();
     svg.select('#highlightCircle').remove();
     d3.select('#profileInfo').html('');
-    gmf.lidarProfile.loader.cartoHighlight.setPosition(undefined);
+    this.parent.loader.cartoHighlight.setPosition(undefined);
   }
 };
 
@@ -309,11 +281,11 @@ gmf.lidarProfile.plot2canvas.pointHighlight = function() {
 * @param {string} material sets profile points colors
 * @export
 */
-gmf.lidarProfile.plot2canvas.changeStyle = function(material) {
+gmf.lidarProfile.plot.prototype.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material);
+  gmf.lidarProfile.plot.drawPoints(this.parent.loader.profilePoints, material);
 };
 
 /**
@@ -322,10 +294,10 @@ gmf.lidarProfile.plot2canvas.changeStyle = function(material) {
 * @param {string} material sets profile points colors
 * @export
 */
-gmf.lidarProfile.plot2canvas.setClassActive = function(classification, material) {
-  gmf.lidarProfile.options.profileConfig.classification = classification;
+gmf.lidarProfile.plot.prototype.setClassActive = function(classification, material) {
+  this.options.profileConfig.classification = classification;
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot2canvas.drawPoints(gmf.lidarProfile.loader.profilePoints, material);
+  gmf.lidarProfile.plot.drawPoints(this.parent.loader.profilePoints, material);
 };

@@ -1,22 +1,34 @@
 goog.provide('gmf.lidarProfile.utils');
 
+
 /**
+* @constructor
+* @param {Object} options to be defined in gmfx
+*/
+gmf.lidarProfile.utils = function(options) {
+
+  this.options = options;
+
+};
+
+/**
+* @param {ol.geom.LineString} linestring an OpenLayer Linestring
 * @param {number} dLeft domain minimum
 * @param {number} dRight domain maximum
 * @return {{clippedLine: Array.<ol.Coordinate>, distanceOffset: number}} Object with clipped lined coordinates and left domain value
 * @export
 */
-gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
+gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft, dRight) {
 
   const clippedLine = new ol.geom.LineString([]);
   let mileage_start = 0;
   let mileage_end = 0;
 
-  const totalLength = gmf.lidarProfile.options.olLinestring.getLength();
+  const totalLength = this.options.olLinestring.getLength();
   const fractionStart = dLeft / totalLength;
   const fractionEnd = dRight / totalLength;
 
-  gmf.lidarProfile.options.olLinestring.forEachSegment((segStart, segEnd) => {
+  linestring.forEachSegment((segStart, segEnd) => {
 
     const segLine = new ol.geom.LineString([segStart, segEnd]);
     mileage_end += segLine.getLength();
@@ -24,7 +36,7 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
     if (dLeft == mileage_start) {
       clippedLine.appendCoordinate(segStart);
     } else if (dLeft > mileage_start && dLeft < mileage_end) {
-      clippedLine.appendCoordinate(gmf.lidarProfile.options.olLinestring.getCoordinateAt(fractionStart));
+      clippedLine.appendCoordinate(linestring.getCoordinateAt(fractionStart));
     }
 
     if (mileage_start > dLeft && mileage_start < dRight) {
@@ -34,7 +46,7 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
     if (dRight == mileage_end) {
       clippedLine.appendCoordinate(segEnd);
     } else if (dRight > mileage_start && dRight < mileage_end) {
-      clippedLine.appendCoordinate(gmf.lidarProfile.options.olLinestring.getCoordinateAt(fractionEnd));
+      clippedLine.appendCoordinate(linestring.getCoordinateAt(fractionEnd));
     }
 
     mileage_start += segLine.getLength();
@@ -42,8 +54,8 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   });
 
   let profileWidth;
-  if (gmf.lidarProfile.options.profileConfig.autoWidth) {
-    profileWidth = gmf.lidarProfile.utils.getNiceLOD(clippedLine.getLength()).width;
+  if (this.options.profileConfig.autoWidth) {
+    profileWidth = this.getNiceLOD(clippedLine.getLength()).width;
   } else {
     profileWidth = gmf.lidarProfile.options.profileConfig.profilWidth;
   }
@@ -51,7 +63,7 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
     geometry: clippedLine
   });
 
-  const widthInMapsUnits = profileWidth / gmf.lidarProfile.options.map.getView().getResolution();
+  const widthInMapsUnits = profileWidth / this.options.map.getView().getResolution();
 
   const lineStyle = new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -122,13 +134,12 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
   const vectorSource = new ol.source.Vector({
     features: [feat]
   });
-  gmf.lidarProfile.loader.lidarBuffer.setSource(null);
-  gmf.lidarProfile.loader.lidarBuffer.setSource(vectorSource);
-  gmf.lidarProfile.loader.lidarBuffer.setStyle(styles);
 
   return {
     clippedLine: clippedLine.getCoordinates(),
-    distanceOffset: dLeft
+    distanceOffset: dLeft,
+    bufferGeom: vectorSource,
+    bufferStyle: styles
   };
 };
 
@@ -137,10 +148,10 @@ gmf.lidarProfile.utils.clipLineByMeasure = function(dLeft, dRight) {
 * @return {{maxLOD: number, width: number}} Object with optimized LOD and width for this profile span
 * @export
 */
-gmf.lidarProfile.utils.getNiceLOD = function(span) {
+gmf.lidarProfile.utils.prototype.getNiceLOD = function(span) {
   let maxLOD = 0;
   let width;
-  const levels = gmf.lidarProfile.options.profileConfig.maxLevels;
+  const levels = this.options.profileConfig.maxLevels;
   for (const key in levels) {
     if (span < key && levels[key].max > maxLOD) {
       maxLOD = levels[key].max;
@@ -158,7 +169,7 @@ gmf.lidarProfile.utils.getNiceLOD = function(span) {
 * @param {string} dataUrl fake url from which to download the csv file
 * @export
 */
-gmf.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataUrl) {
+gmf.lidarProfile.utils.prototype.downloadDataUrlFromJavascript = function(filename, dataUrl) {
 
   const link = document.createElement('a');
   link.download = filename;
@@ -172,8 +183,8 @@ gmf.lidarProfile.utils.downloadDataUrlFromJavascript = function(filename, dataUr
 /**
 * @export
 */
-gmf.lidarProfile.utils.exportToImageFile = function() {
-  const margin = gmf.lidarProfile.options.profileConfig.margin;
+gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
+  const margin = this.options.profileConfig.margin;
   const svg = d3.select('#profileSVG').node();
   const img = new Image();
   const DOMURL = window.URL || window.webkitURL || window;
@@ -197,7 +208,7 @@ gmf.lidarProfile.utils.exportToImageFile = function() {
     canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
     ctx.drawImage(img, 0, 0, w, h);
     const dataURL = canvas.toDataURL();
-    gmf.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+    this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
     DOMURL.revokeObjectURL(url);
   };
   img.src = url;
@@ -207,7 +218,7 @@ gmf.lidarProfile.utils.exportToImageFile = function() {
 * @param {gmfx.LidarProfilePoints} profilePoints points
 * @export
 */
-gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
+gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function(profilePoints) {
 
   let file = 'data:text/csv;charset=utf-8,';
 
@@ -319,6 +330,118 @@ gmf.lidarProfile.utils.getPointsInProfileAsCSV = function(profilePoints) {
   }
 
   const encodedUri = encodeURI(file);
-  gmf.lidarProfile.utils.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
+  this.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
 
+};
+
+
+/**
+* @param {(Array.<number>|undefined)} array of number
+* @return {number} the maximum of input array
+* @private
+*/
+gmf.lidarProfile.utils.prototype.arrayMax = function(array) {
+  return array.reduce((a, b) => Math.max(a, b));
+};
+
+/**
+* @param {Array.<number>|undefined} array of number
+* @return {number} the minimum of input array
+* @private
+*/
+gmf.lidarProfile.utils.prototype.arrayMin = function(array) {
+
+  let minVal = Infinity;
+  for (let i = 0; i < array.length; i++) {
+    if (array[i] < minVal) {
+      minVal = array[i];
+    }
+  }
+  return minVal;
+};
+
+/**
+* @private
+* @return {string} uuid
+*/
+gmf.lidarProfile.utils.prototype.UUID = function() {
+  let nbr, randStr = '';
+  do {
+    randStr += (nbr = Math.random()).toString(16).substr(2);
+  } while (randStr.length < 30);
+  return [
+    randStr.substr(0, 8), '-',
+    randStr.substr(8, 4), '-4',
+    randStr.substr(12, 3), '-',
+    ((nbr * 4 | 0) + 8).toString(16),
+    randStr.substr(15, 3), '-',
+    randStr.substr(18, 12)
+  ].join('');
+};
+
+/**
+* @private
+* @param {ol.geom.LineString} line the profile 2D line
+* @return {string} linestring in a cPotree/pytree compatible string definition
+*/
+gmf.lidarProfile.utils.prototype.getPytreeLinestring = function(line) {
+  const coords = line.getCoordinates();
+  let pytreeLineString = '';
+  for (let i = 0; i < coords.length; i++) {
+    const px = coords[i][0];
+    const py = coords[i][1];
+    pytreeLineString += `{${Math.round(100 * px) / 100}, ${Math.round(100 * py) / 100}},`;
+  }
+  return pytreeLineString.substr(0, pytreeLineString.length - 1);
+};
+
+/**
+ * Find the profile's closest point to the mouse position
+ * @param {gmfx.LidarProfilePoints} points Object containing points properties as arrays
+ * @param {number} xs mouse x coordinate on canvas element
+ * @param {number} ys mouse y coordinate on canvas element
+ * @param {number} tolerance snap sensibility
+ * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
+ * @export
+*/
+gmf.lidarProfile.utils.prototype.getClosestPoint = function(points, xs, ys, tolerance) {
+  const d = points;
+  const tol = tolerance;
+  const sx = this.options.profileConfig.scaleX;
+  const sy = this.options.profileConfig.scaleY;
+  const distances = [];
+  const hP = [];
+
+  for (let i = 0; i < d.distance.length; i++) {
+    if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
+
+      const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
+      if (this.options.profileConfig.classification[d.classification[i].toString()].visible == 1) {
+
+        hP.push({
+          distance: d.distance[i],
+          altitude: d.altitude[i],
+          classification: d.classification[i],
+          color_packed: d.color_packed[i],
+          intensity: d.intensity[i],
+          coords: d.coords[i]
+        });
+        distances.push(pDistance);
+
+      }
+    }
+  }
+
+  let closestPoint;
+
+  if (hP.length > 0) {
+    const minDist = Math.min(distances);
+    const indexMin = distances.indexOf(minDist);
+    if (indexMin != -1) {
+      closestPoint = hP[indexMin];
+    } else {
+      closestPoint = hP[0];
+    }
+  }
+  return closestPoint;
 };

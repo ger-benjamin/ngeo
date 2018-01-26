@@ -58,7 +58,7 @@ gmf.lidarProfile.measure.measureHeight = function() {
   const sx = gmf.lidarProfile.options.profileConfig.scaleX;
   const sy = gmf.lidarProfile.options.profileConfig.scaleY;
   const pointSize = 3;
-  const p = gmf.lidarProfile.plot2canvas.getClosestPoint(gmf.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = this.plot.getClosestPoint(gmf.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
 
   if (!gmf.lidarProfile.measure.profileMeasure.pStart.set) {
     if (p !== undefined) {
