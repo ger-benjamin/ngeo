@@ -129,7 +129,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
       }
     }
 
-    gmf.lidarProfile.measure.clearMeasure();
+    that.parent_.measure.clearMeasure();
 
     const tr = d3.event.transform;
     const svg = d3.select('svg#profileSVG');

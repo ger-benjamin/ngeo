@@ -99,20 +99,6 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.line;
 
   /**
-   * Tolerance distance to highlight on the profile
-   * @type {number}
-   * @export
-   */
-  this.profileHighlight;
-
-  /**
-   * Measure tool state
-   * @type {boolean}
-   * @export
-   */
-  this.lidarProfileMeasureActive = false;
-
-  /**
    * The profile active state
    * @type {boolean}
    * @export

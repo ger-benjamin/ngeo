@@ -93,6 +93,20 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.map = null;
 
   /**
+   * Tolerance distance to highlight on the profile
+   * @type {number}
+   * @export
+   */
+  this.profileHighlight;
+
+  /**
+   * Measure tool state
+   * @type {boolean}
+   * @export
+   */
+  this.lidarProfileMeasureActive = false;
+
+  /**
    * The list of available attributes for this Pytree dataset
    * @type {gmfx.lidarPointAttributeList}
    * @export
@@ -129,6 +143,12 @@ gmf.LidarPanelController.prototype.$onInit = function() {
   });
 };
 
+
+gmf.LidarPanelController.prototype.setMeasureActive = function() {
+  this.lidarProfileMeasureActive = !this.lidarProfileMeasureActive;
+  console.log(this.lidarProfileMeasureActive);
+  this.profile.measure.setMeasureActive(this.lidarProfileMeasureActive);
+};
 
 /**
  * Gets the available classifications for this dataset

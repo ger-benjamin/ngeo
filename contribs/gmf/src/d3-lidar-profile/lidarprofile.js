@@ -23,11 +23,10 @@ gmf.lidarProfile = function(options) {
   */
   this.loader = new gmf.lidarProfile.loader(options, this.plot);
 
+  /**
+  * @type {Object}
+  */
+  this.measure = new gmf.lidarProfile.measure(options, parent);
 
-};
-
-gmf.lidarProfile.prototype.printOptions = function() {
-  console.log('printOptions');
-  console.log(this.options_);
 
 };

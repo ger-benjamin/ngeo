@@ -422,7 +422,8 @@ gmf.lidarProfile.utils.prototype.getClosestPoint = function(points, xs, ys, tole
     if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
 
       const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
-      if (this.options.profileConfig.classification[d.classification[i].toString()].visible == 1) {
+      const cClassif = this.options.profileConfig.classification[d.classification[i].toString()];
+      if (cClassif && cClassif.visible == 1) {
 
         hP.push({
           distance: d.distance[i],

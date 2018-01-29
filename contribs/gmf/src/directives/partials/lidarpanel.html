@@ -23,9 +23,18 @@
       PNG export
     </button>
     <button class="btn btn-default"
+      ng-if="!!$ctrl.line"
       ng-click="$ctrl.resetPlot()"
       data-toggle="tooltip" data-placement="left" data-original-title="{{'Reset profile'|translate}}">
       <span class="fa fa-refresh"></span>
+    </button>
+  </div>
+  <hr>
+  <div ng-if="!!$ctrl.line">
+    <button class="btn btn-default"
+      ng-click="$ctrl.setMeasureActive()"
+      data-toggle="tooltip" data-placement="left" data-original-title="{{'Take measure'|translate}}">
+      Take measure
     </button>
   </div>
   <div>

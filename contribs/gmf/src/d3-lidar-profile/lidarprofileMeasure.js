@@ -1,11 +1,37 @@
 goog.provide('gmf.lidarProfile.measure');
 
+
+/**
+* @constructor
+* @param {Object} options to be defined in gmfx
+* @param {Object} parent the parent class
+*/
+gmf.lidarProfile.measure = function(options, parent) {
+
+/**
+* @type {Object}
+*/
+  this.options_ = options;
+
+  /**
+  * @type {Object}
+  */
+  this.profileMeasure;
+
+  /**
+  * @type {Object}
+  */
+  this.parent_ = parent;
+
+
+};
+
 /**
 * Clear the current measure
 * @export
 */
-gmf.lidarProfile.measure.clearMeasure = function() {
-  gmf.lidarProfile.measure.profileMeasure = {
+gmf.lidarProfile.measure.prototype.clearMeasure = function() {
+  this.profileMeasure = {
     pStart: {
       set: false
     },
@@ -26,119 +52,118 @@ gmf.lidarProfile.measure.clearMeasure = function() {
 
 /**
 * Activate the measure tool
-* @param {Element} el used to draw the measure
+* @param {boolean} active state of the measure tool
 * @export
 */
-gmf.lidarProfile.measure.setMeasureActive = function(el) {
-  if (el.className.indexOf('active') == -1) {
-    gmf.lidarProfile.measure.clearMeasure();
-    d3.select('svg#profileSVG').on('click', gmf.lidarProfile.measure.measureHeight);
+gmf.lidarProfile.measure.prototype.setMeasureActive = function(active) {
+
+  const that = this;
+
+  function measureHeigt() {
+
+    const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
+    const margin = that.options_.profileConfig.margin;
+    const svgCoordinates = d3.mouse(this);
+    const xs = svgCoordinates[0];
+    const ys = svgCoordinates[1];
+    const tolerance = 2;
+    const sx = that.options_.profileConfig.scaleX;
+    const sy = that.options_.profileConfig.scaleY;
+    const pointSize = 3;
+    const p = that.parent_.loader.utils.getClosestPoint(that.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+
+    if (!that.profileMeasure.pStart.set) {
+      if (p !== undefined) {
+
+        that.profileMeasure.pStart.distance = p.distance;
+        that.profileMeasure.pStart.altitude = p.altitude;
+        that.profileMeasure.pStart.cx = sx(p.distance) + margin.left;
+        that.profileMeasure.pStart.cy = sy(p.altitude) + margin.top;
+
+      } else {
+
+        that.profileMeasure.pStart.distance = sx.invert(xs);
+        that.profileMeasure.pStart.altitude = sy.invert(ys);
+        that.profileMeasure.pStart.cx = xs;
+        that.profileMeasure.pStart.cy = ys;
+
+      }
+
+      that.profileMeasure.pStart.set = true;
+      d3.select('svg#profileSVG').append('circle')
+        .attr('id', 'start_m')
+        .attr('cx', that.profileMeasure.pStart.cx)
+        .attr('cy', that.profileMeasure.pStart.cy)
+        .attr('r', pointSize)
+        .style('fill', 'red');
+
+    } else if (!that.profileMeasure.pEnd.set) {
+      if (p !== undefined) {
+
+        that.profileMeasure.pEnd.distance = p.distance;
+        that.profileMeasure.pEnd.altitude = p.altitude;
+        that.profileMeasure.pEnd.cx = sx(p.distance) + margin.left;
+        that.profileMeasure.pEnd.cy = sy(p.altitude) + margin.top;
+      } else {
+        that.profileMeasure.pEnd.distance = sx.invert(xs);
+        that.profileMeasure.pEnd.altitude = sy.invert(ys);
+        that.profileMeasure.pEnd.cx = xs;
+        that.profileMeasure.pEnd.cy = ys;
+
+      }
+
+      that.profileMeasure.pEnd.set = true;
+      d3.select('svg#profileSVG').append('circle')
+        .attr('id', 'end_m')
+        .attr('cx', that.profileMeasure.pEnd.cx)
+        .attr('cy', that.profileMeasure.pEnd.cy)
+        .attr('r', pointSize)
+        .style('fill', 'red');
+
+      d3.select('svg#profileSVG').append('line')
+        .attr('id', 'line_m')
+        .attr('x1', that.profileMeasure.pStart.cx)
+        .attr('y1', that.profileMeasure.pStart.cy)
+        .attr('x2', that.profileMeasure.pEnd.cx)
+        .attr('y2', that.profileMeasure.pEnd.cy)
+        .attr('stroke-width', 2)
+        .attr('stroke', 'red');
+
+    } else {
+
+      that.startMeasure();
+
+    }
+
+    const dH = that.profileMeasure.pEnd.altitude - that.profileMeasure.pStart.altitude;
+    const dD = that.profileMeasure.pEnd.distance - that.profileMeasure.pStart.distance;
+
+    const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
+
+    if (!isNaN(height)) {
+      d3.select('#height_measure').html(`Hauteur: ${height}</p>`);
+      d3.select('svg#profileSVG').append('text')
+        .attr('id', 'text_m')
+        .attr('x', 10 + (that.profileMeasure.pStart.cx + that.profileMeasure.pEnd.cx) / 2)
+        .attr('y', (that.profileMeasure.pStart.cy + that.profileMeasure.pEnd.cy) / 2)
+        .text(`${height} m`)
+        .attr('font-family', 'sans-serif')
+        .attr('font-size', '14px')
+        .style('font-weight', 'bold')
+        .attr('fill', 'red');
+    }
+  }
+
+  if (active) {
+    this.clearMeasure();
+    d3.select('svg#profileSVG').on('click', measureHeigt);
   } else {
-    gmf.lidarProfile.measure.clearMeasure();
+    this.clearMeasure();
     d3.select('svg#profileSVG').on('click', null);
   }
 };
 
-gmf.lidarProfile.measure.startMeasure = function() {
-  gmf.lidarProfile.measure.clearMeasure();
-  d3.select('svg#profileSVG').on('click', gmf.lidarProfile.measure.measureHeight);
-};
-
-/**
-* @private
-*/
-gmf.lidarProfile.measure.measureHeight = function() {
-
-  const margin = gmf.lidarProfile.options.profileConfig.margin;
-  const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-  const svgCoordinates = d3.mouse(this);
-  const xs = svgCoordinates[0];
-  const ys = svgCoordinates[1];
-  const tolerance = 2;
-  const sx = gmf.lidarProfile.options.profileConfig.scaleX;
-  const sy = gmf.lidarProfile.options.profileConfig.scaleY;
-  const pointSize = 3;
-  const p = this.plot.getClosestPoint(gmf.lidarProfile.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
-
-  if (!gmf.lidarProfile.measure.profileMeasure.pStart.set) {
-    if (p !== undefined) {
-
-      gmf.lidarProfile.measure.profileMeasure.pStart.distance = p.distance;
-      gmf.lidarProfile.measure.profileMeasure.pStart.altitude = p.altitude;
-      gmf.lidarProfile.measure.profileMeasure.pStart.cx = sx(p.distance) + margin.left;
-      gmf.lidarProfile.measure.profileMeasure.pStart.cy = sy(p.altitude) + margin.top;
-
-    } else {
-
-      gmf.lidarProfile.measure.profileMeasure.pStart.distance = sx.invert(xs);
-      gmf.lidarProfile.measure.profileMeasure.pStart.altitude = sy.invert(ys);
-      gmf.lidarProfile.measure.profileMeasure.pStart.cx = xs;
-      gmf.lidarProfile.measure.profileMeasure.pStart.cy = ys;
-
-    }
-
-    gmf.lidarProfile.measure.profileMeasure.pStart.set = true;
-    d3.select('svg#profileSVG').append('circle')
-      .attr('id', 'start_m')
-      .attr('cx', gmf.lidarProfile.measure.profileMeasure.pStart.cx)
-      .attr('cy', gmf.lidarProfile.measure.profileMeasure.pStart.cy)
-      .attr('r', pointSize)
-      .style('fill', 'red');
-
-  } else if (!gmf.lidarProfile.measure.profileMeasure.pEnd.set) {
-    if (p !== undefined) {
-
-      gmf.lidarProfile.measure.profileMeasure.pEnd.distance = p.distance;
-      gmf.lidarProfile.measure.profileMeasure.pEnd.altitude = p.altitude;
-      gmf.lidarProfile.measure.profileMeasure.pEnd.cx = sx(p.distance) + margin.left;
-      gmf.lidarProfile.measure.profileMeasure.pEnd.cy = sy(p.altitude) + margin.top;
-    } else {
-      gmf.lidarProfile.measure.profileMeasure.pEnd.distance = sx.invert(xs);
-      gmf.lidarProfile.measure.profileMeasure.pEnd.altitude = sy.invert(ys);
-      gmf.lidarProfile.measure.profileMeasure.pEnd.cx = xs;
-      gmf.lidarProfile.measure.profileMeasure.pEnd.cy = ys;
-
-    }
-
-    gmf.lidarProfile.measure.profileMeasure.pEnd.set = true;
-    d3.select('svg#profileSVG').append('circle')
-      .attr('id', 'end_m')
-      .attr('cx', gmf.lidarProfile.measure.profileMeasure.pEnd.cx)
-      .attr('cy', gmf.lidarProfile.measure.profileMeasure.pEnd.cy)
-      .attr('r', pointSize)
-      .style('fill', 'red');
-
-    d3.select('svg#profileSVG').append('line')
-      .attr('id', 'line_m')
-      .attr('x1', gmf.lidarProfile.measure.profileMeasure.pStart.cx)
-      .attr('y1', gmf.lidarProfile.measure.profileMeasure.pStart.cy)
-      .attr('x2', gmf.lidarProfile.measure.profileMeasure.pEnd.cx)
-      .attr('y2', gmf.lidarProfile.measure.profileMeasure.pEnd.cy)
-      .attr('stroke-width', 2)
-      .attr('stroke', 'red');
-
-  } else {
-
-    gmf.lidarProfile.measure.startMeasure();
-
-  }
-
-  const dH = gmf.lidarProfile.measure.profileMeasure.pEnd.altitude - gmf.lidarProfile.measure.profileMeasure.pStart.altitude;
-  const dD = gmf.lidarProfile.measure.profileMeasure.pEnd.distance - gmf.lidarProfile.measure.profileMeasure.pStart.distance;
-
-  const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
-
-  if (!isNaN(height)) {
-    d3.select('#height_measure').html(`Hauteur: ${height}</p>`);
-    d3.select('svg#profileSVG').append('text')
-      .attr('id', 'text_m')
-      .attr('x', 10 + (gmf.lidarProfile.measure.profileMeasure.pStart.cx + gmf.lidarProfile.measure.profileMeasure.pEnd.cx) / 2)
-      .attr('y', (gmf.lidarProfile.measure.profileMeasure.pStart.cy + gmf.lidarProfile.measure.profileMeasure.pEnd.cy) / 2)
-      .text(`${height} m`)
-      .attr('font-family', 'sans-serif')
-      .attr('font-size', '14px')
-      .style('font-weight', 'bold')
-      .attr('fill', 'red');
-  }
-
+gmf.lidarProfile.measure.prototype.startMeasure = function() {
+  this.clearMeasure();
+  d3.select('svg#profileSVG').on('click', this.measureHeight);
 };
