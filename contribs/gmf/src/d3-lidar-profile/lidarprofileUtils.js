@@ -5,9 +5,11 @@ goog.provide('gmf.lidarProfile.utils');
 * @constructor
 * @param {Object} options to be defined in gmfx
 */
-gmf.lidarProfile.utils = function(options) {
+gmf.lidarProfile.utils = function(options, profilePoints) {
 
   this.options = options;
+
+  this.profilePoints = profilePoints;
 
 };
 
@@ -193,7 +195,7 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
   const svgImage = new Blob([svgStr], {type: 'image/svg+xml'});
   const canvas = document.createElement('canvas');
   const url = DOMURL.createObjectURL(svgImage);
-
+  const that = this;
   img.onload = function() {
     canvas.style.display = 'none';
     document.body.appendChild(canvas);
@@ -208,7 +210,9 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
     canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
     ctx.drawImage(img, 0, 0, w, h);
     const dataURL = canvas.toDataURL();
-    this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+
+    that.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+
     DOMURL.revokeObjectURL(url);
   };
   img.src = url;
@@ -218,7 +222,9 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
 * @param {gmfx.LidarProfilePoints} profilePoints points
 * @export
 */
-gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function(profilePoints) {
+gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
+
+  const profilePoints = this.profilePoints;
 
   let file = 'data:text/csv;charset=utf-8,';
 

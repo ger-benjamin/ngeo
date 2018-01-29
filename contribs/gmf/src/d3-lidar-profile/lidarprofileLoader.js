@@ -12,7 +12,6 @@ gmf.lidarProfile.loader = function(options, plot) {
 
   this.plot = plot;
 
-  this.utils = new gmf.lidarProfile.utils(options);
 
   /**
   * @type {ol.Overlay}
@@ -79,6 +78,9 @@ gmf.lidarProfile.loader = function(options, plot) {
   * @type {string}
   */
   this.lastUuid;
+
+  this.utils = new gmf.lidarProfile.utils(options, this.profilePoints);
+
 
   this.cartoHighlight.setMap(this.options.map);
   this.lidarPointHighlight.setMap(this.options.map);

@@ -200,11 +200,8 @@ gmf.LidarPanelController.prototype.setClassification = function(classification, 
 gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   this.gmfLidarProfileConfig.profileConfig.profilWidth = profileWidth;
   if (this.line) {
-    this.gmfLidarProfileConfig.olLinestring = this.line;
-    this.gmfLidarProfileConfig.map = this.map;
-    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig);
-    profile.loader.clearBuffer();
-    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
+    this.profile.loader.clearBuffer();
+    this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
 
@@ -216,11 +213,8 @@ gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
 gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
   this.gmfLidarProfileConfig.profileConfig.autoWidth = autoWidth;
   if (this.line) {
-    this.gmfLidarProfileConfig.olLinestring = this.line;
-    this.gmfLidarProfileConfig.map = this.map;
-    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig);
-    profile.loader.clearBuffer();
-    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
+    this.profile.loader.clearBuffer();
+    this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
 
@@ -230,7 +224,7 @@ gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
  */
 gmf.LidarPanelController.prototype.csvExport = function() {
   if (this.line) {
-    gmf.lidarProfile.utils.getPointsInProfileAsCSV(gmf.lidarProfile.loader.profilePoints);
+    this.profile.loader.utils.getPointsInProfileAsCSV();
   }
 };
 
@@ -240,7 +234,7 @@ gmf.LidarPanelController.prototype.csvExport = function() {
  */
 gmf.LidarPanelController.prototype.pngExport = function() {
   if (this.line) {
-    gmf.lidarProfile.utils.exportToImageFile();
+    this.profile.loader.utils.exportToImageFile();
   }
 };
 

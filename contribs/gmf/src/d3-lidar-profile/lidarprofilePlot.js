@@ -13,9 +13,7 @@ gmf.lidarProfile.plot = function(options, parent) {
  */
   this.options = options;
 
-  this.parent = parent;
-
-  this.utils = new gmf.lidarProfile.utils(options);
+  this.utils = new gmf.lidarProfile.utils(options, null);
 
 };
 
