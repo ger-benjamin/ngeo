@@ -139,14 +139,6 @@ gmf.LidarProfileController.prototype.$onInit = function() {
   this.map_ = this['getMapFn'] ? this['getMapFn']() : null;
 };
 
-/**
- * Gets the available classifications for this dataset
- * @export
- */
-gmf.LidarProfileController.prototype.resetPlot = function() {
-  this.profile.loader.getProfileByLOD(0, true, 0);
-};
-
 
 /**
  * @private

@@ -113,6 +113,7 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
 
 };
 
+
 /**
  * @private
  */
@@ -127,6 +128,16 @@ gmf.LidarPanelController.prototype.$onInit = function() {
 
   });
 };
+
+
+/**
+ * Gets the available classifications for this dataset
+ * @export
+ */
+gmf.LidarPanelController.prototype.resetPlot = function() {
+  this.profile.loader.getProfileByLOD(0, true, 0);
+};
+
 
 /**
  * Gets the available classifications for this dataset
