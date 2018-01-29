@@ -163,7 +163,7 @@ gmf.LidarPanelController.prototype.getSelectedAttribute = function() {
 gmf.LidarPanelController.prototype.setDefaultAttribute = function(material) {
   this.gmfLidarProfileConfig.profileConfig.defaultAttribute = material;
   if (this.line) {
-    this.plot.changeStyle(material);
+    this.profile.plot.changeStyle(material);
   }
 };
 
@@ -186,7 +186,7 @@ gmf.LidarPanelController.prototype.getWidth = function() {
 gmf.LidarPanelController.prototype.setClassification = function(classification, key) {
   this.gmfLidarProfileConfig.profileConfig.classification[key].visible = classification.visible;
   if (this.line) {
-    this.plot.setClassActive(this.gmfLidarProfileConfig.profileConfig.classification,
+    this.profile.plot.setClassActive(this.gmfLidarProfileConfig.profileConfig.classification,
       this.gmfLidarProfileConfig.profileConfig.defaultAttribute);
   }
 };

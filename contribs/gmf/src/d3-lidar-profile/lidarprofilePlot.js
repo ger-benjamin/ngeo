@@ -284,7 +284,7 @@ gmf.lidarProfile.plot.prototype.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot.drawPoints(this.parent_loader.profilePoints, material);
+  this.drawPoints(this.parent_.loader.profilePoints, material);
 };
 
 /**
@@ -298,5 +298,5 @@ gmf.lidarProfile.plot.prototype.setClassActive = function(classification, materi
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot.drawPoints(this.parent_.loader.profilePoints, material);
+  this.drawPoints(this.parent_.loader.profilePoints, material);
 };
