@@ -31,6 +31,7 @@ gmf.lidarProfile.measure = function(options, parent) {
 * @export
 */
 gmf.lidarProfile.measure.prototype.clearMeasure = function() {
+
   this.profileMeasure = {
     pStart: {
       set: false

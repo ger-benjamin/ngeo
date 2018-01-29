@@ -145,7 +145,7 @@ gmf.LidarPanelController.prototype.$onInit = function() {
 
 
 gmf.LidarPanelController.prototype.setMeasureActive = function() {
-  this.lidarProfileMeasureActive = !this.lidarProfileMeasureActive;
+  this.lidarProfileMeasureActive = true;
   console.log(this.lidarProfileMeasureActive);
   this.profile.measure.setMeasureActive(this.lidarProfileMeasureActive);
 };
