@@ -230,7 +230,6 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
 };
 
 /**
-* @param {gmfx.LidarProfilePoints} profilePoints points
 * @export
 */
 gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
@@ -355,7 +354,6 @@ gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
 /**
 * @param {(Array.<number>|undefined)} array of number
 * @return {number} the maximum of input array
-* @private
 */
 gmf.lidarProfile.utils.prototype.arrayMax = function(array) {
   return array.reduce((a, b) => Math.max(a, b));
@@ -364,7 +362,6 @@ gmf.lidarProfile.utils.prototype.arrayMax = function(array) {
 /**
 * @param {Array.<number>|undefined} array of number
 * @return {number} the minimum of input array
-* @private
 */
 gmf.lidarProfile.utils.prototype.arrayMin = function(array) {
 
@@ -378,7 +375,6 @@ gmf.lidarProfile.utils.prototype.arrayMin = function(array) {
 };
 
 /**
-* @private
 * @return {string} uuid
 */
 gmf.lidarProfile.utils.prototype.UUID = function() {
@@ -397,7 +393,6 @@ gmf.lidarProfile.utils.prototype.UUID = function() {
 };
 
 /**
-* @private
 * @param {ol.geom.LineString} line the profile 2D line
 * @return {string} linestring in a cPotree/pytree compatible string definition
 */

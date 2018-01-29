@@ -1,5 +1,8 @@
 goog.provide('gmf.lidarProfile');
 
+/**
+* @constructor
+*/
 
 gmf.lidarProfile = function(options) {
 

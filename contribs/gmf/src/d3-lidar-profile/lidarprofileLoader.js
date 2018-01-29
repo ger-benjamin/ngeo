@@ -19,7 +19,7 @@ gmf.lidarProfile.loader = function(options, plot) {
   this.plot = plot;
 
   /**
-  * @type {ol.map}
+  * @type {ol.Map}
   */
   this.map = null;
 

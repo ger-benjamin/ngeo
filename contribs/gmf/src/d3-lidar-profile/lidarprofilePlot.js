@@ -1,10 +1,9 @@
 goog.provide('gmf.lidarProfile.plot');
-goog.require('gmf.lidarProfile.measure');
 
 /**
 * @constructor
 * @param {Object} options to be defined in gmfx
-* @param {Class} parent to be defined in gmfx
+* @param {Object} parent to be defined in gmfx
 */
 gmf.lidarProfile.plot = function(options, parent) {
 

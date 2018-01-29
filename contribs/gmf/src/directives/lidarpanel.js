@@ -2,9 +2,22 @@ goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
 goog.require('gmf.lidarProfile');
+/**
+* @suppress {extraRequire}
+*/
 goog.require('gmf.lidarProfile.loader');
+/**
+* @suppress {extraRequire}
+*/
 goog.require('gmf.lidarProfile.plot');
+/**
+* @suppress {extraRequire}
+*/
 goog.require('gmf.lidarProfile.utils');
+/**
+* @suppress {extraRequire}
+*/
+goog.require('gmf.lidarProfile.measure');
 goog.require('ol.geom.LineString');
 
 

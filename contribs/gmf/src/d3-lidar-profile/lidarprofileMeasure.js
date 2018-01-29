@@ -159,8 +159,3 @@ gmf.lidarProfile.measure.prototype.setMeasureActive = function(active) {
     d3.select('svg#profileSVG').on('click', null);
   }
 };
-
-gmf.lidarProfile.measure.prototype.startMeasure = function() {
-  this.clearMeasure();
-  d3.select('svg#profileSVG').on('click', this.measureHeight);
-};
