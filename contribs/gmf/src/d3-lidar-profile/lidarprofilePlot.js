@@ -13,6 +13,8 @@ gmf.lidarProfile.plot = function(options, parent) {
  */
   this.options = options;
 
+  this.parent_ = parent;
+
   this.utils = new gmf.lidarProfile.utils(options, null);
 
 };
@@ -155,7 +157,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
 
   function zoomEnd() {
     ctx.clearRect(0, 0, width, height);
-    that.parent.loader.updateData();
+    that.parent_.loader.updateData();
   }
   zoom.on('end', zoomEnd);
   // TODO: check behaviour!!
@@ -219,7 +221,7 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
   const sx = that.options.profileConfig.scaleX;
   const sy = that.options.profileConfig.scaleY;
   let cx, cy;
-  const p = that.utils.getClosestPoint(that.parent.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = that.utils.getClosestPoint(that.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
   if (p != undefined) {
 
     cx = sx(p.distance) + margin.left;
@@ -241,15 +243,15 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 
     d3.select('#profileInfo')
       .html(html);
-    this.parent.loader.cartoHighlight.setElement(null);
+    this.parent_.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
     el.className += 'tooltip gmf-tooltip-measure';
     el.innerHTML = html;
 
-    this.parent.loader.cartoHighlight.setElement(el);
-    this.parent.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
+    this.parent_.loader.cartoHighlight.setElement(el);
+    this.parent_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
     const classifColor = this.options.profileConfig.classification[p.classification].color;
-    this.parent.loader.lidarPointHighlight.getSource().clear();
+    this.parent_.loader.lidarPointHighlight.getSource().clear();
     const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
     const lidarPointFeature = new ol.Feature(lidarPointGeom);
     if (typeof (classifColor) !== undefined) {
@@ -264,12 +266,12 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
       }));
     }
 
-    this.parent.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
+    this.parent_.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
   } else {
-    this.parent.loader.lidarPointHighlight.getSource().clear();
+    this.parent_.loader.lidarPointHighlight.getSource().clear();
     svg.select('#highlightCircle').remove();
     d3.select('#profileInfo').html('');
-    this.parent.loader.cartoHighlight.setPosition(undefined);
+    this.parent_.loader.cartoHighlight.setPosition(undefined);
   }
 };
 
@@ -282,7 +284,7 @@ gmf.lidarProfile.plot.prototype.changeStyle = function(material) {
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot.drawPoints(this.parent.loader.profilePoints, material);
+  gmf.lidarProfile.plot.drawPoints(this.parent_loader.profilePoints, material);
 };
 
 /**
@@ -296,5 +298,5 @@ gmf.lidarProfile.plot.prototype.setClassActive = function(classification, materi
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
-  gmf.lidarProfile.plot.drawPoints(this.parent.loader.profilePoints, material);
+  gmf.lidarProfile.plot.drawPoints(this.parent_.loader.profilePoints, material);
 };
