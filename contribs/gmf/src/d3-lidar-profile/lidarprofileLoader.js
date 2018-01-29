@@ -8,10 +8,20 @@ goog.provide('gmf.lidarProfile.loader');
 */
 gmf.lidarProfile.loader = function(options, plot) {
 
+  /**
+  * @type {Object}
+  */
   this.options = options;
 
+  /**
+  * @type {Object}
+  */
   this.plot = plot;
 
+  /**
+  * @type {ol.map}
+  */
+  this.map = null;
 
   /**
   * @type {ol.Overlay}
@@ -44,7 +54,11 @@ gmf.lidarProfile.loader = function(options, plot) {
   * @type {ol.layer.Vector}
   * @export
   */
-  this.lidarBuffer = new ol.layer.Vector({});
+
+  this.lidarBuffer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+    })
+  });
 
 
   /**
@@ -70,7 +84,7 @@ gmf.lidarProfile.loader = function(options, plot) {
   */
   this.clearBuffer = function() {
     if (this.lidarBuffer) {
-      this.lidarBuffer.setSource(null);
+      this.lidarBuffer.getSource().clear();
     }
   };
 
@@ -81,11 +95,19 @@ gmf.lidarProfile.loader = function(options, plot) {
 
   this.utils = new gmf.lidarProfile.utils(options, this.profilePoints);
 
+};
 
-  this.cartoHighlight.setMap(this.options.map);
-  this.lidarPointHighlight.setMap(this.options.map);
-  this.lidarBuffer.setMap(this.options.map);
 
+/**
+* @export
+* @param {ol.Map} map of the desktop app
+*/
+gmf.lidarProfile.loader.prototype.setMap = function(map) {
+  this.map = map;
+  this.cartoHighlight.setMap(map);
+  this.lidarPointHighlight.setMap(map);
+  this.lidarBuffer.setMap(map);
+  this.utils.setMap(map);
 };
 
 
@@ -96,8 +118,6 @@ gmf.lidarProfile.loader = function(options, plot) {
 * @export
 */
 gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
-
-  this.clearBuffer();
 
   this.options.pytreeLinestring =  this.utils.getPytreeLinestring(this.options.olLinestring);
 
@@ -117,9 +137,6 @@ gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, res
     profileLine = profileLine.substr(0, profileLine.length - 1);
     maxLODWith = this.utils.getNiceLOD(domain[1] - domain[0]);
 
-    this.lidarBuffer.setSource(null);
-    this.lidarBuffer.setSource(clip.vectorSource);
-    this.lidarBuffer.setStyle(clip.styles);
   }
 
   const uuid = this.utils.UUID();
@@ -344,9 +361,11 @@ gmf.lidarProfile.loader.prototype.updateData = function() {
   const domainY = scaleY.domain();
 
   const clip = this.utils.clipLineByMeasure(this.options.olLinestring, domainX[0], domainX[1]);
-  this.lidarBuffer.setSource(null);
-  this.lidarBuffer.setSource(clip.vectorSource);
-  this.lidarBuffer.setStyle(clip.styles);
+
+  this.lidarBuffer.getSource().clear();
+  this.lidarBuffer.getSource().addFeature(clip.bufferGeom);
+  this.lidarBuffer.setStyle(clip.bufferStyle);
+
   const span = domainX[1] - domainX[0];
   const maxLODWidth = this.utils.getNiceLOD(span);
   const xTolerance = 0.2;

@@ -12,7 +12,17 @@ gmf.lidarProfile.utils = function(options, profilePoints) {
 
   this.profilePoints = profilePoints;
 
+  this.map = null;
+
 };
+
+/**
+* @param {ol.Map} map of the dekstop app
+*/
+gmf.lidarProfile.utils.prototype.setMap = function(map) {
+  this.map = map;
+};
+
 
 /**
 * @param {ol.geom.LineString} linestring an OpenLayer Linestring
@@ -66,7 +76,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
     geometry: clippedLine
   });
 
-  const widthInMapsUnits = profileWidth / this.options.map.getView().getResolution();
+  const widthInMapsUnits = profileWidth / this.map.getView().getResolution();
 
   const lineStyle = new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -97,7 +107,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
   const styles = [lineStyle];
   const lineEnd = clippedLine.getLastCoordinate();
   const lineStart = clippedLine.getFirstCoordinate();
-
+  console.log(lineEnd, lineStart);
   styles.push(
     new ol.style.Style({
       geometry: new ol.geom.Point(lineEnd),
@@ -134,14 +144,11 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
       })
     })
   );
-  const vectorSource = new ol.source.Vector({
-    features: [feat]
-  });
 
   return {
     clippedLine: clippedLine.getCoordinates(),
     distanceOffset: dLeft,
-    bufferGeom: vectorSource,
+    bufferGeom: feat,
     bufferStyle: styles
   };
 };

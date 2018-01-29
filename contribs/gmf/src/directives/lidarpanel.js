@@ -86,13 +86,6 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.autoWidth = true;
 
   /**
-   * The Openlayers amp of the main controller
-   * @type {ol.Map}
-   * @export
-   */
-  this.map = null;
-
-  /**
    * Tolerance distance to highlight on the profile
    * @type {number}
    * @export
@@ -113,6 +106,9 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
    */
   this.pointAttributes;
 
+  /**
+  * @type {Object}
+  **/
   this.profile =  new gmf.lidarProfile(this.gmfLidarProfileConfig);
 
 
@@ -132,11 +128,11 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
  * @private
  */
 gmf.LidarPanelController.prototype.$onInit = function() {
+  this.line = this.line;
+  this.active = this.active;
   this.gmfLidarProfileConfig.initProfileConfig().then((resp) => {
     this.ready = true;
-    this.line = this.line;
-    this.active = this.active;
-    this.map = this.map;
+    this.profile.loader.setMap(this.map);
     this.pointAttributes = this.gmfLidarProfileConfig.profileConfig.pointAttributes;
     this.pointAttributes.selectedOption = this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
 
@@ -231,7 +227,6 @@ gmf.LidarPanelController.prototype.setClassification = function(classification, 
 gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   this.gmfLidarProfileConfig.profileConfig.profilWidth = profileWidth;
   if (this.line) {
-    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
@@ -244,7 +239,6 @@ gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
 gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
   this.gmfLidarProfileConfig.profileConfig.autoWidth = autoWidth;
   if (this.line) {
-    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
@@ -277,8 +271,6 @@ gmf.LidarPanelController.prototype.update_ = function() {
 
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
-    this.gmfLidarProfileConfig.map = this.map;
-    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
 
   } else {

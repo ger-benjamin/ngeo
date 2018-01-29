@@ -238,20 +238,20 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 
     const html = `Distance: ${Math.round(10 * p.distance) / 10}<br>
     Altitude: ${Math.round(10 * p.altitude) / 10}<br>
-    Classification: ${this.options.profileConfig.classification[p.classification].name}<br>
+    Classification: ${that.options.profileConfig.classification[p.classification].name}<br>
     Intensity: ${p.intensity}<br>`;
 
     d3.select('#profileInfo')
       .html(html);
-    this.parent_.loader.cartoHighlight.setElement(null);
+    that.parent_.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
     el.className += 'tooltip gmf-tooltip-measure';
     el.innerHTML = html;
 
-    this.parent_.loader.cartoHighlight.setElement(el);
-    this.parent_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
-    const classifColor = this.options.profileConfig.classification[p.classification].color;
-    this.parent_.loader.lidarPointHighlight.getSource().clear();
+    that.parent_.loader.cartoHighlight.setElement(el);
+    that.parent_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
+    const classifColor = that.options.profileConfig.classification[p.classification].color;
+    that.parent_.loader.lidarPointHighlight.getSource().clear();
     const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
     const lidarPointFeature = new ol.Feature(lidarPointGeom);
     if (typeof (classifColor) !== undefined) {
@@ -266,12 +266,12 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
       }));
     }
 
-    this.parent_.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
+    that.parent_.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
   } else {
-    this.parent_.loader.lidarPointHighlight.getSource().clear();
+    that.parent_.loader.lidarPointHighlight.getSource().clear();
     svg.select('#highlightCircle').remove();
     d3.select('#profileInfo').html('');
-    this.parent_.loader.cartoHighlight.setPosition(undefined);
+    that.parent_.loader.cartoHighlight.setPosition(undefined);
   }
 };
 
