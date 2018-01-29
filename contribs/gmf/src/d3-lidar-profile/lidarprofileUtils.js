@@ -88,44 +88,30 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
 
   let firstSegmentAngle = 0;
   let lastSegementAngle = 0;
-  const segNumber = clippedLine.getCoordinates.length - 1;
-  let segCounter = 0;
-  clippedLine.forEachSegment((end, start) => {
-    if (segCounter == 0) {
+  const segNumber = clippedLine.getCoordinates().length - 1;
+  let segCounter = 1;
+  clippedLine.forEachSegment((start, end) => {
+    if (segCounter == 1) {
       const dx = end[0] - start[0];
       const dy = end[1] - start[1];
-      firstSegmentAngle = Math.atan2(dy, dx);
+      firstSegmentAngle = Math.atan2(dx, dy);
     }
+
     if (segCounter == segNumber) {
       const dx = end[0] - start[0];
       const dy = end[1] - start[1];
-      lastSegementAngle = Math.atan2(dy, dx);
+
+      lastSegementAngle = Math.atan2(dx, dy);
     }
     segCounter += 1;
+
+
   });
 
   const styles = [lineStyle];
   const lineEnd = clippedLine.getLastCoordinate();
   const lineStart = clippedLine.getFirstCoordinate();
-  console.log(lineEnd, lineStart);
   styles.push(
-    new ol.style.Style({
-      geometry: new ol.geom.Point(lineEnd),
-      image: new ol.style.RegularShape({
-        fill: new ol.style.Fill({
-          color: 'rgba(255, 0, 0, 1)'
-        }),
-        stroke: new ol.style.Stroke({
-          color: 'rgba(255,0,0,1)',
-          width: 1,
-          lineCap: 'square'
-        }),
-        points: 3,
-        radius: 5,
-        rotation: firstSegmentAngle,
-        angle: 0
-      })
-    }),
     new ol.style.Style({
       geometry: new ol.geom.Point(lineStart),
       image: new ol.style.RegularShape({
@@ -139,8 +125,25 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
         }),
         points: 3,
         radius: 5,
+        rotation: firstSegmentAngle,
+        angle: Math.PI / 3
+      })
+    }),
+    new ol.style.Style({
+      geometry: new ol.geom.Point(lineEnd),
+      image: new ol.style.RegularShape({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 0, 0, 1)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255,0,0,1)',
+          width: 1,
+          lineCap: 'square'
+        }),
+        points: 3,
+        radius: 5,
         rotation: lastSegementAngle,
-        angle: 0
+        angle: 4 * Math.PI / 3
       })
     })
   );

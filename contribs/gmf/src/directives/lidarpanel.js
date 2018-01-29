@@ -142,7 +142,6 @@ gmf.LidarPanelController.prototype.$onInit = function() {
 
 gmf.LidarPanelController.prototype.setMeasureActive = function() {
   this.lidarProfileMeasureActive = true;
-  console.log(this.lidarProfileMeasureActive);
   this.profile.measure.setMeasureActive(this.lidarProfileMeasureActive);
 };
 
@@ -267,16 +266,16 @@ gmf.LidarPanelController.prototype.pngExport = function() {
  * @private
  */
 gmf.LidarPanelController.prototype.update_ = function() {
-  this.isErrored = false;
 
   if (this.line) {
     this.gmfLidarProfileConfig.olLinestring = this.line;
+    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
 
   } else {
+    this.profile.loader.clearBuffer();
     this.profile.loader.cartoHighlight.setPosition(undefined);
   }
-  this.active = !!this.line;
 };
 
 
