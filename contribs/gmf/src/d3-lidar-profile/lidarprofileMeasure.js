@@ -130,10 +130,6 @@ gmf.lidarProfile.measure.prototype.setMeasureActive = function(active) {
         .attr('stroke-width', 2)
         .attr('stroke', 'red');
 
-    } else {
-
-      that.startMeasure();
-
     }
 
     const dH = that.profileMeasure.pEnd.altitude - that.profileMeasure.pStart.altitude;

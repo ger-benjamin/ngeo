@@ -150,6 +150,7 @@ gmf.LidarPanelController.prototype.setMeasureActive = function() {
  * @export
  */
 gmf.LidarPanelController.prototype.resetPlot = function() {
+  this.profile.loader.clearBuffer();
   this.profile.loader.getProfileByLOD(0, true, 0);
 };
 
