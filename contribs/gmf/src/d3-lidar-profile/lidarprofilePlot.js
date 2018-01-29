@@ -174,7 +174,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
     .attr('height', height + margin.top + margin.bottom);
 
   d3.select('svg#profileSVG')
-    .on('mousemove', function() {
+    .on('mousemove', () => {
       that.pointHighlight(that);
     });
 

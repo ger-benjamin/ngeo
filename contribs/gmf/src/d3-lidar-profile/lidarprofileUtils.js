@@ -4,6 +4,7 @@ goog.provide('gmf.lidarProfile.utils');
 /**
 * @constructor
 * @param {Object} options to be defined in gmfx
+* @param {Object} profilePoints to be defined in gmfx
 */
 gmf.lidarProfile.utils = function(options, profilePoints) {
 
