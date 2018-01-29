@@ -79,7 +79,6 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
   const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
   const width = containerWidth - (margin.left + margin.right);
   const height = containerHeight - (margin.top + margin.bottom);
-
   d3.select('#profileCanvas')
     .attr('height', height)
     .attr('width', width)
@@ -122,7 +121,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
 
   this.options.profileConfig.scaleX = sx;
   this.options.profileConfig.scaleY = sy;
-  let that = this;
+  const that = this;
   function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
       if (d3.event.sourceEvent.movementX == 0 && d3.event.sourceEvent.movementY == 0) {
@@ -170,7 +169,6 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
 
 
   d3.select('svg#profileSVG').selectAll('*').remove();
-
   const svg = d3.select('svg#profileSVG')
     .attr('width', width + margin.left)
     .attr('height', height + margin.top + margin.bottom);
@@ -179,6 +177,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
     .on('mousemove', function() {
       that.pointHighlight(that);
     });
+
 
   const xAxis = d3.axisBottom(sx);
   const yAxis = d3.axisLeft(sy)

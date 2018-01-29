@@ -2,7 +2,6 @@ goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
 goog.require('gmf.lidarProfile');
-goog.require('gmf.lidarProfile.options');
 goog.require('gmf.lidarProfile.loader');
 goog.require('gmf.lidarProfile.plot');
 goog.require('gmf.lidarProfile.utils');
@@ -54,6 +53,7 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
 
 
 /**
+  * @param {angular.Scope} $scope Angular scope.
  * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
  * @constructor
  * @private
@@ -61,7 +61,7 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
  * @ngdoc controller
  * @ngname gmfLidarPanelController
  */
-gmf.LidarPanelController = function(gmfLidarProfileConfig) {
+gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.gmfLidarProfileConfig = gmfLidarProfileConfig;
 
   /**
@@ -98,6 +98,18 @@ gmf.LidarPanelController = function(gmfLidarProfileConfig) {
    * @export
    */
   this.pointAttributes;
+
+  this.profile =  new gmf.lidarProfile(this.gmfLidarProfileConfig);
+
+
+  // Watch the line to update the profileData (data for the chart).
+  $scope.$watch(
+    () => this.line,
+    (newLine, oldLine) => {
+      if (oldLine !== newLine) {
+        this.update_();
+      }
+    });
 
 };
 
@@ -230,6 +242,24 @@ gmf.LidarPanelController.prototype.pngExport = function() {
   if (this.line) {
     gmf.lidarProfile.utils.exportToImageFile();
   }
+};
+
+/**
+ * @private
+ */
+gmf.LidarPanelController.prototype.update_ = function() {
+  this.isErrored = false;
+
+  if (this.line) {
+    this.gmfLidarProfileConfig.olLinestring = this.line;
+    this.gmfLidarProfileConfig.map = this.map;
+    this.profile.loader.clearBuffer();
+    this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
+
+  } else {
+    this.profile.loader.cartoHighlight.setPosition(undefined);
+  }
+  this.active = !!this.line;
 };
 
 

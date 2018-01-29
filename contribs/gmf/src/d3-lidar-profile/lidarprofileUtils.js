@@ -57,7 +57,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
   if (this.options.profileConfig.autoWidth) {
     profileWidth = this.getNiceLOD(clippedLine.getLength()).width;
   } else {
-    profileWidth = gmf.lidarProfile.options.profileConfig.profilWidth;
+    profileWidth = this.options.profileConfig.profilWidth;
   }
   const feat = new ol.Feature({
     geometry: clippedLine

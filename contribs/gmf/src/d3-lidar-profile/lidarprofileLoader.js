@@ -222,7 +222,7 @@ gmf.lidarProfile.loader.prototype.xhrRequest = function(options, minLOD, maxLOD,
 * @private
 */
 gmf.lidarProfile.loader.prototype.processBuffer = function(profile, iter, distanceOffset, lastLOD, resetPlot) {
-  console.log('process buffer');
+
   try {
 
     const typedArrayInt32 = new Int32Array(profile, 0, 4);
@@ -319,10 +319,7 @@ gmf.lidarProfile.loader.prototype.processBuffer = function(profile, iter, distan
     // }
 
     rangeY = [this.utils.arrayMin(points.altitude), this.utils.arrayMax(points.altitude)];
-
     if (iter == 0 && resetPlot) {
-      console.log('hihihi');
-      console.log(this);
       this.plot.setupPlot(rangeX, rangeY);
       this.plot.drawPoints(points, this.options.profileConfig.defaultAttribute);
 

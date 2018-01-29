@@ -1,7 +1,6 @@
 goog.provide('gmf.lidarProfileComponent');
 goog.require('gmf');
 goog.require('ol.geom.LineString');
-goog.require('gmf.lidarProfile.options');
 
 
 gmf.module.value('gmfLidarProfileTemplateUrl',
@@ -129,6 +128,7 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
         this.update_();
       }
     });
+
 };
 
 
@@ -139,23 +139,19 @@ gmf.LidarProfileController.prototype.$onInit = function() {
   this.map_ = this['getMapFn'] ? this['getMapFn']() : null;
 };
 
+/**
+ * Gets the available classifications for this dataset
+ * @export
+ */
+gmf.LidarProfileController.prototype.resetPlot = function() {
+  this.profile.loader.getProfileByLOD(0, true, 0);
+};
+
 
 /**
  * @private
  */
 gmf.LidarProfileController.prototype.update_ = function() {
-  this.isErrored = false;
-
-  if (this.line) {
-    this.gmfLidarProfileConfig_.olLinestring = this.line;
-    this.gmfLidarProfileConfig_.map = this.map_;
-    const profile = new gmf.lidarProfile(this.gmfLidarProfileConfig_);
-    profile.loader.clearBuffer();
-    profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig_.profileConfig.minLOD);
-
-  } else {
-    gmf.lidarProfile.loader.cartoHighlight.setPosition(undefined);
-  }
   this.active = !!this.line;
 };
 
