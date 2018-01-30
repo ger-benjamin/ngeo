@@ -32,7 +32,7 @@
   <hr>
   <div ng-if="!!$ctrl.line">
     <button class="btn btn-default"
-      ng-model="$ctrl.lidarProfileMeasureActive"
+      ngeo-btn ng-model="ctrl.measureActive"
       ng-click="$ctrl.setMeasureActive()"
       data-toggle="tooltip" data-placement="left" data-original-title="{{'Take measure'|translate}}">
       Take measure

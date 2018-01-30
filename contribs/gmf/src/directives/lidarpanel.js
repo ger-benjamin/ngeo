@@ -99,6 +99,13 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.autoWidth = true;
 
   /**
+  * State of the measure tool
+  * @type {boolean}
+  * @export
+  */
+  this.measureActive = false;
+
+  /**
    * Tolerance distance to highlight on the profile
    * @type {number}
    * @export
@@ -150,7 +157,12 @@ gmf.LidarPanelController.prototype.$onInit = function() {
  * @export
  */
 gmf.LidarPanelController.prototype.setMeasureActive = function() {
-  this.profile.measure.setMeasureActive();
+  this.measureActive = !this.measureActive;
+  if (this.measureActive) {
+    this.profile.measure.setMeasureActive();
+  } else {
+    this.profile.measure.clearMeasure();
+  }
 };
 
 /**
@@ -158,6 +170,7 @@ gmf.LidarPanelController.prototype.setMeasureActive = function() {
  * @export
  */
 gmf.LidarPanelController.prototype.clearMeasure = function() {
+  this.measureActive = false;
   this.profile.measure.clearMeasure();
 };
 
