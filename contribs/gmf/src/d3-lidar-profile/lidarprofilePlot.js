@@ -59,8 +59,6 @@ gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
         ctx.fillStyle = `RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       } else if (material == 'INTENSITY') {
         ctx.fillStyle = `RGB(${intensity}, ${intensity}, ${intensity})`;
-      } else if (material == 'RGB') {
-        ctx.fillStyle = `RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       } else if (material == 'CLASSIFICATION') {
         ctx.fillStyle = `RGB(${profileConfig.classification[classification].color})`;
       } else {
