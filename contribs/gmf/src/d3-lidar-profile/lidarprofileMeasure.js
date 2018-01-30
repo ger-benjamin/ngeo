@@ -16,7 +16,14 @@ gmf.lidarProfile.measure = function(options, parent) {
   /**
   * @type {Object}
   */
-  this.profileMeasure;
+  this.profileMeasure = {
+    pStart: {
+      set: false
+    },
+    pEnd: {
+      set: false
+    }
+  };
 
   /**
   * @type {Object}
@@ -53,10 +60,9 @@ gmf.lidarProfile.measure.prototype.clearMeasure = function() {
 
 /**
 * Activate the measure tool
-* @param {boolean} active state of the measure tool
 * @export
 */
-gmf.lidarProfile.measure.prototype.setMeasureActive = function(active) {
+gmf.lidarProfile.measure.prototype.setMeasureActive = function() {
 
   const that = this;
 
@@ -151,11 +157,11 @@ gmf.lidarProfile.measure.prototype.setMeasureActive = function(active) {
     }
   }
 
-  if (active) {
-    this.clearMeasure();
-    d3.select('svg#profileSVG').on('click', measureHeigt);
-  } else {
+  if (this.profileMeasure.pEnd.set && this.profileMeasure.pStart.set) {
     this.clearMeasure();
     d3.select('svg#profileSVG').on('click', null);
+  } else {
+    this.clearMeasure();
+    d3.select('svg#profileSVG').on('click', measureHeigt);
   }
 };

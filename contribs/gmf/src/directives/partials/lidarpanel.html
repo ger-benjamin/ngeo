@@ -37,6 +37,12 @@
       data-toggle="tooltip" data-placement="left" data-original-title="{{'Take measure'|translate}}">
       Take measure
     </button>
+    <button class="btn btn-default"
+      ng-if="!!$ctrl.line"
+      ng-click="$ctrl.clearMeasure()"
+      data-toggle="tooltip" data-placement="left" data-original-title="{{'Clear measure'|translate}}">
+      <span class="fa fa-eraser"></span>
+    </button>
   </div>
   <div>
   <hr>

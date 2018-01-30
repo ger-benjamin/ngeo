@@ -106,13 +106,6 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.profileHighlight;
 
   /**
-   * Measure tool state
-   * @type {boolean}
-   * @export
-   */
-  this.lidarProfileMeasureActive = false;
-
-  /**
    * The list of available attributes for this Pytree dataset
    * @type {gmfx.lidarPointAttributeList}
    * @export
@@ -152,10 +145,20 @@ gmf.LidarPanelController.prototype.$onInit = function() {
   });
 };
 
-
+/**
+ * Activate the measure tool
+ * @export
+ */
 gmf.LidarPanelController.prototype.setMeasureActive = function() {
-  this.lidarProfileMeasureActive = true;
-  this.profile.measure.setMeasureActive(this.lidarProfileMeasureActive);
+  this.profile.measure.setMeasureActive();
+};
+
+/**
+ * Clear the current measure
+ * @export
+ */
+gmf.LidarPanelController.prototype.clearMeasure = function() {
+  this.profile.measure.clearMeasure();
 };
 
 /**
