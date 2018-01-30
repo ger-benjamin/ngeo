@@ -240,6 +240,7 @@ gmf.LidarPanelController.prototype.setClassification = function(classification, 
 gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   this.gmfLidarProfileConfig.profileConfig.profilWidth = profileWidth;
   if (this.line) {
+    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
@@ -252,6 +253,7 @@ gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
 gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
   this.gmfLidarProfileConfig.profileConfig.autoWidth = autoWidth;
   if (this.line) {
+    this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
   }
 };
