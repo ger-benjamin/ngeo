@@ -98,6 +98,11 @@ gmf.lidarProfile.loader = function(options, plot) {
   * @private
   */
   this.lastUuid_;
+  /**
+  * @type {boolean}
+  * @private
+  */
+  this.isPlotSetup_ = false;
 
   /**
   * @type {gmf.lidarProfile.utils}
@@ -129,6 +134,11 @@ gmf.lidarProfile.loader.prototype.setMap = function(map) {
 */
 gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
 
+  if (resetPlot) {
+    this.isPlotSetup_ = false;
+  }
+
+  d3.select('#lidarError').style('visibility', 'hidden');
   this.options.pytreeLinestring =  this.utils.getPytreeLinestring(this.options.olLinestring);
 
   let profileLine;
@@ -255,109 +265,141 @@ gmf.lidarProfile.loader.prototype.xhrRequest_ = function(options, minLOD, maxLOD
 */
 gmf.lidarProfile.loader.prototype.processBuffer_ = function(profile, iter, distanceOffset, lastLOD, resetPlot) {
 
+  const typedArrayInt32 = new Int32Array(profile, 0, 4);
+  const headerSize = typedArrayInt32[0];
+
+  const uInt8header = new Uint8Array(profile, 4, headerSize);
+  let strHeaderLocal = '';
+  for (let i = 0; i < uInt8header.length; i++) {
+    strHeaderLocal += String.fromCharCode(uInt8header[i]);
+  }
+
   try {
 
-    const typedArrayInt32 = new Int32Array(profile, 0, 4);
-    const headerSize = typedArrayInt32[0];
-
-    const uInt8header = new Uint8Array(profile, 4, headerSize);
-    let strHeaderLocal = '';
-    for (let i = 0; i < uInt8header.length; i++) {
-      strHeaderLocal += String.fromCharCode(uInt8header[i]);
-    }
-
-    const jHeader = JSON.parse(strHeaderLocal);
-    this.options.profileConfig.pointSum += jHeader['points'];
-    if (this.options.profileConfig.pointSum > this.options.profileConfig.maxPoints) {
-      this.abortPendingRequests();
-    }
-
-    const attr = jHeader['pointAttributes'];
-    const attributes = [];
-    for (let j = 0; j < attr.length; j++) {
-      if (this.options.profileConfig.pointAttributesRaw [attr[j]] != undefined) {
-        attributes.push(this.options.profileConfig.pointAttributesRaw[attr[j]]);
-      }
-    }
-    const scale = jHeader['scale'];
-
-    /**
-    * @type {gmfx.LidarProfilePoints}
-    */
-    const points = {
-      distance: [],
-      altitude: [],
-      color_packed: [],
-      intensity: [],
-      classification: [],
-      coords: []
-    };
-
-    const bytesPerPoint = jHeader['bytesPerPoint'];
-    const buffer = profile.slice(4 + headerSize);
-    for (let i = 0; i < jHeader['points']; i++) {
-
-      const byteOffset = bytesPerPoint * i;
-      const view = new DataView(buffer, byteOffset, bytesPerPoint);
-      let aoffset = 0;
-      for (let k = 0; k < attributes.length; k++) {
-
-        if (attributes[k]['value'] == 'POSITION_PROJECTED_PROFILE') {
-
-          const udist = view.getUint32(aoffset, true);
-          const ualti = view.getUint32(aoffset + 4, true);
-          const dist = udist * scale;
-          const alti = ualti * scale;
-          points.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
-          this.profilePoints.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
-          points.altitude.push(Math.round(100 * alti) / 100);
-          this.profilePoints.altitude.push(Math.round(100 * alti) / 100);
-
-        } else if (attributes[k]['value']  == 'CLASSIFICATION') {
-          const classif = view.getUint8(aoffset);
-          points.classification.push(classif);
-          this.profilePoints.classification.push(classif);
-
-        } else if (attributes[k]['value']  == 'INTENSITY') {
-          const intensity = view.getUint8(aoffset);
-          points.intensity.push(intensity);
-          this.profilePoints.intensity.push(intensity);
-
-        } else if (attributes[k]['value'] == 'COLOR_PACKED') {
-          const r = view.getUint8(aoffset);
-          const g = view.getUint8(aoffset + 1);
-          const b = view.getUint8(aoffset + 2);
-          points.color_packed.push([r, g, b]);
-          this.profilePoints.color_packed.push([r, g, b]);
-
-        } else if (attributes[k]['value']  == 'POSITION_CARTESIAN') {
-          const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
-          const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
-          points.coords.push([x, y]);
-          this.profilePoints.coords.push([x, y]);
-        }
-        aoffset = aoffset + attributes[k]['bytes'];
-      }
-    }
-
-    const rangeX = [0, this.options.olLinestring.getLength()];
-    let rangeY = [jHeader['boundingBox']['lz'], jHeader['boundingBox']['uz']];
-
-    // TODO fix z offset issue in Pytree!
-
-    rangeY = [this.utils.arrayMin(points.altitude), this.utils.arrayMax(points.altitude)];
-
-    if (iter == 0 && resetPlot) {
-      this.plot_.setupPlot(rangeX, rangeY);
-      this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
-
-    } else {
-      this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
-    }
+    JSON.parse(strHeaderLocal);
 
   } catch (e) {
-    console.log(e);
+    console.log(this.isPlotSetup_);
+    if (!this.isPlotSetup_) {
+      const canvasEl = d3.select('#profileCanvas').node();
+      const ctx = d3.select('#profileCanvas')
+        .node().getContext('2d');
+      ctx.clearRect(0, 0, canvasEl.getBoundingClientRect().width, canvasEl.getBoundingClientRect().height);
+      d3.select('svg#profileSVG').selectAll('*').remove();
+      let errorTxt = '<p><b>Lidar profile service error</b></p>';
+      errorTxt += '<p>It might be offline</p>';
+      // TODO: check extent consistency earlier
+      errorTxt += '<p>Or did you attempt to draw a profile outside data extent ?</p>';
+      errorTxt += '<p>Or did you attempt to draw such a small profile that no point was returned ?</p>';
+      d3.select('#lidarError').style('visibility', 'visible');
+      d3.select('#lidarError').html(errorTxt);
+    }
+    return;
   }
+
+  d3.select('#lidarError').style('visibility', 'hidden');
+
+  const jHeader = JSON.parse(strHeaderLocal);
+
+  // If number of points return is higher than Pytree configuration max value,
+  // stop sending requests.
+  this.options.profileConfig.pointSum += jHeader['points'];
+  if (this.options.profileConfig.pointSum > this.options.profileConfig.maxPoints) {
+    this.abortPendingRequests();
+  }
+
+  const attr = jHeader['pointAttributes'];
+  const attributes = [];
+  for (let j = 0; j < attr.length; j++) {
+    if (this.options.profileConfig.pointAttributesRaw [attr[j]] != undefined) {
+      attributes.push(this.options.profileConfig.pointAttributesRaw[attr[j]]);
+    }
+  }
+  const scale = jHeader['scale'];
+
+  if (jHeader['points'] < 3) {
+    this.isPlotSetup_ = false;
+    return;
+  }
+
+  /**
+  * @type {gmfx.LidarProfilePoints}
+  */
+  const points = {
+    distance: [],
+    altitude: [],
+    color_packed: [],
+    intensity: [],
+    classification: [],
+    coords: []
+  };
+
+  const bytesPerPoint = jHeader['bytesPerPoint'];
+  const buffer = profile.slice(4 + headerSize);
+  for (let i = 0; i < jHeader['points']; i++) {
+
+    const byteOffset = bytesPerPoint * i;
+    const view = new DataView(buffer, byteOffset, bytesPerPoint);
+    let aoffset = 0;
+    for (let k = 0; k < attributes.length; k++) {
+
+      if (attributes[k]['value'] == 'POSITION_PROJECTED_PROFILE') {
+
+        const udist = view.getUint32(aoffset, true);
+        const ualti = view.getUint32(aoffset + 4, true);
+        const dist = udist * scale;
+        const alti = ualti * scale;
+        points.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
+        this.profilePoints.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
+        points.altitude.push(Math.round(100 * alti) / 100);
+        this.profilePoints.altitude.push(Math.round(100 * alti) / 100);
+
+      } else if (attributes[k]['value']  == 'CLASSIFICATION') {
+        const classif = view.getUint8(aoffset);
+        points.classification.push(classif);
+        this.profilePoints.classification.push(classif);
+
+      } else if (attributes[k]['value']  == 'INTENSITY') {
+        const intensity = view.getUint8(aoffset);
+        points.intensity.push(intensity);
+        this.profilePoints.intensity.push(intensity);
+
+      } else if (attributes[k]['value'] == 'COLOR_PACKED') {
+        const r = view.getUint8(aoffset);
+        const g = view.getUint8(aoffset + 1);
+        const b = view.getUint8(aoffset + 2);
+        points.color_packed.push([r, g, b]);
+        this.profilePoints.color_packed.push([r, g, b]);
+
+      } else if (attributes[k]['value']  == 'POSITION_CARTESIAN') {
+        const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
+        const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
+        points.coords.push([x, y]);
+        this.profilePoints.coords.push([x, y]);
+      }
+      aoffset = aoffset + attributes[k]['bytes'];
+    }
+  }
+
+  const rangeX = [0, this.options.olLinestring.getLength()];
+
+  // TODO fix z offset issue in Pytree!
+
+  const rangeY = [this.utils.arrayMin(points.altitude), this.utils.arrayMax(points.altitude)];
+
+  if (iter == 0 && resetPlot) {
+    this.plot_.setupPlot(rangeX, rangeY);
+    this.isPlotSetup_ = true;
+    this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
+
+  } else if (!this.isPlotSetup_) {
+    this.plot_.setupPlot(rangeX, rangeY);
+    this.isPlotSetup_ = true;
+    this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
+  } else {
+    this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
+  }
+
 };
 
 /**
