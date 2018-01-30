@@ -1,33 +1,35 @@
 goog.provide('gmf.lidarProfile');
 
 /**
+* Provides a D3js component to be used to draw an lidar point cloud
+* profile chart.
+* Requires access to a Pytree webservice: https://github.com/sitn/pytree
+*
 * @constructor
+* @param {Object} options from pytree
 */
 
 gmf.lidarProfile = function(options) {
 
   /**
-  * @type {Object}
-  */
-  this.options_ = options;
-
-  /**
-  * @type {Object}
+  * The instance of gmf.lidarProfile class used to access loader instance
+  * properties and methods from plot and measure instances
+  * @type {gmf.lidarProfile}
   */
   const parent = this;
 
   /**
-  * @type {Object}
+  * @type {gmf.lidarProfile.plot}
   */
   this.plot = new gmf.lidarProfile.plot(options, parent);
 
   /**
-  * @type {Object}
+  * @type {gmf.lidarProfile.loader}
   */
   this.loader = new gmf.lidarProfile.loader(options, this.plot);
 
   /**
-  * @type {Object}
+  * @type {gmf.lidarProfile.measure}
   */
   this.measure = new gmf.lidarProfile.measure(options, parent);
 
