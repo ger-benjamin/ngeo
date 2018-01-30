@@ -8,28 +8,41 @@ goog.provide('gmf.lidarProfile.utils');
 */
 gmf.lidarProfile.utils = function(options, profilePoints) {
 
+  /**
+  * @type {Object}
+  * @export
+  */
   this.options = options;
 
+  /**
+  * The variable where all points of the profile are stored
+  * @type {Object}
+  * @export
+  */
   this.profilePoints = profilePoints;
 
-  this.map = null;
+  /**
+  * @type {ol.Map}
+  * @private
+  */
+  this.map_ = null;
 
 };
 
 /**
-* @param {ol.Map} map of the dekstop app
+* @param {ol.Map} map of the app
 */
 gmf.lidarProfile.utils.prototype.setMap = function(map) {
-  this.map = map;
+  this.map_ = map;
 };
 
 
 /**
+* Clip a linstring with start and end measure givent by d3 Chart domain
 * @param {ol.geom.LineString} linestring an OpenLayer Linestring
 * @param {number} dLeft domain minimum
 * @param {number} dRight domain maximum
 * @return {{clippedLine: Array.<ol.Coordinate>, distanceOffset: number}} Object with clipped lined coordinates and left domain value
-* @export
 */
 gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft, dRight) {
 
@@ -76,7 +89,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
     geometry: clippedLine
   });
 
-  const widthInMapsUnits = profileWidth / this.map.getView().getResolution();
+  const widthInMapsUnits = profileWidth / this.map_.getView().getResolution();
 
   const lineStyle = new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -90,6 +103,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
   let lastSegementAngle = 0;
   const segNumber = clippedLine.getCoordinates().length - 1;
   let segCounter = 1;
+
   clippedLine.forEachSegment((start, end) => {
     if (segCounter == 1) {
       const dx = end[0] - start[0];
@@ -111,6 +125,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
   const styles = [lineStyle];
   const lineEnd = clippedLine.getLastCoordinate();
   const lineStart = clippedLine.getFirstCoordinate();
+
   styles.push(
     new ol.style.Style({
       geometry: new ol.geom.Point(lineStart),
@@ -154,12 +169,14 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
     bufferGeom: feat,
     bufferStyle: styles
   };
+
 };
 
 /**
+* Get a LOD and with for a given chart span
+* Configuration is set up in Pytree configuration
 * @param {number} span domain extent
 * @return {{maxLOD: number, width: number}} Object with optimized LOD and width for this profile span
-* @export
 */
 gmf.lidarProfile.utils.prototype.getNiceLOD = function(span) {
   let maxLOD = 0;
@@ -178,6 +195,7 @@ gmf.lidarProfile.utils.prototype.getNiceLOD = function(span) {
 };
 
 /**
+* Create a fake link and make the browser download the referenced URL
 * @param {string} filename csv file name
 * @param {string} dataUrl fake url from which to download the csv file
 * @export
@@ -191,9 +209,11 @@ gmf.lidarProfile.utils.prototype.downloadDataUrlFromJavascript = function(filena
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
 };
 
 /**
+* Create a image file by combining SVG and canvas elements
 * @export
 */
 gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
@@ -227,9 +247,12 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
     DOMURL.revokeObjectURL(url);
   };
   img.src = url;
+
 };
 
 /**
+* Turn the profile data into a CSV file containing all available attributes
+* in lidar data set
 * @export
 */
 gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
@@ -242,6 +265,7 @@ gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
    * @type {Array}
    */
   const points = [];
+
   for (let i = 0; i < profilePoints.distance.length; i++) {
     /**
      * @type {gmfx.lidarPoint}
@@ -352,6 +376,7 @@ gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
 
 
 /**
+* Find the maximum value in am array of numbers
 * @param {(Array.<number>|undefined)} array of number
 * @return {number} the maximum of input array
 */
@@ -360,6 +385,7 @@ gmf.lidarProfile.utils.prototype.arrayMax = function(array) {
 };
 
 /**
+* Find the minimum value in am array of numbers
 * @param {Array.<number>|undefined} array of number
 * @return {number} the minimum of input array
 */
@@ -375,6 +401,7 @@ gmf.lidarProfile.utils.prototype.arrayMin = function(array) {
 };
 
 /**
+* Create an UUID unique identifier
 * @return {string} uuid
 */
 gmf.lidarProfile.utils.prototype.UUID = function() {
@@ -393,6 +420,7 @@ gmf.lidarProfile.utils.prototype.UUID = function() {
 };
 
 /**
+* Transform Openlayers linestring into a cPotree compatible definition
 * @param {ol.geom.LineString} line the profile 2D line
 * @return {string} linestring in a cPotree/pytree compatible string definition
 */
@@ -408,13 +436,12 @@ gmf.lidarProfile.utils.prototype.getPytreeLinestring = function(line) {
 };
 
 /**
- * Find the profile's closest point to the mouse position
+ * Find the profile's closest point in profile data to the chart mouse position
  * @param {gmfx.LidarProfilePoints} points Object containing points properties as arrays
  * @param {number} xs mouse x coordinate on canvas element
  * @param {number} ys mouse y coordinate on canvas element
  * @param {number} tolerance snap sensibility
  * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
- * @export
 */
 gmf.lidarProfile.utils.prototype.getClosestPoint = function(points, xs, ys, tolerance) {
   const d = points;

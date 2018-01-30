@@ -120,7 +120,7 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
   this.pointAttributes;
 
   /**
-  * @type {Object}
+  * @type {gmf.lidarProfile}
   **/
   this.profile =  new gmf.lidarProfile(this.gmfLidarProfileConfig);
 
@@ -175,7 +175,7 @@ gmf.LidarPanelController.prototype.clearMeasure = function() {
 };
 
 /**
- * Gets the available classifications for this dataset
+ * Reload and reset the plot for the current profile (reloads data)
  * @export
  */
 gmf.LidarPanelController.prototype.resetPlot = function() {
@@ -185,7 +185,7 @@ gmf.LidarPanelController.prototype.resetPlot = function() {
 
 
 /**
- * Gets the available classifications for this dataset
+ * Get the available classifications for this dataset
  * @export
  * @return {Object} classification list
  */
@@ -194,7 +194,7 @@ gmf.LidarPanelController.prototype.getClassification = function() {
 };
 
 /**
- * Gets the avalaible point attributes for this dataset
+ * Get the avalaible point attributes for this dataset
  * @export
  * @return {gmfx.lidarPointAttributeList} this.pointAttributes
  */
@@ -203,7 +203,7 @@ gmf.LidarPanelController.prototype.getPointAttributes = function() {
 };
 
 /**
- * The the selected point attribute
+ * Get the selected point attribute
  * @export
  * @return {gmfx.lidarPointAttribute} this.pointAttributes
  */
@@ -214,7 +214,7 @@ gmf.LidarPanelController.prototype.getSelectedAttribute = function() {
 /**
  * Set the profile points color for the selected attribute (material)
  * @export
- * @param {string} material the material string code
+ * @param {string} material string code
  */
 gmf.LidarPanelController.prototype.setDefaultAttribute = function(material) {
   this.gmfLidarProfileConfig.profileConfig.defaultAttribute = material;
@@ -224,7 +224,7 @@ gmf.LidarPanelController.prototype.setDefaultAttribute = function(material) {
 };
 
 /**
- * Get the width og the profile
+ * Get the width of the profile
  * @export
  * @return {number} width of the profile
  */
@@ -236,8 +236,8 @@ gmf.LidarPanelController.prototype.getWidth = function() {
 /**
  * Sets the visible classification in the profile
  * @export
- * @param {gmfx.lidarPointClassification} classification the classification
- * @param {number} key the classification code
+ * @param {gmfx.lidarPointClassification} classification selected value
+ * @param {number} key of the classification code
  */
 gmf.LidarPanelController.prototype.setClassification = function(classification, key) {
   this.gmfLidarProfileConfig.profileConfig.classification[key].visible = classification.visible;
@@ -251,7 +251,7 @@ gmf.LidarPanelController.prototype.setClassification = function(classification, 
  * Sets the profil width and request new profile from Pytree
  * Sets the width of the profile and get a new profile from Pytree
  * @export
- * @param {number} profileWidth set the width using user inputs and redraw the profile
+ * @param {number} profileWidth set the width using user inputs and reload the profile
  */
 gmf.LidarPanelController.prototype.setWidth = function(profileWidth) {
   this.gmfLidarProfileConfig.profileConfig.profilWidth = profileWidth;
@@ -275,7 +275,7 @@ gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
 };
 
 /**
- * Export the profile to CSV file
+ * Export the profile data to CSV file
  * @export
  */
 gmf.LidarPanelController.prototype.csvExport = function() {
