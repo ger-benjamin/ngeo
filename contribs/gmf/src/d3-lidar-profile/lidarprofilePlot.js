@@ -3,25 +3,34 @@ goog.provide('gmf.lidarProfile.plot');
 /**
 * @constructor
 * @param {Object} options to be defined in gmfx
-* @param {Object} parent to be defined in gmfx
+* @param {gmf.lidarProfile} parent instance
 */
 gmf.lidarProfile.plot = function(options, parent) {
 
 /**
  * @type {Object}
+ * @export
  */
   this.options = options;
 
+  /**
+  * @type {gmf.lidarProfile}
+  * @private
+  */
   this.parent_ = parent;
 
-  this.utils = new gmf.lidarProfile.utils(options, null);
+  /**
+  * @type {gmf.lidarProfile.utils}
+  * @private
+  */
+  this.utils_ = new gmf.lidarProfile.utils(options, null);
 
 };
 
 /**
  * Draw the points to the canvas element
- * @param {gmfx.LidarProfilePoints} points Object containing arrays of point properties
- * @param {string} material material used to determine point color
+ * @param {gmfx.LidarProfilePoints} points of the profile
+ * @param {string} material used to determine point color
  * @export
 */
 gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
@@ -45,10 +54,13 @@ gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
 
       ctx.beginPath();
       ctx.moveTo(cx, cy);
+
       if (material == 'COLOR_PACKED') {
         ctx.fillStyle = `RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       } else if (material == 'INTENSITY') {
         ctx.fillStyle = `RGB(${intensity}, ${intensity}, ${intensity})`;
+      } else if (material == 'RGB') {
+        ctx.fillStyle = `RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       } else if (material == 'CLASSIFICATION') {
         ctx.fillStyle = `RGB(${profileConfig.classification[classification].color})`;
       } else {
@@ -56,12 +68,13 @@ gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
       }
       ctx.arc(cx, cy, profileConfig.pointSize, 0, 2 * Math.PI, false);
       ctx.fill();
+
     }
   }
 };
 
 /**
- * Setupt the SVG components of the d3 chart
+ * Setup the SVG components of the d3 chart
  * @param {Array.<number>} rangeX range of the x scale
  * @param {Array.<number>} rangeY range of the y scale
  * @export
@@ -78,6 +91,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
   const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
   const width = containerWidth - (margin.left + margin.right);
   const height = containerHeight - (margin.top + margin.bottom);
+
   d3.select('#profileCanvas')
     .attr('height', height)
     .attr('width', width)
@@ -120,7 +134,9 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
 
   this.options.profileConfig.scaleX = sx;
   this.options.profileConfig.scaleY = sy;
+
   const that = this;
+
   function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
       if (d3.event.sourceEvent.movementX == 0 && d3.event.sourceEvent.movementY == 0) {
@@ -135,6 +151,7 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
     const xAxis = d3.axisBottom(sx);
     const yAxis = d3.axisLeft(sy)
       .tickSize(-width);
+
     svg.select('.x.axis').call(xAxis.scale(tr.rescaleX(sx)));
     svg.select('.y.axis').call(yAxis.scale(tr.rescaleY(sy)));
     ctx.clearRect(0, 0, width, height);
@@ -158,16 +175,15 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
     ctx.clearRect(0, 0, width, height);
     that.parent_.loader.updateData();
   }
+
   zoom.on('end', zoomEnd);
-  // TODO: check behaviour!!
-  // zoom.on('start', this.loader.abortPendingRequests);
 
   d3.select('svg#profileSVG')
     .call(zoom)
     .on('dblclick.zoom', null);
 
-
   d3.select('svg#profileSVG').selectAll('*').remove();
+
   const svg = d3.select('svg#profileSVG')
     .attr('width', width + margin.left)
     .attr('height', height + margin.top + margin.bottom);
@@ -205,9 +221,9 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
 };
 
 /**
- * Update the Openlayers overlay that shows point position and attributes
+ * Update the Openlayers overlay that displays point position and attributes values
  * @export
- * @param {Object} that scope of the plot class
+ * @param {gmf.lidarProfile.plot} that scope of the plot class
 */
 gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 
@@ -220,7 +236,9 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
   const sx = that.options.profileConfig.scaleX;
   const sy = that.options.profileConfig.scaleY;
   let cx, cy;
-  const p = that.utils.getClosestPoint(that.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = that.utils_.getClosestPoint(that.parent_.loader.profilePoints,
+    canvasCoordinates[0], canvasCoordinates[1], tolerance);
+
   if (p != undefined) {
 
     cx = sx(p.distance) + margin.left;
@@ -275,27 +293,31 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 };
 
 /**
-* Change the profile style according to the material
-* @param {string} material sets profile points colors
+* Change the profile style according to the material color
+* @param {string} material value as defined in Pytree attribute configuration
 * @export
 */
 gmf.lidarProfile.plot.prototype.changeStyle = function(material) {
+
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
   this.drawPoints(this.parent_.loader.profilePoints, material);
+
 };
 
 /**
 * Show/Hide classes in the profile
-* @param {gmfx.lidarPointAttribute} classification classification object
-* @param {string} material sets profile points colors
+* @param {gmfx.lidarPointAttribute} classification value as defined in the Pytree classification_colors configuration
+* @param {string} material  value as defined in Pytree attribute configuration
 * @export
 */
 gmf.lidarProfile.plot.prototype.setClassActive = function(classification, material) {
+
   this.options.profileConfig.classification = classification;
   const ctx = d3.select('#profileCanvas')
     .node().getContext('2d');
   ctx.clearRect(0, 0, d3.select('#profileCanvas').node().width, d3.select('#profileCanvas').node().height);
   this.drawPoints(this.parent_.loader.profilePoints, material);
+
 };

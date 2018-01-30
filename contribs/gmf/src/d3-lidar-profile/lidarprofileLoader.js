@@ -4,24 +4,21 @@ goog.provide('gmf.lidarProfile.loader');
 /**
 * @constructor
 * @param {Object} options to be defined in gmfx
-* @param {Object} plot to be defined in gmfx
+* @param {gmf.lidarProfile.plot} plot instance
 */
 gmf.lidarProfile.loader = function(options, plot) {
 
   /**
   * @type {Object}
+  * @export
   */
   this.options = options;
 
   /**
-  * @type {Object}
+  * @type {gmf.lidarProfile.plot}
+  * @private
   */
-  this.plot = plot;
-
-  /**
-  * @type {ol.Map}
-  */
-  this.map = null;
+  this.plot_ = plot;
 
   /**
   * @type {ol.Overlay}
@@ -54,7 +51,6 @@ gmf.lidarProfile.loader = function(options, plot) {
   * @type {ol.layer.Vector}
   * @export
   */
-
   this.lidarBuffer = new ol.layer.Vector({
     source: new ol.source.Vector({
     })
@@ -103,7 +99,6 @@ gmf.lidarProfile.loader = function(options, plot) {
 * @param {ol.Map} map of the desktop app
 */
 gmf.lidarProfile.loader.prototype.setMap = function(map) {
-  this.map = map;
   this.cartoHighlight.setMap(map);
   this.lidarPointHighlight.setMap(map);
   this.lidarBuffer.setMap(map);
@@ -339,11 +334,11 @@ gmf.lidarProfile.loader.prototype.processBuffer = function(profile, iter, distan
 
     rangeY = [this.utils.arrayMin(points.altitude), this.utils.arrayMax(points.altitude)];
     if (iter == 0 && resetPlot) {
-      this.plot.setupPlot(rangeX, rangeY);
-      this.plot.drawPoints(points, this.options.profileConfig.defaultAttribute);
+      this.plot_.setupPlot(rangeX, rangeY);
+      this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
 
     } else {
-      this.plot.drawPoints(points, this.options.profileConfig.defaultAttribute);
+      this.plot_.drawPoints(points, this.options.profileConfig.defaultAttribute);
     }
 
   } catch (e) {
@@ -373,11 +368,11 @@ gmf.lidarProfile.loader.prototype.updateData = function() {
   if (Math.abs(domainX[0] - this.options.profileConfig.previousDomainX[0]) < xTolerance &&
       Math.abs(domainX[1] - this.options.profileConfig.previousDomainX[1]) < xTolerance) {
 
-    this.plot.drawPoints(this.profilePoints,
+    this.plot_.drawPoints(this.profilePoints,
       this.options.profileConfig.defaultAttribute);
   } else {
     if (maxLODWidth.maxLOD <= this.options.profileConfig.initialLOD) {
-      this.plot.drawPoints(this.profilePoints,
+      this.plot_.drawPoints(this.profilePoints,
         this.options.profileConfig.defaultAttribute);
     } else {
       this.getProfileByLOD(clip.distanceOffset, false, 0);

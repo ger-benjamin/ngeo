@@ -4,7 +4,7 @@ goog.provide('gmf.lidarProfile.measure');
 /**
 * @constructor
 * @param {Object} options to be defined in gmfx
-* @param {Object} parent the parent class
+* @param {gmf.lidarProfile} parent instance
 */
 gmf.lidarProfile.measure = function(options, parent) {
 
