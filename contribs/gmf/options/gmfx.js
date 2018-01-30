@@ -139,6 +139,31 @@ gmfx.LidarProfilePoints;
 gmfx.lidarPoint;
 
 /**
+ * Profile measure
+ * @typedef {{
+ * pStart: {
+ * distance: (number|undefined),
+ * altitude: (number|undefined),
+ * color_packed: Array<(number|undefined)>,
+ * coords: Array<(number|undefined)>,
+ * intensity: (number|undefined),
+ * classification: (number|undefined),
+ * set: (boolean|undefined)
+ * },
+ * pEnd: {
+ * distance: (number|undefined),
+ * altitude: (number|undefined),
+ * color_packed: Array<(number|undefined)>,
+ * coords: Array<(number|undefined)>,
+ * intensity: (number|undefined),
+ * classification: (number|undefined),
+ * set: (boolean|undefined)
+ * }
+ * }}
+ */
+gmfx.lidarMeasure;
+
+/**
  * The lidar point attribute: describes the point binary property, material, visibility, ...
  * @typedef {{
  *   bytes: (string|undefined),

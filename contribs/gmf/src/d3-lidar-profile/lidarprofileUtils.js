@@ -16,7 +16,7 @@ gmf.lidarProfile.utils = function(options, profilePoints) {
 
   /**
   * The variable where all points of the profile are stored
-  * @type {Object}
+  * @type {(gmfx.LidarProfilePoints|null)}
   * @export
   */
   this.profilePoints = profilePoints;

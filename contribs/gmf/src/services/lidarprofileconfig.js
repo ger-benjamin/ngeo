@@ -4,6 +4,8 @@ goog.require('gmf');
 
 
 /**
+ * Configuration service to configure the gmf.lidarPanelComponent and gmf.lidarProfile instance
+ * Requires a Pytree service: https://github.com/sitn/pytree
  * @constructor
  * @struct
  * @param {angular.$http} $http Angular http service.
@@ -80,6 +82,7 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
 };
 
 /**
+* Initialize the service variables from Pytree profile_config_gmf2 route
 * @export
 * @return {Object} configuration values
 */
