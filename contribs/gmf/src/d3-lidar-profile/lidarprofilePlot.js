@@ -158,7 +158,6 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
       .style('opacity', '0.5')
       .style('stroke', '#b7cff7');
 
-    that.options.profileConfig.currentZoom = tr.k;
     that.options.profileConfig.scaleX = tr.rescaleX(sx);
     that.options.profileConfig.scaleY = tr.rescaleY(sy);
   }

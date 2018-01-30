@@ -297,7 +297,7 @@ gmf.LidarPanelController.prototype.pngExport = function() {
 gmf.LidarPanelController.prototype.update_ = function() {
 
   if (this.line) {
-    this.gmfLidarProfileConfig.olLinestring = this.line;
+    this.profile.loader.setLine(this.line);
     this.profile.loader.clearBuffer();
     this.profile.loader.getProfileByLOD(0, true, this.gmfLidarProfileConfig.profileConfig.minLOD);
 

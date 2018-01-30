@@ -50,7 +50,7 @@ gmf.lidarProfile.utils.prototype.clipLineByMeasure = function(linestring, dLeft,
   let mileage_start = 0;
   let mileage_end = 0;
 
-  const totalLength = this.options.olLinestring.getLength();
+  const totalLength = linestring.getLength();
   const fractionStart = dLeft / totalLength;
   const fractionEnd = dRight / totalLength;
 

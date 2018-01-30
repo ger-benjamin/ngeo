@@ -103,6 +103,11 @@ gmf.lidarProfile.loader = function(options, plot) {
   * @private
   */
   this.isPlotSetup_ = false;
+  /**
+  * @type {ol.geom.LineString}
+  * @private
+  */
+  this.line;
 
   /**
   * @type {gmf.lidarProfile.utils}
@@ -111,6 +116,15 @@ gmf.lidarProfile.loader = function(options, plot) {
 
 };
 
+
+/**
+* Set the line for the profile
+* @export
+* @param {ol.geom.LineString} line that defines the profile
+*/
+gmf.lidarProfile.loader.prototype.setLine = function(line) {
+  this.line = line;
+};
 
 /**
 * Set the map for the ol.layer.Vector layers
@@ -139,17 +153,17 @@ gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, res
   }
 
   d3.select('#lidarError').style('visibility', 'hidden');
-  this.options.pytreeLinestring =  this.utils.getPytreeLinestring(this.options.olLinestring);
+  this.options.pytreeLinestring =  this.utils.getPytreeLinestring(this.line);
 
   let profileLine;
   let maxLODWith;
   if (distanceOffset == 0) {
     profileLine = this.options.pytreeLinestring;
-    maxLODWith = this.utils.getNiceLOD(this.options.olLinestring.getLength());
+    maxLODWith = this.utils.getNiceLOD(this.line.getLength());
   } else {
 
     const domain = this.options.profileConfig.scaleX.domain();
-    const clip = this.utils.clipLineByMeasure(this.options.olLinestring, domain[0], domain[1]);
+    const clip = this.utils.clipLineByMeasure(this.line, domain[0], domain[1]);
     profileLine = '';
     for (let i = 0; i < clip.clippedLine.length; i++) {
       profileLine += `{${clip.clippedLine[i][0]},${clip.clippedLine[i][1]}},`;
@@ -381,7 +395,7 @@ gmf.lidarProfile.loader.prototype.processBuffer_ = function(profile, iter, dista
     }
   }
 
-  const rangeX = [0, this.options.olLinestring.getLength()];
+  const rangeX = [0, this.line.getLength()];
 
   // TODO fix z offset issue in Pytree!
 
@@ -412,7 +426,7 @@ gmf.lidarProfile.loader.prototype.updateData = function() {
   const domainX = scaleX.domain();
   const domainY = scaleY.domain();
 
-  const clip = this.utils.clipLineByMeasure(this.options.olLinestring, domainX[0], domainX[1]);
+  const clip = this.utils.clipLineByMeasure(this.line, domainX[0], domainX[1]);
 
   this.lidarBuffer.getSource().clear();
   this.lidarBuffer.getSource().addFeature(clip.bufferGeom);

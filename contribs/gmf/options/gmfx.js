@@ -184,6 +184,22 @@ gmfx.lidarPointAttribute;
  */
 gmfx.lidarPointAttributeList;
 
+/**
+* @typedef {{
+*  color: (string|undefined),
+*  name: (string|undefined),
+*  value: (string|undefined),
+*  visible: (boolean|undefined)
+*}}
+*/
+gmfx.lidarClassification;
+
+/**
+* @typedef {{
+*   number: gmfx.lidarClassification
+}}
+*/
+gmfx.lidarClassificationObjects;
 
 /**
  * The lidar point classification: describes the point binary property, material, visibility, ...

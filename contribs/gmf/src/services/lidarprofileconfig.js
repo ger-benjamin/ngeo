@@ -20,10 +20,6 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @private
    */
   this.$http_ = $http;
-  /**
-   * @type {ol.geom.LineString}
-   */
-  this.olLinestring = null;
 
   /**
    * @type {string}
@@ -37,10 +33,7 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {Object}
    */
   this.profileConfig.scaleX = {};
-  /**
-   * @type {Object}
-   */
-  this.profileConfig.currentScaleY = {};
+
   /**
    * @type {Array.<number>}
    */
@@ -49,14 +42,7 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {Array.<number>}
    */
   this.profileConfig.previousDomainY = [];
-  /**
-   * @type {number}
-   */
-  this.profileConfig.currentZoom = 1;
-  /**
-   * @type {number}
-   */
-  this.profileConfig.distanceOffset = 0;
+
   /**
    * @type {{left: number, top: number, right: number, bottom: number}}
    */
@@ -78,6 +64,14 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {Object}
    */
   this.profileConfig.pointAttributes = {};
+  /**
+   * @type {Object}
+   */
+  this.profileConfig.pointAttributesRaw;
+  /**
+   * @type {gmfx.lidarClassificationObjects}
+   */
+  this.profileConfig.classification;
 
 };
 
