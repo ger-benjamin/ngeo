@@ -148,6 +148,15 @@ gmf.lidarProfile.loader.prototype.setMap = function(map) {
 */
 gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, resetPlot, minLOD) {
 
+  this.profilePoints = {
+    distance: [],
+    altitude: [],
+    color_packed: [],
+    intensity: [],
+    classification: [],
+    coords: []
+  };
+
   if (resetPlot) {
     this.isPlotSetup_ = false;
   }
