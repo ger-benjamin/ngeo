@@ -42,6 +42,7 @@ gmf.lidarProfile.measure = function(options, parent) {
 
   /**
   * @type {gmf.lidarProfile}
+  * @private
   */
   this.parent_ = parent;
 
