@@ -27,6 +27,12 @@ gmf.lidarProfile.utils = function(options, profilePoints) {
   */
   this.map_ = null;
 
+  /**
+  * @type {Object}
+  * @private
+  */
+  this.exportImage = new Image();
+
 };
 
 /**
@@ -217,36 +223,43 @@ gmf.lidarProfile.utils.prototype.downloadDataUrlFromJavascript = function(filena
 * @export
 */
 gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
-  const margin = this.options.profileConfig.margin;
   const svg = d3.select('#profileSVG').node();
-  const img = new Image();
+  this.exportImage = new Image();
   const DOMURL = window.URL || window.webkitURL || window;
   const serializer = new XMLSerializer();
   const svgStr = serializer.serializeToString(svg);
   const svgImage = new Blob([svgStr], {type: 'image/svg+xml'});
-  const canvas = document.createElement('canvas');
   const url = DOMURL.createObjectURL(svgImage);
-  const that = this;
-  img.onload = function() {
-    canvas.style.display = 'none';
-    document.body.appendChild(canvas);
-    const w = d3.select('#profileSVG').attr('width');
-    const h = d3.select('#profileSVG').attr('height');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, w, h);
-    const pointsCanvas = d3.select('#profileCanvas').node();
-    canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
-    ctx.drawImage(img, 0, 0, w, h);
-    const dataURL = canvas.toDataURL();
 
-    that.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+  this.exportImage = new Image();
 
-    DOMURL.revokeObjectURL(url);
-  };
-  img.src = url;
+  this.exportImage.onload = this.createImage(DOMURL, url);
+  this.exportImage.src = url;
+};
+
+
+gmf.lidarProfile.utils.prototype.createImage = function(DOMURL, url) {
+
+  const margin = this.options.profileConfig.margin;
+  const canvas = document.createElement('canvas');
+
+  canvas.style.display = 'none';
+  document.body.appendChild(canvas);
+  const w = d3.select('#profileSVG').attr('width');
+  const h = d3.select('#profileSVG').attr('height');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, w, h);
+  const pointsCanvas = d3.select('#profileCanvas').node();
+  canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
+  ctx.drawImage(this.exportImage, 0, 0, w, h);
+  const dataURL = canvas.toDataURL();
+
+  this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+
+  DOMURL.revokeObjectURL(url);
 
 };
 
@@ -441,13 +454,13 @@ gmf.lidarProfile.utils.prototype.getPytreeLinestring = function(line) {
  * @param {number} xs mouse x coordinate on canvas element
  * @param {number} ys mouse y coordinate on canvas element
  * @param {number} tolerance snap sensibility
+ * @param {Object} sx x scale
+ * @param {Object} sy yscale
  * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
 */
-gmf.lidarProfile.utils.prototype.getClosestPoint = function(points, xs, ys, tolerance) {
+gmf.lidarProfile.utils.prototype.getClosestPoint = function(points, xs, ys, tolerance, sx, sy) {
   const d = points;
   const tol = tolerance;
-  const sx = this.options.profileConfig.scaleX;
-  const sy = this.options.profileConfig.scaleY;
   const distances = [];
   const hP = [];
 

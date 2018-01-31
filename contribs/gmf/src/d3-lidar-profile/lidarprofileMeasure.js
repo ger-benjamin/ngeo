@@ -110,10 +110,11 @@ gmf.lidarProfile.measure.prototype.measureHeigt = function() {
   const xs = svgCoordinates[0];
   const ys = svgCoordinates[1];
   const tolerance = 2;
-  const sx = this.options_.profileConfig.scaleX;
-  const sy = this.options_.profileConfig.scaleY;
+  const sx = this.parent_.plot.scaleX;
+  const sy = this.parent_.plot.scaleY;
   const pointSize = 3;
-  const p = this.parent_.loader.utils.getClosestPoint(this.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = this.parent_.loader.utils.getClosestPoint(this.parent_.loader.profilePoints,
+    canvasCoordinates[0], canvasCoordinates[1], tolerance, this.parent_.plot.scaleX, this.parent_.plot.scaleY);
   if (!this.profileMeasure_.pStart.set) {
 
     if (p !== undefined) {

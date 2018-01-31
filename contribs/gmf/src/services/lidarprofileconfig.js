@@ -30,19 +30,6 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
    * @type {Object}
    */
   this.profileConfig = {};
-  /**
-   * @type {Object}
-   */
-  this.profileConfig.scaleX = {};
-
-  /**
-   * @type {Array.<number>}
-   */
-  this.profileConfig.previousDomainX = [];
-  /**
-   * @type {Array.<number>}
-   */
-  this.profileConfig.previousDomainY = [];
 
   /**
    * @type {{left: number, top: number, right: number, bottom: number}}

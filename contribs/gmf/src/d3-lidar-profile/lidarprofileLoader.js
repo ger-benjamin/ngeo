@@ -171,7 +171,7 @@ gmf.lidarProfile.loader.prototype.getProfileByLOD = function(distanceOffset, res
     maxLODWith = this.utils.getNiceLOD(this.line.getLength());
   } else {
 
-    const domain = this.options.profileConfig.scaleX.domain();
+    const domain = this.plot_.scaleX.domain();
     const clip = this.utils.clipLineByMeasure(this.line, domain[0], domain[1]);
     profileLine = '';
     for (let i = 0; i < clip.clippedLine.length; i++) {
@@ -302,7 +302,6 @@ gmf.lidarProfile.loader.prototype.processBuffer_ = function(profile, iter, dista
     JSON.parse(strHeaderLocal);
 
   } catch (e) {
-    console.log(this.isPlotSetup_);
     if (!this.isPlotSetup_) {
       const canvasEl = d3.select('#profileCanvas').node();
       const ctx = d3.select('#profileCanvas')
@@ -430,11 +429,9 @@ gmf.lidarProfile.loader.prototype.processBuffer_ = function(profile, iter, dista
 * @export
 */
 gmf.lidarProfile.loader.prototype.updateData = function() {
-  const scaleX = this.options.profileConfig.scaleX;
-  const scaleY = this.options.profileConfig.scaleY;
-  const domainX = scaleX.domain();
-  const domainY = scaleY.domain();
 
+  const domainX = this.plot_.scaleX.domain();
+  const domainY = this.plot_.scaleY.domain();
   const clip = this.utils.clipLineByMeasure(this.line, domainX[0], domainX[1]);
 
   this.lidarBuffer.getSource().clear();
@@ -445,8 +442,8 @@ gmf.lidarProfile.loader.prototype.updateData = function() {
   const maxLODWidth = this.utils.getNiceLOD(span);
   const xTolerance = 0.2;
 
-  if (Math.abs(domainX[0] - this.options.profileConfig.previousDomainX[0]) < xTolerance &&
-      Math.abs(domainX[1] - this.options.profileConfig.previousDomainX[1]) < xTolerance) {
+  if (Math.abs(domainX[0] - this.plot_.previousDomainX[0]) < xTolerance &&
+      Math.abs(domainX[1] - this.plot_.previousDomainX[1]) < xTolerance) {
 
     this.plot_.drawPoints(this.profilePoints,
       this.options.profileConfig.defaultAttribute);
@@ -461,8 +458,8 @@ gmf.lidarProfile.loader.prototype.updateData = function() {
     }
   }
 
-  this.options.profileConfig.previousDomainX = domainX;
-  this.options.profileConfig.previousDomainY = domainY;
+  this.plot_.previousDomainX = domainX;
+  this.plot_.previousDomainY = domainY;
 
 };
 

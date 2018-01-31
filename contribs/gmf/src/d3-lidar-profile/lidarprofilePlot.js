@@ -25,6 +25,40 @@ gmf.lidarProfile.plot = function(options, parent) {
   */
   this.utils_ = new gmf.lidarProfile.utils(options, null);
 
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.scaleX;
+
+  /**
+   * @type {Object}
+   * @export
+   */
+  this.scaleY;
+
+  /**
+   * @type {number}
+   * @export
+   */
+  this.width;
+
+  /**
+   * @type {number}
+   * @export
+   */
+  this.height;
+  /**
+   * @type {Array.<number>}
+   * @export
+   */
+  this.previousDomainX = [];
+  /**
+   * @type {Array.<number>}
+   * @export
+   */
+  this.previousDomainY = [];
+
 };
 
 /**
@@ -49,8 +83,8 @@ gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
     const classification = points.classification[i];
     if (profileConfig.classification[classification] && profileConfig.classification[classification].visible) {
 
-      cx = profileConfig.scaleX(distance);
-      cy = profileConfig.scaleY(altitude);
+      cx = this.scaleX(distance);
+      cy = this.scaleY(altitude);
 
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -87,12 +121,12 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
   const margin = this.options.profileConfig.margin;
   const containerWidth = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().width;
   const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
-  const width = containerWidth - (margin.left + margin.right);
-  const height = containerHeight - (margin.top + margin.bottom);
+  this.width = containerWidth - (margin.left + margin.right);
+  this.height = containerHeight - (margin.top + margin.bottom);
 
   d3.select('#profileCanvas')
-    .attr('height', height)
-    .attr('width', width)
+    .attr('height', this.height)
+    .attr('width', this.width)
     .style('background-color', 'black')
     .style('z-index', 0)
     .style('position', 'absolute')
@@ -102,78 +136,44 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
   const domainProfileWidth = rangeX[1] - rangeX[0];
   const domainProfileHeight = rangeY[1] - rangeY[0];
   const domainRatio = domainProfileWidth / domainProfileHeight;
-  const rangeProfileWidth = width;
-  const rangeProfileHeight = height;
+  const rangeProfileWidth = this.width;
+  const rangeProfileHeight = this.height;
   const rangeRatio = rangeProfileWidth / rangeProfileHeight;
 
-  let sx, sy, domainScale;
+  let domainScale;
   if (domainRatio < rangeRatio) {
     const domainScale = rangeRatio / domainRatio;
     const domainScaledWidth = domainProfileWidth * domainScale;
-    sx = d3.scaleLinear()
+    this.scaleX = d3.scaleLinear()
       .domain([0, domainScaledWidth])
-      .range([0, width]);
-    sy = d3.scaleLinear()
+      .range([0, this.width]);
+    this.scaleY = d3.scaleLinear()
       .domain(rangeY)
-      .range([height, 0]);
+      .range([this.height, 0]);
   } else {
     domainScale =  domainRatio / rangeRatio;
     const domainScaledHeight = domainProfileHeight * domainScale;
     const domainHeightCentroid = (rangeY[1] + rangeY[0]) / 2;
-    sx = d3.scaleLinear()
+    this.scaleX = d3.scaleLinear()
       .domain(rangeX)
-      .range([0, width]);
-    sy = d3.scaleLinear()
+      .range([0, this.width]);
+    this.scaleY = d3.scaleLinear()
       .domain([
         domainHeightCentroid - domainScaledHeight / 2,
         domainHeightCentroid + domainScaledHeight / 2])
-      .range([height, 0]);
-  }
-
-  this.options.profileConfig.scaleX = sx;
-  this.options.profileConfig.scaleY = sy;
-
-  const that = this;
-
-  function zoomed() {
-    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
-      if (d3.event.sourceEvent.movementX == 0 && d3.event.sourceEvent.movementY == 0) {
-        return;
-      }
-    }
-
-    that.parent_.measure.clearMeasure();
-
-    const tr = d3.event.transform;
-    const svg = d3.select('svg#profileSVG');
-    const xAxis = d3.axisBottom(sx);
-    const yAxis = d3.axisLeft(sy)
-      .tickSize(-width);
-
-    svg.select('.x.axis').call(xAxis.scale(tr.rescaleX(sx)));
-    svg.select('.y.axis').call(yAxis.scale(tr.rescaleY(sy)));
-    ctx.clearRect(0, 0, width, height);
-
-    svg.select('.y.axis').selectAll('g.tick line')
-      .style('opacity', '0.5')
-      .style('stroke', '#b7cff7');
-
-    that.options.profileConfig.scaleX = tr.rescaleX(sx);
-    that.options.profileConfig.scaleY = tr.rescaleY(sy);
+      .range([this.height, 0]);
   }
 
   const zoom = d3.zoom()
     .scaleExtent([1, 100])
-    .translateExtent([[0, 0], [width, height]])
-    .extent([[0, 0], [width, height]])
-    .on('zoom', zoomed);
+    .translateExtent([[0, 0], [this.width, this.height]])
+    .extent([[0, 0], [this.width, this.height]])
+    .on('zoom', this.zoomed.bind(this));
 
-  function zoomEnd() {
-    ctx.clearRect(0, 0, width, height);
-    that.parent_.loader.updateData();
-  }
+  zoom.on('end', this.zoomEnd.bind(this));
 
-  zoom.on('end', zoomEnd);
+  this.previousDomainX = this.scaleX.domain();
+  this.previousDomainY = this.scaleY.domain();
 
   d3.select('svg#profileSVG')
     .call(zoom)
@@ -182,18 +182,19 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
   d3.select('svg#profileSVG').selectAll('*').remove();
 
   const svg = d3.select('svg#profileSVG')
-    .attr('width', width + margin.left)
-    .attr('height', height + margin.top + margin.bottom);
+    .attr('width', this.width + margin.left)
+    .attr('height', this.height + margin.top + margin.bottom);
 
   d3.select('svg#profileSVG')
     .on('mousemove', () => {
-      that.pointHighlight(that);
+      this.pointHighlight.bind(this);
     });
 
 
-  const xAxis = d3.axisBottom(sx);
-  const yAxis = d3.axisLeft(sy)
-    .tickSize(-width);
+  const xAxis = d3.axisBottom(this.scaleX);
+  const yAxis = d3.axisLeft(this.scaleY)
+    .tickSize(-this.width);  this.previousDomainX = this.scaleX.domain();
+  this.previousDomainY = this.scaleY.domain();
 
   svg.select('.y.axis').selectAll('g.tick line').style('stroke', '#b7cff7');
 
@@ -206,40 +207,76 @@ gmf.lidarProfile.plot.prototype.setupPlot = function(rangeX, rangeY) {
     .call(xAxis);
 
   svg.select('.y.axis').attr('transform', `translate(${margin.left}, ${margin.top})`);
-  svg.select('.x.axis').attr('transform', `translate(${margin.left}, ${height + margin.top})`);
+  svg.select('.x.axis').attr('transform', `translate(${margin.left}, ${this.height + margin.top})`);
 
   svg.select('.y.axis').selectAll('g.tick line')
     .style('opacity', '0.5')
     .style('stroke', '#b7cff7');
 
-  this.options.profileConfig.previousDomainX = sx.domain();
-  this.options.profileConfig.previousDomainY = sy.domain();
+  this.previousDomainX = this.scaleX.domain();
+  this.previousDomainY = this.scaleY.domain();
 
+};
+
+gmf.lidarProfile.plot.prototype.zoomEnd = function() {
+  const ctx = d3.select('#profileCanvas')
+    .node().getContext('2d');
+  ctx.clearRect(0, 0, this.width, this.height);
+  this.parent_.loader.updateData();
+};
+
+gmf.lidarProfile.plot.prototype.zoomed = function() {
+
+  if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
+    if (d3.event.sourceEvent.movementX == 0 && d3.event.sourceEvent.movementY == 0) {
+      return;
+    }
+  }
+
+  this.parent_.measure.clearMeasure();
+
+  const tr = d3.event.transform;
+  const svg = d3.select('svg#profileSVG');
+  const xAxis = d3.axisBottom(this.scaleX);
+  const yAxis = d3.axisLeft(this.scaleY)
+    .tickSize(-this.width);
+
+  svg.select('.x.axis').call(xAxis.scale(tr.rescaleX(this.scaleX)));
+  svg.select('.y.axis').call(yAxis.scale(tr.rescaleY(this.scaleY)));
+  const ctx = d3.select('#profileCanvas')
+    .node().getContext('2d');
+  ctx.clearRect(0, 0, this.width, this.height);
+
+  svg.select('.y.axis').selectAll('g.tick line')
+    .style('opacity', '0.5')
+    .style('stroke', '#b7cff7');
+
+  this.scaleX = tr.rescaleX(this.scaleX);
+  this.scaleY = tr.rescaleY(this.scaleY);
+  console.log(this);
 };
 
 /**
  * Update the Openlayers overlay that displays point position and attributes values
  * @export
- * @param {gmf.lidarProfile.plot} that scope of the plot class
 */
-gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
+gmf.lidarProfile.plot.prototype.pointHighlight = function() {
 
   const svg = d3.select('svg#profileSVG');
-  const pointSize = that.options.profileConfig.pointSize;
-  const margin = that.options.profileConfig.margin;
-  const tolerance = that.options.profileConfig.tolerance;
+  const pointSize = this.options.profileConfig.pointSize;
+  const margin = this.options.profileConfig.margin;
+  const tolerance = this.options.profileConfig.tolerance;
 
   const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-  const sx = that.options.profileConfig.scaleX;
-  const sy = that.options.profileConfig.scaleY;
+
   let cx, cy;
-  const p = that.utils_.getClosestPoint(that.parent_.loader.profilePoints,
-    canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  const p = this.utils_.getClosestPoint(this.parent_.loader.profilePoints,
+    canvasCoordinates[0], canvasCoordinates[1], tolerance, this.scaleX, this.scaleY);
 
   if (p != undefined) {
 
-    cx = sx(p.distance) + margin.left;
-    cy = sy(p.altitude) + margin.top;
+    cx = this.scaleX(p.distance) + margin.left;
+    cy = this.scaleY(p.altitude) + margin.top;
 
     svg.selectAll('#highlightCircle').remove();
 
@@ -252,20 +289,20 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
 
     const html = `Distance: ${Math.round(10 * p.distance) / 10}<br>
     Altitude: ${Math.round(10 * p.altitude) / 10}<br>
-    Classification: ${that.options.profileConfig.classification[p.classification].name}<br>
+    Classification: ${this.options.profileConfig.classification[p.classification].name}<br>
     Intensity: ${p.intensity}<br>`;
 
     d3.select('#profileInfo')
       .html(html);
-    that.parent_.loader.cartoHighlight.setElement(null);
+    this.parent_.loader.cartoHighlight.setElement(null);
     const el = document.createElement('div');
     el.className += 'tooltip gmf-tooltip-measure';
     el.innerHTML = html;
 
-    that.parent_.loader.cartoHighlight.setElement(el);
-    that.parent_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
-    const classifColor = that.options.profileConfig.classification[p.classification].color;
-    that.parent_.loader.lidarPointHighlight.getSource().clear();
+    this.parent_.loader.cartoHighlight.setElement(el);
+    this.parent_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
+    const classifColor = this.options.profileConfig.classification[p.classification].color;
+    this.parent_.loader.lidarPointHighlight.getSource().clear();
     const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
     const lidarPointFeature = new ol.Feature(lidarPointGeom);
     if (typeof (classifColor) !== undefined) {
@@ -280,12 +317,12 @@ gmf.lidarProfile.plot.prototype.pointHighlight = function(that) {
       }));
     }
 
-    that.parent_.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
+    this.parent_.loader.lidarPointHighlight.getSource().addFeature(lidarPointFeature);
   } else {
-    that.parent_.loader.lidarPointHighlight.getSource().clear();
+    this.parent_.loader.lidarPointHighlight.getSource().clear();
     svg.select('#highlightCircle').remove();
     d3.select('#profileInfo').html('');
-    that.parent_.loader.cartoHighlight.setPosition(undefined);
+    this.parent_.loader.cartoHighlight.setPosition(undefined);
   }
 };
 
