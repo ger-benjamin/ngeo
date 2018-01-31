@@ -97,7 +97,6 @@ gmf.lidarProfile.measure.prototype.clearMeasure = function() {
 gmf.lidarProfile.measure.prototype.setMeasureActive = function() {
 
   const that = this;
-
   d3.select('svg#profileSVG').style('cursor', 'pointer');
 
   function measureHeigt() {

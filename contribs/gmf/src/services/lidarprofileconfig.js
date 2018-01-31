@@ -23,6 +23,7 @@ gmf.LidarProfileConfig = function($http, pytreeLidarProfileJsonUrl) {
 
   /**
    * @type {string}
+   * @private
    */
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
   /**

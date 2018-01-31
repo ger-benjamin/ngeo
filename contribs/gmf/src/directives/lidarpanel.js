@@ -2,21 +2,13 @@ goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
 goog.require('gmf.lidarProfile');
-/**
-* @suppress {extraRequire}
-*/
+/** @suppress {extraRequire}*/
 goog.require('gmf.lidarProfile.loader');
-/**
-* @suppress {extraRequire}
-*/
+/** @suppress {extraRequire}*/
 goog.require('gmf.lidarProfile.plot');
-/**
-* @suppress {extraRequire}
-*/
+/** @suppress {extraRequire}*/
 goog.require('gmf.lidarProfile.utils');
-/**
-* @suppress {extraRequire}
-*/
+/** @suppress {extraRequire}*/
 goog.require('gmf.lidarProfile.measure');
 goog.require('ol.geom.LineString');
 
@@ -167,7 +159,6 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig, ngeoToolActiv
  * @private
  */
 gmf.LidarPanelController.prototype.$onInit = function() {
-  this.line = this.line;
   this.active = this.active;
   this.gmfLidarProfileConfig.initProfileConfig().then((resp) => {
     this.ready = true;

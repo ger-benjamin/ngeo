@@ -35,12 +35,12 @@ gmf.lidarProfile.plot = function(options, parent) {
 */
 gmf.lidarProfile.plot.prototype.drawPoints = function(points, material) {
   let i = -1;
-  const n = points.distance.length;
+  const nPoints = points.distance.length;
   let cx, cy;
   const ctx = d3.select('#profileCanvas').node().getContext('2d');
   const profileConfig = this.options.profileConfig;
 
-  while (++i < n) {
+  while (++i < nPoints) {
 
     const distance = points.distance[i];
     const altitude = points.altitude[i];
