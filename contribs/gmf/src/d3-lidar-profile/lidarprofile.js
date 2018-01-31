@@ -12,16 +12,9 @@ goog.provide('gmf.lidarProfile');
 gmf.lidarProfile = function(options) {
 
   /**
-  * The instance of gmf.lidarProfile class used to access loader instance
-  * properties and methods from plot and measure instances
-  * @type {gmf.lidarProfile}
-  */
-  const parent = this;
-
-  /**
   * @type {gmf.lidarProfile.plot}
   */
-  this.plot = new gmf.lidarProfile.plot(options, parent);
+  this.plot = new gmf.lidarProfile.plot(options, this);
 
   /**
   * @type {gmf.lidarProfile.loader}
@@ -31,7 +24,7 @@ gmf.lidarProfile = function(options) {
   /**
   * @type {gmf.lidarProfile.measure}
   */
-  this.measure = new gmf.lidarProfile.measure(options, parent);
+  this.measure = new gmf.lidarProfile.measure(options, this);
 
 
 };

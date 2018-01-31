@@ -253,11 +253,11 @@ gmf.lidarProfile.utils.prototype.exportToImageFile = function() {
 /**
 * Turn the profile data into a CSV file containing all available attributes
 * in lidar data set
+* @param {gmfx.LidarProfilePoints} profilePoints in the profile
 * @export
 */
-gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function() {
+gmf.lidarProfile.utils.prototype.getPointsInProfileAsCSV = function(profilePoints) {
 
-  const profilePoints = this.profilePoints;
 
   let file = 'data:text/csv;charset=utf-8,';
 

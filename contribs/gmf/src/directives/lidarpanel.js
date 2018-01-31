@@ -315,7 +315,7 @@ gmf.LidarPanelController.prototype.setAutoWidth = function(autoWidth) {
  */
 gmf.LidarPanelController.prototype.csvExport = function() {
   if (this.line) {
-    this.profile.loader.utils.getPointsInProfileAsCSV();
+    this.profile.loader.utils.getPointsInProfileAsCSV(this.profile.loader.profilePoints);
   }
 };
 
