@@ -96,105 +96,104 @@ gmf.lidarProfile.measure.prototype.clearMeasure = function() {
 */
 gmf.lidarProfile.measure.prototype.setMeasureActive = function() {
 
-  const that = this;
   d3.select('svg#profileSVG').style('cursor', 'pointer');
 
-  function measureHeigt() {
+  d3.select('svg#profileSVG').on('click', this.measureHeigt.bind(this));
 
-    const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-    const margin = that.options_.profileConfig.margin;
-    const svgCoordinates = d3.mouse(this);
-    const xs = svgCoordinates[0];
-    const ys = svgCoordinates[1];
-    const tolerance = 2;
-    const sx = that.options_.profileConfig.scaleX;
-    const sy = that.options_.profileConfig.scaleY;
-    const pointSize = 3;
-    const p = that.parent_.loader.utils.getClosestPoint(that.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
-    if (!that.profileMeasure_.pStart.set) {
+};
 
-      if (p !== undefined) {
+gmf.lidarProfile.measure.prototype.measureHeigt = function() {
 
-        that.profileMeasure_.pStart.distance = p.distance;
-        that.profileMeasure_.pStart.altitude = p.altitude;
-        that.profileMeasure_.pStart.cx = sx(p.distance) + margin.left;
-        that.profileMeasure_.pStart.cy = sy(p.altitude) + margin.top;
+  const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
+  const margin = this.options_.profileConfig.margin;
+  const svgCoordinates = d3.mouse(d3.select('svg#profileSVG').node());
+  const xs = svgCoordinates[0];
+  const ys = svgCoordinates[1];
+  const tolerance = 2;
+  const sx = this.options_.profileConfig.scaleX;
+  const sy = this.options_.profileConfig.scaleY;
+  const pointSize = 3;
+  const p = this.parent_.loader.utils.getClosestPoint(this.parent_.loader.profilePoints, canvasCoordinates[0], canvasCoordinates[1], tolerance);
+  if (!this.profileMeasure_.pStart.set) {
 
-      } else {
+    if (p !== undefined) {
 
-        that.profileMeasure_.pStart.distance = sx.invert(xs);
-        that.profileMeasure_.pStart.altitude = sy.invert(ys);
-        that.profileMeasure_.pStart.cx = xs;
-        that.profileMeasure_.pStart.cy = ys;
+      this.profileMeasure_.pStart.distance = p.distance;
+      this.profileMeasure_.pStart.altitude = p.altitude;
+      this.profileMeasure_.pStart.cx = sx(p.distance) + margin.left;
+      this.profileMeasure_.pStart.cy = sy(p.altitude) + margin.top;
 
-      }
+    } else {
 
-      that.profileMeasure_.pStart.set = true;
-      d3.select('svg#profileSVG').append('circle')
-        .attr('id', 'start_m')
-        .attr('cx', that.profileMeasure_.pStart.cx)
-        .attr('cy', that.profileMeasure_.pStart.cy)
-        .attr('r', pointSize)
-        .style('fill', 'red');
-
-    } else if (!that.profileMeasure_.pEnd.set) {
-      if (p !== undefined) {
-
-        that.profileMeasure_.pEnd.distance = p.distance;
-        that.profileMeasure_.pEnd.altitude = p.altitude;
-        that.profileMeasure_.pEnd.cx = sx(p.distance) + margin.left;
-        that.profileMeasure_.pEnd.cy = sy(p.altitude) + margin.top;
-      } else {
-        that.profileMeasure_.pEnd.distance = sx.invert(xs);
-        that.profileMeasure_.pEnd.altitude = sy.invert(ys);
-        that.profileMeasure_.pEnd.cx = xs;
-        that.profileMeasure_.pEnd.cy = ys;
-
-      }
-
-      that.profileMeasure_.pEnd.set = true;
-      d3.select('svg#profileSVG').append('circle')
-        .attr('id', 'end_m')
-        .attr('cx', that.profileMeasure_.pEnd.cx)
-        .attr('cy', that.profileMeasure_.pEnd.cy)
-        .attr('r', pointSize)
-        .style('fill', 'red');
-
-      d3.select('svg#profileSVG').append('line')
-        .attr('id', 'line_m')
-        .attr('x1', that.profileMeasure_.pStart.cx)
-        .attr('y1', that.profileMeasure_.pStart.cy)
-        .attr('x2', that.profileMeasure_.pEnd.cx)
-        .attr('y2', that.profileMeasure_.pEnd.cy)
-        .attr('stroke-width', 2)
-        .attr('stroke', 'red');
+      this.profileMeasure_.pStart.distance = sx.invert(xs);
+      this.profileMeasure_.pStart.altitude = sy.invert(ys);
+      this.profileMeasure_.pStart.cx = xs;
+      this.profileMeasure_.pStart.cy = ys;
 
     }
 
-    if (that.profileMeasure_.pStart.set && that.profileMeasure_.pEnd.set) {
-      const dH = that.profileMeasure_.pEnd.altitude - that.profileMeasure_.pStart.altitude;
-      const dD = that.profileMeasure_.pEnd.distance - that.profileMeasure_.pStart.distance;
+    this.profileMeasure_.pStart.set = true;
+    d3.select('svg#profileSVG').append('circle')
+      .attr('id', 'start_m')
+      .attr('cx', this.profileMeasure_.pStart.cx)
+      .attr('cy', this.profileMeasure_.pStart.cy)
+      .attr('r', pointSize)
+      .style('fill', 'red');
 
-      const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
+  } else if (!this.profileMeasure_.pEnd.set) {
+    if (p !== undefined) {
 
-      if (!isNaN(height)) {
-        d3.select('#height_measure').html(`Hauteur: ${height}</p>`);
-        d3.select('svg#profileSVG').append('text')
-          .attr('id', 'text_m')
-          .attr('x', 10 + (that.profileMeasure_.pStart.cx + that.profileMeasure_.pEnd.cx) / 2)
-          .attr('y', (that.profileMeasure_.pStart.cy + that.profileMeasure_.pEnd.cy) / 2)
-          .text(`${height} m`)
-          .attr('font-family', 'sans-serif')
-          .attr('font-size', '14px')
-          .style('font-weight', 'bold')
-          .attr('fill', 'red');
-      }
-      that.profileMeasure_.pEnd.set = false;
-      that.profileMeasure_.pStart.set = false;
+      this.profileMeasure_.pEnd.distance = p.distance;
+      this.profileMeasure_.pEnd.altitude = p.altitude;
+      this.profileMeasure_.pEnd.cx = sx(p.distance) + margin.left;
+      this.profileMeasure_.pEnd.cy = sy(p.altitude) + margin.top;
+    } else {
+      this.profileMeasure_.pEnd.distance = sx.invert(xs);
+      this.profileMeasure_.pEnd.altitude = sy.invert(ys);
+      this.profileMeasure_.pEnd.cx = xs;
+      this.profileMeasure_.pEnd.cy = ys;
+
     }
+
+    this.profileMeasure_.pEnd.set = true;
+    d3.select('svg#profileSVG').append('circle')
+      .attr('id', 'end_m')
+      .attr('cx', this.profileMeasure_.pEnd.cx)
+      .attr('cy', this.profileMeasure_.pEnd.cy)
+      .attr('r', pointSize)
+      .style('fill', 'red');
+
+    d3.select('svg#profileSVG').append('line')
+      .attr('id', 'line_m')
+      .attr('x1', this.profileMeasure_.pStart.cx)
+      .attr('y1', this.profileMeasure_.pStart.cy)
+      .attr('x2', this.profileMeasure_.pEnd.cx)
+      .attr('y2', this.profileMeasure_.pEnd.cy)
+      .attr('stroke-width', 2)
+      .attr('stroke', 'red');
 
   }
 
-  d3.select('svg#profileSVG').on('click', measureHeigt);
+  if (this.profileMeasure_.pStart.set && this.profileMeasure_.pEnd.set) {
+    const dH = this.profileMeasure_.pEnd.altitude - this.profileMeasure_.pStart.altitude;
+    const dD = this.profileMeasure_.pEnd.distance - this.profileMeasure_.pStart.distance;
+
+    const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
+
+    if (!isNaN(height)) {
+      d3.select('#height_measure').html(`Hauteur: ${height}</p>`);
+      d3.select('svg#profileSVG').append('text')
+        .attr('id', 'text_m')
+        .attr('x', 10 + (this.profileMeasure_.pStart.cx + this.profileMeasure_.pEnd.cx) / 2)
+        .attr('y', (this.profileMeasure_.pStart.cy + this.profileMeasure_.pEnd.cy) / 2)
+        .text(`${height} m`)
+        .attr('font-family', 'sans-serif')
+        .attr('font-size', '14px')
+        .style('font-weight', 'bold')
+        .attr('fill', 'red');
+    }
+    this.profileMeasure_.pEnd.set = false;
+    this.profileMeasure_.pStart.set = false;
+  }
 
 };
