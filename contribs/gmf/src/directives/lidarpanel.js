@@ -66,16 +66,23 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
 
 
 /**
-  * @param {angular.Scope} $scope Angular scope.
+ * @param {angular.Scope} $scope Angular scope.
  * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
+ * @param {ngeo.ToolActivateMgr} ngeoToolActivateMgr Ngeo ToolActivate manager service
+ * @param {ngeo.ToolActivate} ngeoToolActivate Ngeo ToolActivate service.
  * @constructor
  * @private
  * @ngInject
  * @ngdoc controller
  * @ngname gmfLidarPanelController
  */
-gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
+gmf.LidarPanelController = function($scope, gmfLidarProfileConfig, ngeoToolActivateMgr, ngeoToolActivate) {
   this.gmfLidarProfileConfig = gmfLidarProfileConfig;
+
+  /**
+   * @type {boolean}
+   */
+  this.active;
 
   /**
   * The Openlayers LineString geometry of the profle
@@ -134,6 +141,25 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig) {
       }
     });
 
+  /**
+   * @type {ngeo.ToolActivateMgr}
+   * @private
+   */
+  this.ngeoToolActivateMgr_ = ngeoToolActivateMgr;
+
+  // Initialize the tools inside of the tool manager
+  this.tool = new ngeo.ToolActivate(this, 'active');
+  this.ngeoToolActivateMgr_.registerTool('mapTools', this.tool, false);
+
+
+  $scope.$watch(
+    () => this.active,
+    (newValue, oldValue) => {
+      if (oldValue !== newValue) {
+        this.updateEventsListening_(newValue);
+      }
+    });
+
 };
 
 
@@ -150,6 +176,18 @@ gmf.LidarPanelController.prototype.$onInit = function() {
     this.pointAttributes.selectedOption = this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
 
   });
+};
+
+/**
+ * @param {boolean} activate Activation state of the plugin
+ * @private
+ */
+gmf.LidarPanelController.prototype.updateEventsListening_ = function(activate) {
+  if (activate === true) {
+    this.ngeoToolActivateMgr_.activateTool(this.tool);
+  } else {
+    this.ngeoToolActivateMgr_.deactivateTool(this.tool);
+  }
 };
 
 /**
