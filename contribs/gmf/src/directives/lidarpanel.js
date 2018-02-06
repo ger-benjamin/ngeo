@@ -1,6 +1,7 @@
 goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
+goog.require('gmf.lidarProfile.Config');
 goog.require('gmf.lidarProfile.Manager');
 goog.require('ol.geom.LineString');
 
@@ -51,8 +52,8 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
 
 /**
  * @param {angular.Scope} $scope Angular scope.
- * @param {gmf.LidarProfileManager} gmfLidarProfileManager gmf gmfLidarProfileManager.
- * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
+ * @param {gmf.lidarProfile.Manager} gmfLidarProfileManager gmf gmfLidarProfileManager.
+ * @param {gmf.lidarProfile.Config} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
  * @param {ngeo.ToolActivateMgr} ngeoToolActivateMgr Ngeo ToolActivate manager service
  * @param {ngeo.ToolActivate} ngeoToolActivate Ngeo ToolActivate service.
  * @constructor
@@ -65,12 +66,12 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileManager, gmfLidarProf
   ngeoToolActivateMgr, ngeoToolActivate) {
 
   /**
-   * @type {gmf.LidarProfileConfig}
+   * @type {gmf.lidarProfile.Config}
    */
   this.gmfLidarProfileConfig = gmfLidarProfileConfig;
 
   /**
-   * @type {gmf.LidarProfileConfig}
+   * @type {gmf.lidarProfile.Manager}
    */
   this.profile = gmfLidarProfileManager;
   this.profile.init(this.gmfLidarProfileConfig);

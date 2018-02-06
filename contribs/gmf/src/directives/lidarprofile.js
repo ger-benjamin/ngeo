@@ -52,7 +52,7 @@ gmf.module.component('gmfLidarProfile', gmf.lidarProfileComponent);
  * @param {angular.Scope} $scope Angular scope.
  * @param {angular.$http} $http Angular http service.
  * @param {string} pytreeLidarProfileJsonUrl URL of GMF service JSON profile.
- * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig LiDAR Profile Configuration Service
+ * @param {gmf.lidarProfile.Config} gmfLidarProfileConfig LiDAR Profile Configuration Service
  * @constructor
  * @private
  * @ngInject
@@ -80,7 +80,7 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
 
   /**
-   * @type {gmf.LidarProfileConfig}
+   * @type {gmf.lidarProfile.Config}
    * @private
    */
   this.gmfLidarProfileConfig_ = gmfLidarProfileConfig;
