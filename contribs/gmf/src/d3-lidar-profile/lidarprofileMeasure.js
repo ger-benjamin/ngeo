@@ -12,22 +12,10 @@ gmf.lidarProfile.measure = class {
   constructor(gmfLidarProfileManagerInstance) {
 
     /**
-     * @type {Object}
+     * @type {gmf.lidarProfile.Manager}
      * @private
      */
-    this.options_ = gmfLidarProfileManagerInstance.options;
-
-    /**
-     * @type {gmf.lidarProfile.Plot}
-     * @private
-     */
-    this.plot_ = gmfLidarProfileManagerInstance.plot;
-
-    /**
-     * @type {gmf.lidarProfile.Loader}
-     * @private
-     */
-    this.loader_ = gmfLidarProfileManagerInstance.loader;
+    this.manager_ = gmfLidarProfileManagerInstance;
 
     /**
      * @type {gmfx.lidarMeasure}
@@ -110,16 +98,16 @@ gmf.lidarProfile.measure = class {
    */
   measureHeigt() {
     const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-    const margin = this.options_.profileConfig.margin;
+    const margin = this.manager_.options.profileConfig.margin;
     const svgCoordinates = d3.mouse(d3.select('svg#profileSVG').node());
     const xs = svgCoordinates[0];
     const ys = svgCoordinates[1];
     const tolerance = 2;
-    const sx = this.plot_.scaleX;
-    const sy = this.plot_.scaleY;
+    const sx = this.manager_.plot.scaleX;
+    const sy = this.manager_.plot.scaleY;
     const pointSize = 3;
-    const p = this.loader_.utils.getClosestPoint(this.loader_.profilePoints,
-      canvasCoordinates[0], canvasCoordinates[1], tolerance, this.plot_.scaleX, this.plot_.scaleY);
+    const p = this.manager_.loader.utils.getClosestPoint(this.manager_.loader.profilePoints,
+      canvasCoordinates[0], canvasCoordinates[1], tolerance, this.manager_.plot.scaleX, this.manager_.plot.scaleY);
     if (!this.profileMeasure_.pStart.set) {
 
       if (p !== undefined) {

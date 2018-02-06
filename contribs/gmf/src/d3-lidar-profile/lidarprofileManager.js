@@ -23,9 +23,8 @@ gmf.lidarProfile.Manager = class {
 
     /**
      * @type {angular.$http}
-     * @private
      */
-    this.$http_ = $http;
+    this.$http = $http;
 
     /**
      * @type {gmf.lidarProfile.Plot}
@@ -48,7 +47,6 @@ gmf.lidarProfile.Manager = class {
      */
     this.options = null;
   }
-
 
   /**
    * @param {Object} options from pytree
