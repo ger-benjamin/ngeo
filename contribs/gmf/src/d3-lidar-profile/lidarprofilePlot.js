@@ -18,7 +18,7 @@ gmf.lidarProfile.Plot = class {
     this.options_ = gmfLidarProfileManagerInstance.options;
 
     /**
-     * @type {Object}
+     * @type {gmf.lidarProfile.Loader}
      * @private
      */
     this.loader_ = gmfLidarProfileManagerInstance.loader;

@@ -11,13 +11,13 @@ gmf.lidarProfile.Loader = class {
   constructor (gmfLidarProfileManagerInstance) {
   
     /**
-     * FIXME
+     * @type {gmf.lidarProfile.Loader}
      * @private
      */
     this.plot_ = gmfLidarProfileManagerInstance.plot
 
     /**
-     * FIXME
+     * @type {Object}
      * @private
      */
     this.options_ = gmfLidarProfileManagerInstance.options
@@ -38,8 +38,7 @@ gmf.lidarProfile.Loader = class {
      * @export
      */
     this.lidarPointHighlight = new ol.layer.Vector({
-      source: new ol.source.Vector({
-      }),
+      source: new ol.source.Vector({}),
       style: new ol.style.Style({
         image: new ol.style.Circle({
           fill: new ol.style.Fill({
@@ -113,7 +112,7 @@ gmf.lidarProfile.Loader = class {
     this.line;
   
     /**
-     * @type {gmf.lidarProfile.utils}
+     * @type {gmf.lidarProfile.Utils}
      */
     this.utils = new gmf.lidarProfile.utils(this.options_, this.profilePoints);
   };

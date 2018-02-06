@@ -4,6 +4,7 @@ goog.provide('gmf.lidarProfile.Manager');
 gmf.lidarProfile.Manager = class {
 
  /**
+  * FIXME sitn mentions
   * FIXME Object types
   * FIXME private
   * FIXME .bind(this)
