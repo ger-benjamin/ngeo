@@ -31,6 +31,12 @@ gmf.lidarProfile.Manager = class {
     this.$http = $http;
 
     /**
+     * @type {?angular.$q.Promise}
+     * @private
+     */
+    this.promise = null;
+
+    /**
      * @type {gmf.lidarProfile.Plot}
      */
     this.plot = null;

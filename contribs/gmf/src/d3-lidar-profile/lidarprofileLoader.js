@@ -59,14 +59,6 @@ gmf.lidarProfile.Loader = class {
 
 
     /**
-     * Queue of xhr requests to Pytree service
-     * Used to abort pending requests when user queries new profile before
-     * all pytree requests are recieved
-     * @type {Array}
-     */
-    this.requestsQueue_ = [];
-
-    /**
      * The variable where all points of the profile are stored
      * @type {gmfx.LidarProfilePoints}
      * @export
@@ -197,20 +189,20 @@ gmf.lidarProfile.Loader = class {
 
     for (let i = 0; i < maxLODWith.maxLOD; i++) {
       if (i == 0) {
-        this.xhrRequest_(this.manager_.options, minLOD, this.manager_.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
+        this.queryPytree_(this.manager_.options, minLOD, this.manager_.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
         i += this.manager_.options.profileConfig.initialLOD - 1;
       } else if (i < maxLODWith.maxLOD - 1) {
-        this.xhrRequest_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
       } else {
         lastLOD = true;
-        this.xhrRequest_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
       }
     }
   }
 
 
   /**
-   * XHR request to Pytree service for a range of Level Of Detail
+   * Request to Pytree service for a range of Level Of Detail (LOD)
    * @param {Object} options the profile Options
    * @param {number} minLOD minimum level of detail of the request
    * @param {number} maxLOD maximum level of detail of the request
@@ -223,7 +215,7 @@ gmf.lidarProfile.Loader = class {
    * @param {string} uuid the unique identifier of the current profile requests cycle
    * @private
    */
-  xhrRequest_(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
+  queryPytree_(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
     if (this.manager_.options.profileConfig.debug) {
       let html = d3.select('#lodInfo').html();
       html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
@@ -234,44 +226,21 @@ gmf.lidarProfile.Loader = class {
     const hurl = `${options.pytreeLidarProfileJsonUrl_}/get_profile?minLOD=${minLOD}
       &maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pointCloudName}&attributes='`;
 
-    for (let i = 0; i < this.requestsQueue_.length; i++) {
-      if (this.requestsQueue_[i].uuid != this.lastUuid_) {
-        this.requestsQueue_[i].abort();
-        this.requestsQueue_.splice(i, 1);
+    this.manager_.$http.get(hurl, {
+      headers: {
+        'Content-Type': 'text/plain; charset=x-user-defined'
+      },
+      responseType: 'arraybuffer'
+    }).then((response) => {
+      if (this.manager_.options.profileConfig.debug) {
+        let html = d3.select('#lodInfo').html();
+        html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
+        d3.select('#lodInfo').html(html);
       }
-    }
-
-    const that = this;
-    const xhr = new XMLHttpRequest();
-    xhr.uuid = uuid;
-    xhr.lastUuid = this.lastUuid_;
-    xhr.debug = this.manager_.options.profileConfig.debug;
-    xhr.open('GET', hurl, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.overrideMimeType('text/plain; charset=x-user-defined');
-    xhr.onreadystatechange = function() {
-
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          if (xhr.uuid == xhr.lastUuid) {
-            if (xhr.debug) {
-              let html = d3.select('#lodInfo').html();
-              html += `LOD: ${minLOD}-${maxLOD} loaded <br>`;
-              d3.select('#lodInfo').html(html);
-            }
-            const xhrresponse = /** @type {!ArrayBuffer}*/(xhr.response);
-            that.processBuffer_(xhrresponse, iter, distanceOffset, lastLOD, resetPlot);
-          }
-        }
-      }
-    };
-
-    try {
-      this.requestsQueue_.push(xhr);
-      xhr.send(null);
-    } catch (e) {
-      console.log(e);
-    }
+      this.processBuffer_(response.data, iter, distanceOffset, lastLOD, resetPlot);
+    }, (response) => {
+      console.log(response);
+    });
   }
 
 
