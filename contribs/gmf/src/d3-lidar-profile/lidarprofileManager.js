@@ -1,7 +1,7 @@
-goog.provide('gmf.lidarProfileManager');
+goog.provide('gmf.lidarProfile.Manager');
 
 
-gmf.lidarProfileManager = class {
+gmf.lidarProfile.Manager = class {
 
  /**
   * FIXME Object types
@@ -395,4 +395,4 @@ gmf.lidarProfileManager = class {
   };
 };
 
-gmf.module.service('gmfLidarProfileManager', gmf.lidarProfileManager);
+gmf.module.service('gmfLidarProfileManager', gmf.lidarProfile.Manager);
