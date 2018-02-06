@@ -3,11 +3,12 @@ goog.provide('gmf.lidarProfile.Plot');
 
 gmf.lidarProfile.Plot = class {
 
- /**
-  * FIXME desc
-  * @struct
-  * @constructor
-  */   
+  /**
+   * FIXME desc
+   * @struct
+   * @constructor
+   * @param {gmf.lidarProfile.Manager} parent instance
+   */   
   constructor(gmfLidarProfileManagerInstance) {
 
     /**
