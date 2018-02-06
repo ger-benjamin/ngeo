@@ -126,42 +126,18 @@ gmfx.GridMergeTabs;
 gmfx.LidarProfilePoints;
 
 /**
- * Profile point after parsing of the binary array returned by Pytree
+ * Profile point after measure or after parsing of the binary array returned by Pytree
  * @typedef {{
  * distance: (number|undefined),
  * altitude: (number|undefined),
- * color_packed: Array<(number|undefined)>,
- * coords: Array<(number|undefined)>,
+ * color_packed: (Array.<number>|undefined),
+ * coords: (Array.<number>|undefined),
  * intensity: (number|undefined),
  * classification: (number|undefined),
+ * set: (boolean|undefined)
  * }}
  */
 gmfx.lidarPoint;
-
-/**
- * Profile measure
- * @typedef {{
- * pStart: {
- * distance: (number|undefined),
- * altitude: (number|undefined),
- * color_packed: Array<(number|undefined)>,
- * coords: Array<(number|undefined)>,
- * intensity: (number|undefined),
- * classification: (number|undefined),
- * set: (boolean|undefined)
- * },
- * pEnd: {
- * distance: (number|undefined),
- * altitude: (number|undefined),
- * color_packed: Array<(number|undefined)>,
- * coords: Array<(number|undefined)>,
- * intensity: (number|undefined),
- * classification: (number|undefined),
- * set: (boolean|undefined)
- * }
- * }}
- */
-gmfx.lidarMeasure;
 
 /**
  * The lidar point attribute: describes the point binary property, material, visibility, ...

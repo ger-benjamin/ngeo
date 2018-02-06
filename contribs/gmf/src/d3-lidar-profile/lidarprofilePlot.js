@@ -1,6 +1,5 @@
 goog.provide('gmf.lidarProfile.Plot');
 
-goog.require('gmf.lidarProfile.Manager');
 goog.require('gmf.lidarProfile.Utils');
 
 
@@ -9,7 +8,6 @@ gmf.lidarProfile.Plot = class {
   /**
    * FIXME desc
    * @struct
-   * @constructor
    * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
    */
   constructor(gmfLidarProfileManagerInstance) {
@@ -27,13 +25,15 @@ gmf.lidarProfile.Plot = class {
     this.utils_ = new gmf.lidarProfile.Utils(this.manager_.options, null);
 
     /**
-     * @type {Object}
+     * d3.scaleLinear X scale.
+     * @type {Function}
      * @export
      */
     this.scaleX;
 
     /**
-     * @type {Object}
+     * d3.scaleLinear Y scale.
+     * @type {Function}
      * @export
      */
     this.scaleY;
@@ -146,11 +146,11 @@ gmf.lidarProfile.Plot = class {
       const domainScale = rangeRatio / domainRatio;
       const domainScaledWidth = domainProfileWidth * domainScale;
       this.scaleX = d3.scaleLinear()
-        .domain([0, domainScaledWidth])
-        .range([0, this.width]);
+        ['domain']([0, domainScaledWidth])
+        ['range']([0, this.width]);
       this.scaleY = d3.scaleLinear()
-        .domain(rangeY)
-        .range([this.height, 0]);
+        ['domain'](rangeY)
+        ['range']([this.height, 0]);
     } else {
       domainScale =  domainRatio / rangeRatio;
       const domainScaledHeight = domainProfileHeight * domainScale;
@@ -173,8 +173,8 @@ gmf.lidarProfile.Plot = class {
 
     zoom.on('end', this.zoomEnd.bind(this));
 
-    this.previousDomainX = this.scaleX.domain();
-    this.previousDomainY = this.scaleY.domain();
+    this.previousDomainX = this.scaleX['domain']();
+    this.previousDomainY = this.scaleY['domain']();
 
     d3.select('svg#profileSVG')
       .call(zoom)
@@ -194,8 +194,8 @@ gmf.lidarProfile.Plot = class {
 
     const xAxis = d3.axisBottom(this.scaleX);
     const yAxis = d3.axisLeft(this.scaleY)
-      .tickSize(-this.width);  this.previousDomainX = this.scaleX.domain();
-    this.previousDomainY = this.scaleY.domain();
+      .tickSize(-this.width);  this.previousDomainX = this.scaleX['domain']();
+    this.previousDomainY = this.scaleY['domain']();
 
     svg.select('.y.axis').selectAll('g.tick line').style('stroke', '#b7cff7');
 
@@ -214,8 +214,8 @@ gmf.lidarProfile.Plot = class {
       .style('opacity', '0.5')
       .style('stroke', '#b7cff7');
 
-    this.previousDomainX = this.scaleX.domain();
-    this.previousDomainY = this.scaleY.domain();
+    this.previousDomainX = this.scaleX['domain']();
+    this.previousDomainY = this.scaleY['domain']();
   }
 
 

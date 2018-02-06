@@ -1,6 +1,6 @@
 goog.provide('gmf.lidarProfile.Manager');
 
-goog.require('gmf.lidarProfile.Loader');
+goog.require('gmf.lidarProfile.Loader')
 goog.require('gmf.lidarProfile.Measure');
 goog.require('gmf.lidarProfile.Plot');
 
@@ -17,7 +17,6 @@ gmf.lidarProfile.Manager = class {
    * Requires access to a Pytree webservice: https://github.com/sitn/pytree
    *
    * @struct
-   * @constructor
    * @param {angular.$http} $http Angular http service.
    * @ngInject
    * @ngdoc service

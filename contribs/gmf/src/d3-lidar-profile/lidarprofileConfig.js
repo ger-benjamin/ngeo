@@ -8,7 +8,7 @@ gmf.lidarProfile.Config = class {
   /**
    * Configuration service to configure the gmf.lidarPanelComponent and gmf.lidarProfile instance
    * Requires a Pytree service: https://github.com/sitn/pytree
-   * @constructor
+   *
    * @struct
    * @param {angular.$http} $http Angular http service.
    * @param {string} pytreeLidarProfileJsonUrl pytree Lidar profile URL.
@@ -66,7 +66,7 @@ gmf.lidarProfile.Config = class {
     this.profileConfig.pointAttributesRaw = null;
 
     /**
-     * @type {gmfx.lidarClassificationObjects}
+     * @type {gmfx.lidarClassificationObjects?}
      */
     this.profileConfig.classification = null;
   }

@@ -1,6 +1,6 @@
 goog.provide('gmf.lidarProfileComponent');
 goog.require('gmf');
-goog.require('ol.geom.LineString');
+goog.require('gmf.lidarProfile.Config');
 
 
 gmf.module.value('gmfLidarProfileTemplateUrl',

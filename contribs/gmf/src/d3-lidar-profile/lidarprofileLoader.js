@@ -1,6 +1,5 @@
 goog.provide('gmf.lidarProfile.Loader');
 
-goog.require('gmf.lidarProfile.Manager');
 goog.require('gmf.lidarProfile.Utils');
 
 
@@ -9,7 +8,6 @@ gmf.lidarProfile.Loader = class {
   /**
    * FIXME desc
    * @struct
-   * @constructor
    * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
    */
   constructor(gmfLidarProfileManagerInstance) {
@@ -161,7 +159,7 @@ gmf.lidarProfile.Loader = class {
       profileLine = this.manager_.options.pytreeLinestring;
       maxLODWith = this.utils.getNiceLOD(this.line.getLength());
     } else {
-      const domain = this.manager_.plot.scaleX.domain();
+      const domain = this.manager_.plot.scaleX['domain']();
       const clip = this.utils.clipLineByMeasure(this.line, domain[0], domain[1]);
       profileLine = '';
       for (let i = 0; i < clip.clippedLine.length; i++) {
@@ -395,8 +393,8 @@ gmf.lidarProfile.Loader = class {
    * @export
    */
   updateData() {
-    const domainX = this.manager_.plot.scaleX.domain();
-    const domainY = this.manager_.plot.scaleY.domain();
+    const domainX = this.manager_.plot.scaleX['domain']();
+    const domainY = this.manager_.plot.scaleY['domain']();
     const clip = this.utils.clipLineByMeasure(this.line, domainX[0], domainX[1]);
 
     this.lidarBuffer.getSource().clear();
@@ -429,14 +427,12 @@ gmf.lidarProfile.Loader = class {
 
 
   /**
+   * FIXME
    * Abort pending request to Pytree service when new batch of request is sent
    * after zoom, pan or when new profile is drawn
    * @export
    */
   abortPendingRequests() {
-    for (let i = 0; i < this.requestsQueue_.length; i++) {
-      this.requestsQueue_[i].abort();
-      this.requestsQueue_.splice(i, 1);
-    }
+    console.log('Not implemented yet');
   }
 };

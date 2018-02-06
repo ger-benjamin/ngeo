@@ -5,7 +5,7 @@ gmf.lidarProfile.Utils = class {
 
   /**
    * FIXME desc
-   * @constructor
+   * @struct
    * @param {Object} options to be defined in gmfx
    * @param {Object} profilePoints to be defined in gmfx
    */
@@ -237,37 +237,31 @@ gmf.lidarProfile.Utils = class {
 
     this.exportImage = new Image();
 
-    this.exportImage.onload = this.createImage(DOMURL, url);
+    this.exportImage.onload = function() {
+      const margin = this.options_.profileConfig.margin;
+      const canvas = document.createElement('canvas');
+  
+      canvas.style.display = 'none';
+      document.body.appendChild(canvas);
+      const w = d3.select('#profileSVG').attr('width');
+      const h = d3.select('#profileSVG').attr('height');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, w, h);
+      const pointsCanvas = d3.select('#profileCanvas').node();
+      canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
+      ctx.drawImage(this.exportImage, 0, 0, w, h);
+      const dataURL = canvas.toDataURL();
+  
+      this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
+  
+      DOMURL['revokeObjectURL'](url);
+        
+    }.bind(this);
+
     this.exportImage.src = url;
-  }
-
-
-  /**
-   * FIXME
-   * @param {string} DOMURL DOM url
-   * @param {string} url url
-   */
-  createImage(DOMURL, url) {
-    const margin = this.options_.profileConfig.margin;
-    const canvas = document.createElement('canvas');
-
-    canvas.style.display = 'none';
-    document.body.appendChild(canvas);
-    const w = d3.select('#profileSVG').attr('width');
-    const h = d3.select('#profileSVG').attr('height');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, w, h);
-    const pointsCanvas = d3.select('#profileCanvas').node();
-    canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
-    ctx.drawImage(this.exportImage, 0, 0, w, h);
-    const dataURL = canvas.toDataURL();
-
-    this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
-
-    DOMURL.revokeObjectURL(url);
   }
 
 
@@ -460,8 +454,8 @@ gmf.lidarProfile.Utils = class {
    * @param {number} xs mouse x coordinate on canvas element
    * @param {number} ys mouse y coordinate on canvas element
    * @param {number} tolerance snap sensibility
-   * @param {Object} sx x scale
-   * @param {Object} sy yscale
+   * @param {Function} sx d3.scalelinear x scale
+   * @param {Function} sy d3.scalelinear y scale
    * @return {gmfx.lidarPoint} closestPoint the closest point to the clicked coordinates
    */
   getClosestPoint(points, xs, ys, tolerance, sx, sy) {
