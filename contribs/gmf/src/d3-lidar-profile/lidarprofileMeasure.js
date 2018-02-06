@@ -5,8 +5,9 @@ gmf.lidarProfile.measure = class {
 
   /**
    * Measure tool for the d3 chart
+   * @struct
    * @constructor
-   * @param {gmf.lidarProfile.Manager} parent instance
+   * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
    */
   constructor(gmfLidarProfileManagerInstance) {
 
@@ -27,7 +28,7 @@ gmf.lidarProfile.measure = class {
      * @private
      */
     this.loader_ = gmfLidarProfileManagerInstance.loader;
-    
+
     /**
      * @type {gmfx.lidarMeasure}
      * @private
@@ -52,8 +53,9 @@ gmf.lidarProfile.measure = class {
         set: false
       }
     };
-  };
-    
+  }
+
+
   /**
    * Clear the current measure
    * @export
@@ -79,19 +81,20 @@ gmf.lidarProfile.measure = class {
         set: false
       }
     };
-  
+
     const svg = d3.select('svg#profileSVG');
     svg.selectAll('#text_m').remove();
     svg.selectAll('#start_m').remove();
     svg.selectAll('#end_m').remove();
     svg.selectAll('#line_m').remove();
-  
+
     d3.select('#height_measure').html('');
     d3.select('svg#profileSVG').on('click', null);
-  
+
     d3.select('svg#profileSVG').style('cursor', 'default');
-  };
-  
+  }
+
+
   /**
    * Activate the measure tool
    * @export
@@ -99,8 +102,9 @@ gmf.lidarProfile.measure = class {
   setMeasureActive() {
     d3.select('svg#profileSVG').style('cursor', 'pointer');
     d3.select('svg#profileSVG').on('click', this.measureHeigt.bind(this));
-  };
-  
+  }
+
+
   /**
    * FIXME
    */
@@ -117,23 +121,23 @@ gmf.lidarProfile.measure = class {
     const p = this.loader_.utils.getClosestPoint(this.loader_.profilePoints,
       canvasCoordinates[0], canvasCoordinates[1], tolerance, this.plot_.scaleX, this.plot_.scaleY);
     if (!this.profileMeasure_.pStart.set) {
-  
+
       if (p !== undefined) {
-  
+
         this.profileMeasure_.pStart.distance = p.distance;
         this.profileMeasure_.pStart.altitude = p.altitude;
         this.profileMeasure_.pStart.cx = sx(p.distance) + margin.left;
         this.profileMeasure_.pStart.cy = sy(p.altitude) + margin.top;
-  
+
       } else {
-  
+
         this.profileMeasure_.pStart.distance = sx.invert(xs);
         this.profileMeasure_.pStart.altitude = sy.invert(ys);
         this.profileMeasure_.pStart.cx = xs;
         this.profileMeasure_.pStart.cy = ys;
-  
+
       }
-  
+
       this.profileMeasure_.pStart.set = true;
       d3.select('svg#profileSVG').append('circle')
         .attr('id', 'start_m')
@@ -141,10 +145,10 @@ gmf.lidarProfile.measure = class {
         .attr('cy', this.profileMeasure_.pStart.cy)
         .attr('r', pointSize)
         .style('fill', 'red');
-  
+
     } else if (!this.profileMeasure_.pEnd.set) {
       if (p !== undefined) {
-  
+
         this.profileMeasure_.pEnd.distance = p.distance;
         this.profileMeasure_.pEnd.altitude = p.altitude;
         this.profileMeasure_.pEnd.cx = sx(p.distance) + margin.left;
@@ -154,9 +158,9 @@ gmf.lidarProfile.measure = class {
         this.profileMeasure_.pEnd.altitude = sy.invert(ys);
         this.profileMeasure_.pEnd.cx = xs;
         this.profileMeasure_.pEnd.cy = ys;
-  
+
       }
-  
+
       this.profileMeasure_.pEnd.set = true;
       d3.select('svg#profileSVG').append('circle')
         .attr('id', 'end_m')
@@ -164,7 +168,7 @@ gmf.lidarProfile.measure = class {
         .attr('cy', this.profileMeasure_.pEnd.cy)
         .attr('r', pointSize)
         .style('fill', 'red');
-  
+
       d3.select('svg#profileSVG').append('line')
         .attr('id', 'line_m')
         .attr('x1', this.profileMeasure_.pStart.cx)
@@ -173,15 +177,15 @@ gmf.lidarProfile.measure = class {
         .attr('y2', this.profileMeasure_.pEnd.cy)
         .attr('stroke-width', 2)
         .attr('stroke', 'red');
-  
+
     }
-  
+
     if (this.profileMeasure_.pStart.set && this.profileMeasure_.pEnd.set) {
       const dH = this.profileMeasure_.pEnd.altitude - this.profileMeasure_.pStart.altitude;
       const dD = this.profileMeasure_.pEnd.distance - this.profileMeasure_.pStart.distance;
-  
+
       const height = Math.round(10 * Math.sqrt(Math.pow(dH, 2) + Math.pow(dD, 2))) / 10;
-  
+
       if (!isNaN(height)) {
         d3.select('#height_measure').html(`Hauteur: ${height}</p>`);
         d3.select('svg#profileSVG').append('text')
@@ -197,5 +201,5 @@ gmf.lidarProfile.measure = class {
       this.profileMeasure_.pEnd.set = false;
       this.profileMeasure_.pStart.set = false;
     }
-  };  
+  }
 };

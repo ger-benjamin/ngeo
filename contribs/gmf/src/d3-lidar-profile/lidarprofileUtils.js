@@ -2,7 +2,7 @@ goog.provide('gmf.lidarProfile.utils');
 
 
 gmf.lidarProfile.utils = class {
-    
+
   /**
    * FIXME desc
    * @constructor
@@ -35,7 +35,7 @@ gmf.lidarProfile.utils = class {
      * @private
      */
     this.exportImage = new Image();
-  };
+  }
 
 
   /**
@@ -43,9 +43,9 @@ gmf.lidarProfile.utils = class {
    */
   setMap(map) {
     this.map_ = map;
-  };
-  
-  
+  }
+
+
   /**
    * Clip a linstring with start and end measure givent by d3 Chart domain
    * @param {ol.geom.LineString} linestring an OpenLayer Linestring
@@ -54,40 +54,40 @@ gmf.lidarProfile.utils = class {
    * @return {{clippedLine: Array.<ol.Coordinate>, distanceOffset: number}} Object with clipped lined coordinates and left domain value
    */
   clipLineByMeasure(linestring, dLeft, dRight) {
-  
+
     const clippedLine = new ol.geom.LineString([]);
     let mileage_start = 0;
     let mileage_end = 0;
-  
+
     const totalLength = linestring.getLength();
     const fractionStart = dLeft / totalLength;
     const fractionEnd = dRight / totalLength;
-  
+
     linestring.forEachSegment((segStart, segEnd) => {
-  
+
       const segLine = new ol.geom.LineString([segStart, segEnd]);
       mileage_end += segLine.getLength();
-  
+
       if (dLeft == mileage_start) {
         clippedLine.appendCoordinate(segStart);
       } else if (dLeft > mileage_start && dLeft < mileage_end) {
         clippedLine.appendCoordinate(linestring.getCoordinateAt(fractionStart));
       }
-  
+
       if (mileage_start > dLeft && mileage_start < dRight) {
         clippedLine.appendCoordinate(segStart);
       }
-  
+
       if (dRight == mileage_end) {
         clippedLine.appendCoordinate(segEnd);
       } else if (dRight > mileage_start && dRight < mileage_end) {
         clippedLine.appendCoordinate(linestring.getCoordinateAt(fractionEnd));
       }
-  
+
       mileage_start += segLine.getLength();
-  
+
     });
-  
+
     let profileWidth;
     if (this.options_.profileConfig.autoWidth) {
       profileWidth = this.getNiceLOD(clippedLine.getLength()).width;
@@ -97,9 +97,9 @@ gmf.lidarProfile.utils = class {
     const feat = new ol.Feature({
       geometry: clippedLine
     });
-  
+
     const widthInMapsUnits = profileWidth / this.map_.getView().getResolution();
-  
+
     const lineStyle = new ol.style.Style({
       stroke: new ol.style.Stroke({
         color: 'rgba(255,0,0,1)',
@@ -107,34 +107,34 @@ gmf.lidarProfile.utils = class {
         lineCap: 'square'
       })
     });
-  
+
     let firstSegmentAngle = 0;
     let lastSegementAngle = 0;
     const segNumber = clippedLine.getCoordinates().length - 1;
     let segCounter = 1;
-  
+
     clippedLine.forEachSegment((start, end) => {
       if (segCounter == 1) {
         const dx = end[0] - start[0];
         const dy = end[1] - start[1];
         firstSegmentAngle = Math.atan2(dx, dy);
       }
-  
+
       if (segCounter == segNumber) {
         const dx = end[0] - start[0];
         const dy = end[1] - start[1];
-  
+
         lastSegementAngle = Math.atan2(dx, dy);
       }
       segCounter += 1;
-  
-  
+
+
     });
-  
+
     const styles = [lineStyle];
     const lineEnd = clippedLine.getLastCoordinate();
     const lineStart = clippedLine.getFirstCoordinate();
-  
+
     styles.push(
       new ol.style.Style({
         geometry: new ol.geom.Point(lineStart),
@@ -171,16 +171,17 @@ gmf.lidarProfile.utils = class {
         })
       })
     );
-  
+
     return {
       clippedLine: clippedLine.getCoordinates(),
       distanceOffset: dLeft,
       bufferGeom: feat,
       bufferStyle: styles
     };
-  
-  };
-  
+
+  }
+
+
   /**
    * Get a LOD and with for a given chart span
    * Configuration is set up in Pytree configuration
@@ -201,8 +202,9 @@ gmf.lidarProfile.utils = class {
       maxLOD,
       width
     };
-  };
-  
+  }
+
+
   /**
    * Create a fake link and make the browser download the referenced URL
    * @param {string} filename csv file name
@@ -217,8 +219,9 @@ gmf.lidarProfile.utils = class {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-  
+  }
+
+
   /**
    * Create a image file by combining SVG and canvas elements
    * @export
@@ -233,13 +236,16 @@ gmf.lidarProfile.utils = class {
     const url = DOMURL.createObjectURL(svgImage);
 
     this.exportImage = new Image();
- 
+
     this.exportImage.onload = this.createImage(DOMURL, url);
     this.exportImage.src = url;
-  };
-  
+  }
+
+
   /**
    * FIXME
+   * @param {string} DOMURL DOM url
+   * @param {string} url url
    */
   createImage(DOMURL, url) {
     const margin = this.options_.profileConfig.margin;
@@ -260,10 +266,10 @@ gmf.lidarProfile.utils = class {
     const dataURL = canvas.toDataURL();
 
     this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
- 
+
     DOMURL.revokeObjectURL(url);
-  };
-  
+  }
+
 
   /**
    * Turn the profile data into a CSV file containing all available attributes
@@ -313,23 +319,23 @@ gmf.lidarProfile.utils = class {
       if (points[0].hasOwnProperty('color_packed')) {
         header += ', r, g, b';
       }
-  
+
       if (points[0].hasOwnProperty('intensity')) {
         header += ', intensity';
       }
-  
+
       if (points[0].hasOwnProperty('classification')) {
         header += ', classification';
       }
-  
+
       if (points[0].hasOwnProperty('numberOfReturns')) {
         header += ', numberOfReturns';
       }
-  
+
       if (points[0].hasOwnProperty('pointSourceID')) {
         header += ', pointSourceID';
       }
-  
+
       if (points[0].hasOwnProperty('returnNumber')) {
         header += ', returnNumber';
       }
@@ -350,7 +356,7 @@ gmf.lidarProfile.utils = class {
     for (point of points) {
       let line = `${point.distance.toFixed(4)}, `;
       line += `${point.altitude.toFixed(4)}, `;
-  
+
       if (point.hasOwnProperty('color_packed')) {
         line += point.color_packed.join(', ');
       }
@@ -381,9 +387,9 @@ gmf.lidarProfile.utils = class {
 
     const encodedUri = encodeURI(file);
     this.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
-  };
-  
-  
+  }
+
+
   /**
    * Find the maximum value in am array of numbers
    * @param {(Array.<number>|undefined)} array of number
@@ -391,7 +397,7 @@ gmf.lidarProfile.utils = class {
    */
   arrayMax(array) {
     return array.reduce((a, b) => Math.max(a, b));
-  };
+  }
 
 
   /**
@@ -407,7 +413,7 @@ gmf.lidarProfile.utils = class {
       }
     }
     return minVal;
-  };
+  }
 
 
   /**
@@ -428,8 +434,8 @@ gmf.lidarProfile.utils = class {
       randStr.substr(15, 3), '-',
       randStr.substr(18, 12)
     ].join('');
-  };
- 
+  }
+
 
   /**
    * Transform Openlayers linestring into a cPotree compatible definition
@@ -445,8 +451,8 @@ gmf.lidarProfile.utils = class {
       pytreeLineString += `{${Math.round(100 * px) / 100}, ${Math.round(100 * py) / 100}},`;
     }
     return pytreeLineString.substr(0, pytreeLineString.length - 1);
-  };
-  
+  }
+
 
   /**
    * Find the profile's closest point in profile data to the chart mouse position
@@ -463,14 +469,14 @@ gmf.lidarProfile.utils = class {
     const tol = tolerance;
     const distances = [];
     const hP = [];
-  
+
     for (let i = 0; i < d.distance.length; i++) {
       if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
-  
+
         const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
         const cClassif = this.options_.profileConfig.classification[d.classification[i].toString()];
         if (cClassif && cClassif.visible == 1) {
-  
+
           hP.push({
             distance: d.distance[i],
             altitude: d.altitude[i],
@@ -480,13 +486,13 @@ gmf.lidarProfile.utils = class {
             coords: d.coords[i]
           });
           distances.push(pDistance);
-  
+
         }
       }
     }
-  
+
     let closestPoint;
-  
+
     if (hP.length > 0) {
       const minDist = Math.min(distances);
       const indexMin = distances.indexOf(minDist);
@@ -497,5 +503,5 @@ gmf.lidarProfile.utils = class {
       }
     }
     return closestPoint;
-  };
+  }
 };

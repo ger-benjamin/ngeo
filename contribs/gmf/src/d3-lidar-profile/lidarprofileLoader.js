@@ -2,26 +2,27 @@ goog.provide('gmf.lidarProfile.Loader');
 
 
 gmf.lidarProfile.Loader = class {
+
   /**
    * FIXME desc
    * @struct
    * @constructor
-   * @param {gmf.lidarProfile.Manager} The gmf.lidarProfile.Manager instance.
-   */     
-  constructor (gmfLidarProfileManagerInstance) {
-  
+   * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
+   */
+  constructor(gmfLidarProfileManagerInstance) {
+
     /**
      * @type {gmf.lidarProfile.Loader}
      * @private
      */
-    this.plot_ = gmfLidarProfileManagerInstance.plot
+    this.plot_ = gmfLidarProfileManagerInstance.plot;
 
     /**
      * @type {Object}
      * @private
      */
-    this.options_ = gmfLidarProfileManagerInstance.options
-  
+    this.options_ = gmfLidarProfileManagerInstance.options;
+
     /**
      * The hovered point attributes in d3 profile highlighted on the 2D map
      * @type {ol.Overlay}
@@ -31,7 +32,7 @@ gmf.lidarProfile.Loader = class {
       offset: [0, -15],
       positioning: 'bottom-center'
     });
-  
+
     /**
      * The hovered point geometry (point) in d3 profile highlighted on the 2D map
      * @type {ol.layer.Vector}
@@ -48,7 +49,7 @@ gmf.lidarProfile.Loader = class {
         })
       })
     });
-  
+
     /**
      * The profile footpring represented as a LineString represented
      * with real mapunites stroke width
@@ -56,11 +57,10 @@ gmf.lidarProfile.Loader = class {
      * @export
      */
     this.lidarBuffer = new ol.layer.Vector({
-      source: new ol.source.Vector({
-      })
+      source: new ol.source.Vector({})
     });
-  
-  
+
+
     /**
      * Queue of xhr requests to Pytree service
      * Used to abort pending requests when user queries new profile before
@@ -68,7 +68,7 @@ gmf.lidarProfile.Loader = class {
      * @type {Array}
      */
     this.requestsQueue_ = [];
-  
+
     /**
      * The variable where all points of the profile are stored
      * @type {gmfx.LidarProfilePoints}
@@ -82,17 +82,7 @@ gmf.lidarProfile.Loader = class {
       classification: [],
       coords: []
     };
-  
-    /**
-     * Clears the profile footprint
-     * @export
-     */
-    this.clearBuffer = function() {
-      if (this.lidarBuffer) {
-        this.lidarBuffer.getSource().clear();
-      }
-    };
-  
+
     /**
      * @type {string}
      * @private
@@ -110,14 +100,25 @@ gmf.lidarProfile.Loader = class {
      * @private
      */
     this.line;
-  
+
     /**
      * @type {gmf.lidarProfile.Utils}
      */
     this.utils = new gmf.lidarProfile.utils(this.options_, this.profilePoints);
-  };
-  
-  
+  }
+
+
+  /**
+   * Clears the profile footprint
+   * @export
+   */
+  clearBuffer() {
+    if (this.lidarBuffer) {
+      this.lidarBuffer.getSource().clear();
+    }
+  }
+
+
   /**
   * Set the line for the profile
   * @export
@@ -125,21 +126,21 @@ gmf.lidarProfile.Loader = class {
   */
   setLine(line) {
     this.line = line;
-  };
-  
+  }
+
   /**
   * Set the map for the ol.layer.Vector layers
   * @export
   * @param {ol.Map} map of the desktop app
   */
-  setMap = function(map) {
+  setMap(map) {
     this.cartoHighlight.setMap(map);
     this.lidarPointHighlight.setMap(map);
     this.lidarBuffer.setMap(map);
     this.utils.setMap(map);
-  };
-  
-  
+  }
+
+
   /**
   * Load profile data (lidar points) by succesive Levels Of Details using asynchronous requests
   * @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
@@ -157,14 +158,14 @@ gmf.lidarProfile.Loader = class {
       classification: [],
       coords: []
     };
-  
+
     if (resetPlot) {
       this.isPlotSetup_ = false;
     }
-  
+
     d3.select('#lidarError').style('visibility', 'hidden');
     this.options_.pytreeLinestring = this.utils.getPytreeLinestring(this.line);
-  
+
     let profileLine;
     let maxLODWith;
     if (distanceOffset == 0) {
@@ -179,13 +180,13 @@ gmf.lidarProfile.Loader = class {
       }
       profileLine = profileLine.substr(0, profileLine.length - 1);
       maxLODWith = this.utils.getNiceLOD(domain[1] - domain[0]);
-  
+
     }
-  
+
     const uuid = this.utils.UUID();
     this.lastUuid_ = uuid;
     let lastLOD = false;
-  
+
     d3.select('#lodInfo').html('');
     this.options_.profileConfig.pointSum = 0;
     let profileWidth = 0;
@@ -194,9 +195,9 @@ gmf.lidarProfile.Loader = class {
     } else {
       profileWidth = this.options_.profileConfig.profilWidth;
     }
-  
+
     d3.select('#widthInfo').html(`Profile width: ${profileWidth}m`);
-  
+
     for (let i = 0; i < maxLODWith.maxLOD; i++) {
       if (i == 0) {
         this.xhrRequest_(this.options_, minLOD, this.options_.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
@@ -208,9 +209,9 @@ gmf.lidarProfile.Loader = class {
         this.xhrRequest_(this.options_, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
       }
     }
-  
-  };
-  
+  }
+
+
   /**
    * XHR request to Pytree service for a range of Level Of Detail
    * @param {Object} options the profile Options
@@ -231,18 +232,18 @@ gmf.lidarProfile.Loader = class {
       html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
       d3.select('#lodInfo').html(html);
     }
-  
+
     const pointCloudName = this.options_.profileConfig.defaultPointCloud;
     const hurl = `${options.pytreeLidarProfileJsonUrl_}/get_profile?minLOD=${minLOD}
       &maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pointCloudName}&attributes='`;
-  
+
     for (let i = 0; i < this.requestsQueue_.length; i++) {
       if (this.requestsQueue_[i].uuid != this.lastUuid_) {
         this.requestsQueue_[i].abort();
         this.requestsQueue_.splice(i, 1);
       }
     }
-  
+
     const that = this;
     const xhr = new XMLHttpRequest();
     xhr.uuid = uuid;
@@ -252,7 +253,7 @@ gmf.lidarProfile.Loader = class {
     xhr.responseType = 'arraybuffer';
     xhr.overrideMimeType('text/plain; charset=x-user-defined');
     xhr.onreadystatechange = function() {
-  
+
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
           if (xhr.uuid == xhr.lastUuid) {
@@ -267,15 +268,16 @@ gmf.lidarProfile.Loader = class {
         }
       }
     };
-  
+
     try {
       this.requestsQueue_.push(xhr);
       xhr.send(null);
     } catch (e) {
       console.log(e);
     }
-  };
-  
+  }
+
+
   /**
    * Process the binary array return by Pytree (cPotree)
    * @param {ArrayBuffer} profile binary array returned by cPotree executable called by Pytree
@@ -288,17 +290,17 @@ gmf.lidarProfile.Loader = class {
   processBuffer_(profile, iter, distanceOffset, lastLOD, resetPlot) {
     const typedArrayInt32 = new Int32Array(profile, 0, 4);
     const headerSize = typedArrayInt32[0];
-  
+
     const uInt8header = new Uint8Array(profile, 4, headerSize);
     let strHeaderLocal = '';
     for (let i = 0; i < uInt8header.length; i++) {
       strHeaderLocal += String.fromCharCode(uInt8header[i]);
     }
-  
+
     try {
-  
+
       JSON.parse(strHeaderLocal);
-  
+
     } catch (e) {
       if (!this.isPlotSetup_) {
         const canvasEl = d3.select('#profileCanvas').node();
@@ -316,18 +318,18 @@ gmf.lidarProfile.Loader = class {
       }
       return;
     }
-  
+
     d3.select('#lidarError').style('visibility', 'hidden');
-  
+
     const jHeader = JSON.parse(strHeaderLocal);
-  
+
     // If number of points return is higher than Pytree configuration max value,
     // stop sending requests.
     this.options_.profileConfig.pointSum += jHeader['points'];
     if (this.options_.profileConfig.pointSum > this.options_.profileConfig.maxPoints) {
       this.abortPendingRequests();
     }
-  
+
     const attr = jHeader['pointAttributes'];
     const attributes = [];
     for (let j = 0; j < attr.length; j++) {
@@ -336,12 +338,12 @@ gmf.lidarProfile.Loader = class {
       }
     }
     const scale = jHeader['scale'];
-  
+
     if (jHeader['points'] < 3) {
       this.isPlotSetup_ = false;
       return;
     }
-  
+
     /**
     * @type {gmfx.LidarProfilePoints}
     */
@@ -353,18 +355,18 @@ gmf.lidarProfile.Loader = class {
       classification: [],
       coords: []
     };
-  
+
     const bytesPerPoint = jHeader['bytesPerPoint'];
     const buffer = profile.slice(4 + headerSize);
     for (let i = 0; i < jHeader['points']; i++) {
-  
+
       const byteOffset = bytesPerPoint * i;
       const view = new DataView(buffer, byteOffset, bytesPerPoint);
       let aoffset = 0;
       for (let k = 0; k < attributes.length; k++) {
-  
+
         if (attributes[k]['value'] == 'POSITION_PROJECTED_PROFILE') {
-  
+
           const udist = view.getUint32(aoffset, true);
           const ualti = view.getUint32(aoffset + 4, true);
           const dist = udist * scale;
@@ -373,24 +375,24 @@ gmf.lidarProfile.Loader = class {
           this.profilePoints.distance.push(Math.round(100 * (distanceOffset + dist)) / 100);
           points.altitude.push(Math.round(100 * alti) / 100);
           this.profilePoints.altitude.push(Math.round(100 * alti) / 100);
-  
+
         } else if (attributes[k]['value']  == 'CLASSIFICATION') {
           const classif = view.getUint8(aoffset);
           points.classification.push(classif);
           this.profilePoints.classification.push(classif);
-  
+
         } else if (attributes[k]['value']  == 'INTENSITY') {
           const intensity = view.getUint8(aoffset);
           points.intensity.push(intensity);
           this.profilePoints.intensity.push(intensity);
-  
+
         } else if (attributes[k]['value'] == 'COLOR_PACKED') {
           const r = view.getUint8(aoffset);
           const g = view.getUint8(aoffset + 1);
           const b = view.getUint8(aoffset + 2);
           points.color_packed.push([r, g, b]);
           this.profilePoints.color_packed.push([r, g, b]);
-  
+
         } else if (attributes[k]['value']  == 'POSITION_CARTESIAN') {
           const x = view.getInt32(aoffset, true) * scale + jHeader['boundingBox']['lx'];
           const y = view.getInt32(aoffset + 4, true) * scale + jHeader['boundingBox']['ly'];
@@ -400,18 +402,18 @@ gmf.lidarProfile.Loader = class {
         aoffset = aoffset + attributes[k]['bytes'];
       }
     }
-  
+
     const rangeX = [0, this.line.getLength()];
-  
+
     // TODO fix z offset issue in Pytree!
-  
+
     const rangeY = [this.utils.arrayMin(points.altitude), this.utils.arrayMax(points.altitude)];
-  
+
     if (iter == 0 && resetPlot) {
       this.plot_.setupPlot(rangeX, rangeY);
       this.isPlotSetup_ = true;
       this.plot_.drawPoints(points, this.options_.profileConfig.defaultAttribute);
-  
+
     } else if (!this.isPlotSetup_) {
       this.plot_.setupPlot(rangeX, rangeY);
       this.isPlotSetup_ = true;
@@ -419,55 +421,56 @@ gmf.lidarProfile.Loader = class {
     } else {
       this.plot_.drawPoints(points, this.options_.profileConfig.defaultAttribute);
     }
-  };
-  
+  }
+
+
   /**
    * Update the profile data according to d3 chart zoom and pan level
    * @export
    */
-  updateData = function() {
+  updateData() {
     const domainX = this.plot_.scaleX.domain();
     const domainY = this.plot_.scaleY.domain();
     const clip = this.utils.clipLineByMeasure(this.line, domainX[0], domainX[1]);
-  
+
     this.lidarBuffer.getSource().clear();
     this.lidarBuffer.getSource().addFeature(clip.bufferGeom);
     this.lidarBuffer.setStyle(clip.bufferStyle);
-  
+
     const span = domainX[1] - domainX[0];
     const maxLODWidth = this.utils.getNiceLOD(span);
     const xTolerance = 0.2;
-  
+
     if (Math.abs(domainX[0] - this.plot_.previousDomainX[0]) < xTolerance &&
         Math.abs(domainX[1] - this.plot_.previousDomainX[1]) < xTolerance) {
-  
+
       this.plot_.drawPoints(this.profilePoints,
         this.options_.profileConfig.defaultAttribute);
-  
+
     } else {
       if (maxLODWidth.maxLOD <= this.options_.profileConfig.initialLOD) {
         this.plot_.drawPoints(this.profilePoints,
           this.options_.profileConfig.defaultAttribute);
       } else {
         this.getProfileByLOD(clip.distanceOffset, false, 0);
-  
+
       }
     }
-  
+
     this.plot_.previousDomainX = domainX;
     this.plot_.previousDomainY = domainY;
-  };
-  
-  
+  }
+
+
   /**
    * Abort pending request to Pytree service when new batch of request is sent
    * after zoom, pan or when new profile is drawn
    * @export
    */
-  abortPendingRequests = function() {
+  abortPendingRequests() {
     for (let i = 0; i < this.requestsQueue_.length; i++) {
       this.requestsQueue_[i].abort();
       this.requestsQueue_.splice(i, 1);
     }
-  };
+  }
 };
