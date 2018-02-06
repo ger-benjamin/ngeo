@@ -1,15 +1,7 @@
 goog.provide('gmf.lidarPanelComponent');
 
 goog.require('gmf');
-goog.require('gmf.lidarProfile');
-/** @suppress {extraRequire}*/
-goog.require('gmf.lidarProfile.loader');
-/** @suppress {extraRequire}*/
-goog.require('gmf.lidarProfile.plot');
-/** @suppress {extraRequire}*/
-goog.require('gmf.lidarProfile.utils');
-/** @suppress {extraRequire}*/
-goog.require('gmf.lidarProfile.measure');
+goog.require('gmf.lidarProfile.Manager');
 goog.require('ol.geom.LineString');
 
 
@@ -59,6 +51,7 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
 
 /**
  * @param {angular.Scope} $scope Angular scope.
+ * @param {gmf.LidarProfileManager} gmfLidarProfileManager gmf gmfLidarProfileManager.
  * @param {gmf.LidarProfileConfig} gmfLidarProfileConfig gmf gmfLidarProfileConfig.
  * @param {ngeo.ToolActivateMgr} ngeoToolActivateMgr Ngeo ToolActivate manager service
  * @param {ngeo.ToolActivate} ngeoToolActivate Ngeo ToolActivate service.
@@ -68,8 +61,19 @@ gmf.module.component('gmfLidarPanel', gmf.lidarPanelComponent);
  * @ngdoc controller
  * @ngname gmfLidarPanelController
  */
-gmf.LidarPanelController = function($scope, gmfLidarProfileConfig, ngeoToolActivateMgr, ngeoToolActivate) {
+gmf.LidarPanelController = function($scope, gmfLidarProfileManager, gmfLidarProfileConfig,
+  ngeoToolActivateMgr, ngeoToolActivate) {
+
+  /**
+   * @type {gmf.LidarProfileConfig}
+   */
   this.gmfLidarProfileConfig = gmfLidarProfileConfig;
+
+  /**
+   * @type {gmf.LidarProfileConfig}
+   */
+  this.profile = gmfLidarProfileManager;
+  this.profile.init(this.gmfLidarProfileConfig);
 
   /**
    * @type {boolean}
@@ -117,11 +121,6 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileConfig, ngeoToolActiv
    * @export
    */
   this.pointAttributes;
-
-  /**
-  * @type {gmf.lidarProfile}
-  **/
-  this.profile =  new gmf.lidarProfile(this.gmfLidarProfileConfig);
 
 
   // Watch the line to update the profileData (data for the chart).

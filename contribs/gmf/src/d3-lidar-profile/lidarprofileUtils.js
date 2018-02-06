@@ -1,7 +1,7 @@
-goog.provide('gmf.lidarProfile.utils');
+goog.provide('gmf.lidarProfile.Utils');
 
 
-gmf.lidarProfile.utils = class {
+gmf.lidarProfile.Utils = class {
 
   /**
    * FIXME desc

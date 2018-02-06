@@ -1,5 +1,9 @@
 goog.provide('gmf.lidarProfile.Manager');
 
+goog.require('gmf.lidarProfile.Loader');
+goog.require('gmf.lidarProfile.Measure');
+goog.require('gmf.lidarProfile.Plot');
+
 
 gmf.lidarProfile.Manager = class {
 

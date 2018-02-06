@@ -1,5 +1,8 @@
 goog.provide('gmf.lidarProfile.Loader');
 
+goog.require('gmf.lidarProfile.Manager');
+goog.require('gmf.lidarProfile.Utils');
+
 
 gmf.lidarProfile.Loader = class {
 
@@ -98,7 +101,7 @@ gmf.lidarProfile.Loader = class {
     /**
      * @type {gmf.lidarProfile.Utils}
      */
-    this.utils = new gmf.lidarProfile.utils(this.manager_.options, this.profilePoints);
+    this.utils = new gmf.lidarProfile.Utils(this.manager_.options, this.profilePoints);
   }
 
 

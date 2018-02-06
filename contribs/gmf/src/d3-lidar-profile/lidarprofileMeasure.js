@@ -1,7 +1,9 @@
 goog.provide('gmf.lidarProfile.Measure');
 
+goog.require('gmf.lidarProfile.Manager');
 
-gmf.lidarProfile.measure = class {
+
+gmf.lidarProfile.Measure = class {
 
   /**
    * Measure tool for the d3 chart

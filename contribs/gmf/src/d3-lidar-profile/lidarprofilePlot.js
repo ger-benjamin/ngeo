@@ -1,5 +1,8 @@
 goog.provide('gmf.lidarProfile.Plot');
 
+goog.require('gmf.lidarProfile.Manager');
+goog.require('gmf.lidarProfile.Utils');
+
 
 gmf.lidarProfile.Plot = class {
 
@@ -18,10 +21,10 @@ gmf.lidarProfile.Plot = class {
     this.manager_ = gmfLidarProfileManagerInstance;
 
     /**
-     * @type {gmf.lidarProfile.utils}
+     * @type {gmf.lidarProfile.Utils}
      * @private
      */
-    this.utils_ = new gmf.lidarProfile.utils(this.manager_.options, null);
+    this.utils_ = new gmf.lidarProfile.Utils(this.manager_.options, null);
 
     /**
      * @type {Object}
@@ -237,7 +240,7 @@ gmf.lidarProfile.Plot = class {
       }
     }
 
-    this.measure.clearMeasure();
+    this.manager_.measure.clearMeasure();
 
     const tr = d3.event.transform;
     const svg = d3.select('svg#profileSVG');
