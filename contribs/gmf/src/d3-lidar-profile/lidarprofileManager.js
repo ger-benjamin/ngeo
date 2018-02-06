@@ -16,7 +16,7 @@ gmf.lidarProfile.Manager = class {
   * @param {angular.$http} $http Angular http service.
   * @ngInject
   * @ngdoc service
-  * @ngname gmfDataSourcesManager
+  * @ngname gmflidarProfileManager
   */   
   constructor($http) {
 
