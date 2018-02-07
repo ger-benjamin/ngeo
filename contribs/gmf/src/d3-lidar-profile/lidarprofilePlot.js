@@ -6,7 +6,7 @@ goog.require('gmf.lidarProfile.Utils');
 gmf.lidarProfile.Plot = class {
 
   /**
-   * FIXME desc
+   * FIXME missing description
    * @struct
    * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
    */
@@ -218,7 +218,7 @@ gmf.lidarProfile.Plot = class {
 
 
   /**
-   * FIXME description
+   * FIXME missing description
    */
   zoomEnd() {
     const ctx = d3.select('#profileCanvas')
@@ -229,7 +229,7 @@ gmf.lidarProfile.Plot = class {
 
 
   /**
-   * FIXME description
+   * FIXME missing description
    */
   zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {

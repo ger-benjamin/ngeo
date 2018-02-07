@@ -62,7 +62,7 @@ gmf.lidarProfile.Measure = class {
 
 
   /**
-   * FIXME
+   * FIXME missing description
    */
   measureHeigt() {
     const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());

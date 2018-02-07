@@ -4,7 +4,7 @@ goog.provide('gmf.lidarProfile.Utils');
 gmf.lidarProfile.Utils = class {
 
   /**
-   * FIXME desc
+   * FIXME missing description
    * @struct
    * @param {Object} options to be defined in gmfx
    */
@@ -287,46 +287,17 @@ gmf.lidarProfile.Utils = class {
 
     points.sort((a, b) => (a.distance - b.distance));
 
-    // FIXME ???
-    {
-      let header = '';
-      if (points[0].hasOwnProperty('x')) {
-        header += ', x';
+    let header = '';
+    const headerColumns = ['x', 'y', 'distance', 'altitude', 'color_packed', 'intensity',
+      'classification', 'numberOfReturns', 'pointSourceID', 'returnNumber'];
+    for (let i = 0; i < headerColumns.length; i++) {
+      const property = headerColumns[i];
+      if (points[0].hasOwnProperty(property)) {
+        header += `, ${property}`;
       }
-      if (points[0].hasOwnProperty('y')) {
-        header += ', y';
-      }
-      if (points[0].hasOwnProperty('distance')) {
-        header += ', distance';
-      }
-      if (points[0].hasOwnProperty('altitude')) {
-        header += ', altitude';
-      }
-      if (points[0].hasOwnProperty('color_packed')) {
-        header += ', r, g, b';
-      }
-
-      if (points[0].hasOwnProperty('intensity')) {
-        header += ', intensity';
-      }
-
-      if (points[0].hasOwnProperty('classification')) {
-        header += ', classification';
-      }
-
-      if (points[0].hasOwnProperty('numberOfReturns')) {
-        header += ', numberOfReturns';
-      }
-
-      if (points[0].hasOwnProperty('pointSourceID')) {
-        header += ', pointSourceID';
-      }
-
-      if (points[0].hasOwnProperty('returnNumber')) {
-        header += ', returnNumber';
-      }
-      file += `${header.substr(2)} \n`;
     }
+
+    file += `${header.substr(2)} \n`;
 
     let point = {
       distance: -1,

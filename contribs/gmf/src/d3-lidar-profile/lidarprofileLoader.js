@@ -6,7 +6,7 @@ goog.require('gmf.lidarProfile.Utils');
 gmf.lidarProfile.Loader = class {
 
   /**
-   * FIXME desc
+   * FIXME missing description
    * @struct
    * @param {gmf.lidarProfile.Manager} gmfLidarProfileManagerInstance gmf lidar profile manager instance
    */
@@ -57,14 +57,7 @@ gmf.lidarProfile.Loader = class {
      * The variable where all points of the profile are stored
      * @type {gmfx.LidarProfilePoints}
      */
-    this.profilePoints = {
-      distance: [],
-      altitude: [],
-      color_packed: [],
-      intensity: [],
-      classification: [],
-      coords: []
-    };
+    this.profilePoints = this.getEmptyProfilePoints_();
 
     /**
      * @type {boolean}
@@ -117,6 +110,21 @@ gmf.lidarProfile.Loader = class {
     this.utils.setMap(map);
   }
 
+  /**
+   * @return {gmfx.LidarProfilePoints} An empty lidarProfile points object.
+   * @private
+   */
+  getEmptyProfilePoints_() {
+    return {
+      distance: [],
+      altitude: [],
+      color_packed: [],
+      intensity: [],
+      classification: [],
+      coords: []
+    };
+  }
+
 
   /**
    * Load profile data (lidar points) by succesive Levels Of Details using asynchronous requests
@@ -126,15 +134,7 @@ gmf.lidarProfile.Loader = class {
    * @export
    */
   getProfileByLOD(distanceOffset, resetPlot, minLOD) {
-    // FIXME
-    this.profilePoints = {
-      distance: [],
-      altitude: [],
-      color_packed: [],
-      intensity: [],
-      classification: [],
-      coords: []
-    };
+    this.profilePoints = this.getEmptyProfilePoints_();
 
     if (resetPlot) {
       this.isPlotSetup_ = false;
@@ -277,7 +277,7 @@ gmf.lidarProfile.Loader = class {
     // stop sending requests.
     this.manager_.options.profileConfig.pointSum += jHeader['points'];
     if (this.manager_.options.profileConfig.pointSum > this.manager_.options.profileConfig.maxPoints) {
-      this.abortPendingRequests();
+      console.warn('Number of points is higher than Pytree configuration max value !');
     }
 
     const attr = jHeader['pointAttributes'];
@@ -294,18 +294,7 @@ gmf.lidarProfile.Loader = class {
       return;
     }
 
-    /**
-     * @type {gmfx.LidarProfilePoints}
-     */
-    const points = {
-      distance: [],
-      altitude: [],
-      color_packed: [],
-      intensity: [],
-      classification: [],
-      coords: []
-    };
-
+    const points = this.getEmptyProfilePoints_();
     const bytesPerPoint = jHeader['bytesPerPoint'];
     const buffer = profile.slice(4 + headerSize);
     for (let i = 0; i < jHeader['points']; i++) {
@@ -416,16 +405,5 @@ gmf.lidarProfile.Loader = class {
 
     this.manager_.plot.previousDomainX = domainX;
     this.manager_.plot.previousDomainY = domainY;
-  }
-
-
-  /**
-   * FIXME
-   * Abort pending request to Pytree service when new batch of request is sent
-   * after zoom, pan or when new profile is drawn
-   * @export
-   */
-  abortPendingRequests() {
-    console.log('Not implemented yet');
   }
 };
