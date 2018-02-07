@@ -22,41 +22,39 @@ gmf.lidarProfile.Plot = class {
      * @type {gmf.lidarProfile.Utils}
      * @private
      */
-    this.utils_ = new gmf.lidarProfile.Utils(this.manager_.options, null);
+    this.utils_ = new gmf.lidarProfile.Utils(this.manager_.options);
 
     /**
      * d3.scaleLinear X scale.
      * @type {Function}
-     * @export
      */
     this.scaleX;
 
     /**
      * d3.scaleLinear Y scale.
      * @type {Function}
-     * @export
      */
     this.scaleY;
 
     /**
      * @type {number}
-     * @export
+     * @private
      */
-    this.width;
+    this.width_;
 
     /**
      * @type {number}
-     * @export
+     * @private
      */
-    this.height;
+    this.height_;
+
     /**
      * @type {Array.<number>}
-     * @export
      */
     this.previousDomainX = [];
+
     /**
      * @type {Array.<number>}
-     * @export
      */
     this.previousDomainY = [];
   }
@@ -122,12 +120,12 @@ gmf.lidarProfile.Plot = class {
     const margin = this.manager_.options.profileConfig.margin;
     const containerWidth = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().width;
     const containerHeight = d3.select('.gmf-lidar-profile-container').node().getBoundingClientRect().height;
-    this.width = containerWidth - (margin.left + margin.right);
-    this.height = containerHeight - (margin.top + margin.bottom);
+    this.width_ = containerWidth - (margin.left + margin.right);
+    this.height_ = containerHeight - (margin.top + margin.bottom);
 
     d3.select('#profileCanvas')
-      .attr('height', this.height)
-      .attr('width', this.width)
+      .attr('height', this.height_)
+      .attr('width', this.width_)
       .style('background-color', 'black')
       .style('z-index', 0)
       .style('position', 'absolute')
@@ -137,38 +135,38 @@ gmf.lidarProfile.Plot = class {
     const domainProfileWidth = rangeX[1] - rangeX[0];
     const domainProfileHeight = rangeY[1] - rangeY[0];
     const domainRatio = domainProfileWidth / domainProfileHeight;
-    const rangeProfileWidth = this.width;
-    const rangeProfileHeight = this.height;
+    const rangeProfileWidth = this.width_;
+    const rangeProfileHeight = this.height_;
     const rangeRatio = rangeProfileWidth / rangeProfileHeight;
 
     let domainScale;
     if (domainRatio < rangeRatio) {
       const domainScale = rangeRatio / domainRatio;
       const domainScaledWidth = domainProfileWidth * domainScale;
-      this.scaleX = d3.scaleLinear()
-        ['domain']([0, domainScaledWidth])
-        ['range']([0, this.width]);
-      this.scaleY = d3.scaleLinear()
-        ['domain'](rangeY)
-        ['range']([this.height, 0]);
+      this.scaleX = d3.scaleLinear();
+      this.scaleX['domain']([0, domainScaledWidth]);
+      this.scaleX['range']([0, this.width_]);
+      this.scaleY = d3.scaleLinear();
+      this.scaleY['domain'](rangeY);
+      this.scaleY['range']([this.height_, 0]);
     } else {
       domainScale =  domainRatio / rangeRatio;
       const domainScaledHeight = domainProfileHeight * domainScale;
       const domainHeightCentroid = (rangeY[1] + rangeY[0]) / 2;
-      this.scaleX = d3.scaleLinear()
-        .domain(rangeX)
-        .range([0, this.width]);
-      this.scaleY = d3.scaleLinear()
-        .domain([
-          domainHeightCentroid - domainScaledHeight / 2,
-          domainHeightCentroid + domainScaledHeight / 2])
-        .range([this.height, 0]);
+      this.scaleX = d3.scaleLinear();
+      this.scaleX['domain'](rangeX);
+      this.scaleX['range']([0, this.width_]);
+      this.scaleY = d3.scaleLinear();
+      this.scaleY['domain']([
+        domainHeightCentroid - domainScaledHeight / 2,
+        domainHeightCentroid + domainScaledHeight / 2]);
+      this.scaleY['range']([this.height_, 0]);
     }
 
     const zoom = d3.zoom()
       .scaleExtent([1, 100])
-      .translateExtent([[0, 0], [this.width, this.height]])
-      .extent([[0, 0], [this.width, this.height]])
+      .translateExtent([[0, 0], [this.width_, this.height_]])
+      .extent([[0, 0], [this.width_, this.height_]])
       .on('zoom', this.zoomed.bind(this));
 
     zoom.on('end', this.zoomEnd.bind(this));
@@ -183,8 +181,8 @@ gmf.lidarProfile.Plot = class {
     d3.select('svg#profileSVG').selectAll('*').remove();
 
     const svg = d3.select('svg#profileSVG')
-      .attr('width', this.width + margin.left)
-      .attr('height', this.height + margin.top + margin.bottom);
+      .attr('width', this.width_ + margin.left)
+      .attr('height', this.height_ + margin.top + margin.bottom);
 
     d3.select('svg#profileSVG')
       .on('mousemove', () => {
@@ -194,7 +192,7 @@ gmf.lidarProfile.Plot = class {
 
     const xAxis = d3.axisBottom(this.scaleX);
     const yAxis = d3.axisLeft(this.scaleY)
-      .tickSize(-this.width);  this.previousDomainX = this.scaleX['domain']();
+      .tickSize(-this.width_);  this.previousDomainX = this.scaleX['domain']();
     this.previousDomainY = this.scaleY['domain']();
 
     svg.select('.y.axis').selectAll('g.tick line').style('stroke', '#b7cff7');
@@ -208,7 +206,7 @@ gmf.lidarProfile.Plot = class {
       .call(xAxis);
 
     svg.select('.y.axis').attr('transform', `translate(${margin.left}, ${margin.top})`);
-    svg.select('.x.axis').attr('transform', `translate(${margin.left}, ${this.height + margin.top})`);
+    svg.select('.x.axis').attr('transform', `translate(${margin.left}, ${this.height_ + margin.top})`);
 
     svg.select('.y.axis').selectAll('g.tick line')
       .style('opacity', '0.5')
@@ -225,7 +223,7 @@ gmf.lidarProfile.Plot = class {
   zoomEnd() {
     const ctx = d3.select('#profileCanvas')
       .node().getContext('2d');
-    ctx.clearRect(0, 0, this.width, this.height);
+    ctx.clearRect(0, 0, this.width_, this.height_);
     this.manager_.loader.updateData();
   }
 
@@ -246,13 +244,13 @@ gmf.lidarProfile.Plot = class {
     const svg = d3.select('svg#profileSVG');
     const xAxis = d3.axisBottom(this.scaleX);
     const yAxis = d3.axisLeft(this.scaleY)
-      .tickSize(-this.width);
+      .tickSize(-this.width_);
 
     svg.select('.x.axis').call(xAxis.scale(tr.rescaleX(this.scaleX)));
     svg.select('.y.axis').call(yAxis.scale(tr.rescaleY(this.scaleY)));
     const ctx = d3.select('#profileCanvas')
       .node().getContext('2d');
-    ctx.clearRect(0, 0, this.width, this.height);
+    ctx.clearRect(0, 0, this.width_, this.height_);
 
     svg.select('.y.axis').selectAll('g.tick line')
       .style('opacity', '0.5')

@@ -20,13 +20,13 @@ gmf.lidarProfile.Measure = class {
      * @type {!gmfx.lidarPoint}
      * @private
      */
-    this.pStart_ = {}
+    this.pStart_ = {};
 
     /**
      * @type {!gmfx.lidarPoint}
      * @private
      */
-    this.pEnd_ = {}
+    this.pEnd_ = {};
   }
 
 
@@ -35,8 +35,8 @@ gmf.lidarProfile.Measure = class {
    * @export
    */
   clearMeasure() {
-    this.pStart_ = {}
-    this.pEnd_ = {}
+    this.pStart_ = {};
+    this.pEnd_ = {};
 
     const svg = d3.select('svg#profileSVG');
     svg.selectAll('#text_m').remove();

@@ -7,22 +7,14 @@ gmf.lidarProfile.Utils = class {
    * FIXME desc
    * @struct
    * @param {Object} options to be defined in gmfx
-   * @param {Object} profilePoints to be defined in gmfx
    */
-  constructor(options, profilePoints) {
+  constructor(options) {
 
     /**
      * @type {Object}
      * @export
      */
     this.options_ = options;
-
-    /**
-     * The variable where all points of the profile are stored
-     * @type {gmfx.LidarProfilePoints?}
-     * @export
-     */
-    this.profilePoints = profilePoints;
 
     /**
      * @type {ol.Map}
@@ -34,7 +26,7 @@ gmf.lidarProfile.Utils = class {
      * @type {Object}
      * @private
      */
-    this.exportImage = new Image();
+    this.exportImage_ = new Image();
   }
 
 
@@ -228,19 +220,19 @@ gmf.lidarProfile.Utils = class {
    */
   exportToImageFile() {
     const svg = d3.select('#profileSVG').node();
-    this.exportImage = new Image();
+    this.exportImage_ = new Image();
     const DOMURL = window.URL || window.webkitURL || window;
     const serializer = new XMLSerializer();
     const svgStr = serializer.serializeToString(svg);
     const svgImage = new Blob([svgStr], {type: 'image/svg+xml'});
     const url = DOMURL.createObjectURL(svgImage);
 
-    this.exportImage = new Image();
+    this.exportImage_ = new Image();
 
-    this.exportImage.onload = function() {
+    this.exportImage_.onload = function() {
       const margin = this.options_.profileConfig.margin;
       const canvas = document.createElement('canvas');
-  
+
       canvas.style.display = 'none';
       document.body.appendChild(canvas);
       const w = d3.select('#profileSVG').attr('width');
@@ -252,16 +244,16 @@ gmf.lidarProfile.Utils = class {
       ctx.fillRect(0, 0, w, h);
       const pointsCanvas = d3.select('#profileCanvas').node();
       canvas.getContext('2d').drawImage(pointsCanvas, margin.left, margin.top, w - (margin.left + margin.right), h - (margin.top + margin.bottom));
-      ctx.drawImage(this.exportImage, 0, 0, w, h);
+      ctx.drawImage(this.exportImage_, 0, 0, w, h);
       const dataURL = canvas.toDataURL();
-  
-      this.downloadDataUrlFromJavascript('sitn_profile.png', dataURL);
-  
+
+      this.downloadDataUrlFromJavascript('profile.png', dataURL);
+
       DOMURL['revokeObjectURL'](url);
-        
+
     }.bind(this);
 
-    this.exportImage.src = url;
+    this.exportImage_.src = url;
   }
 
 
@@ -380,7 +372,7 @@ gmf.lidarProfile.Utils = class {
     }
 
     const encodedUri = encodeURI(file);
-    this.downloadDataUrlFromJavascript('sitn_profile.csv', encodedUri);
+    this.downloadDataUrlFromJavascript('profile.csv', encodedUri);
   }
 
 
@@ -407,27 +399,6 @@ gmf.lidarProfile.Utils = class {
       }
     }
     return minVal;
-  }
-
-
-  /**
-   * FIXME rename
-   * Create an UUID unique identifier
-   * @return {string} uuid
-   */
-  UUID() {
-    let nbr, randStr = '';
-    do {
-      randStr += (nbr = Math.random()).toString(16).substr(2);
-    } while (randStr.length < 30);
-    return [
-      randStr.substr(0, 8), '-',
-      randStr.substr(8, 4), '-4',
-      randStr.substr(12, 3), '-',
-      ((nbr * 4 | 0) + 8).toString(16),
-      randStr.substr(15, 3), '-',
-      randStr.substr(18, 12)
-    ].join('');
   }
 
 

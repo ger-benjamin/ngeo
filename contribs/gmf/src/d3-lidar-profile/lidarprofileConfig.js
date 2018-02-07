@@ -33,42 +33,19 @@ gmf.lidarProfile.Config = class {
     /**
      * @type {Object}
      */
-    this.profileConfig = {};
-
-    /**
-     * @type {{left: number, top: number, right: number, bottom: number}}
-     */
-    this.profileConfig.margin = {
-      'left': 40,
-      'top': 10,
-      'right': 200,
-      'bottom': 40
+    this.profileConfig = {
+      margin: {
+        'left': 40,
+        'top': 10,
+        'right': 200,
+        'bottom': 40
+      },
+      tolerance: 5,
+      configLoaded: false,
+      pointAttributes: {},
+      pointAttributesRaw: null,
+      classification: null
     };
-
-    /**
-     * @type {number}
-     */
-    this.profileConfig.tolerance = 5;
-
-    /**
-     * @type {boolean}
-     */
-    this.profileConfig.configLoaded = false;
-
-    /**
-     * @type {Object}
-     */
-    this.profileConfig.pointAttributes = {};
-
-    /**
-     * @type {Object}
-     */
-    this.profileConfig.pointAttributesRaw = null;
-
-    /**
-     * @type {gmfx.lidarClassificationObjects?}
-     */
-    this.profileConfig.classification = null;
   }
 
 

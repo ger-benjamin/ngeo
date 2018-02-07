@@ -21,7 +21,6 @@ gmf.lidarProfile.Loader = class {
     /**
      * The hovered point attributes in d3 profile highlighted on the 2D map
      * @type {ol.Overlay}
-     * @export
      */
     this.cartoHighlight = new ol.Overlay({
       offset: [0, -15],
@@ -31,7 +30,6 @@ gmf.lidarProfile.Loader = class {
     /**
      * The hovered point geometry (point) in d3 profile highlighted on the 2D map
      * @type {ol.layer.Vector}
-     * @export
      */
     this.lidarPointHighlight = new ol.layer.Vector({
       source: new ol.source.Vector({}),
@@ -49,7 +47,6 @@ gmf.lidarProfile.Loader = class {
      * The profile footpring represented as a LineString represented
      * with real mapunites stroke width
      * @type {ol.layer.Vector}
-     * @export
      */
     this.lidarBuffer = new ol.layer.Vector({
       source: new ol.source.Vector({})
@@ -59,7 +56,6 @@ gmf.lidarProfile.Loader = class {
     /**
      * The variable where all points of the profile are stored
      * @type {gmfx.LidarProfilePoints}
-     * @export
      */
     this.profilePoints = {
       distance: [],
@@ -71,12 +67,6 @@ gmf.lidarProfile.Loader = class {
     };
 
     /**
-     * @type {string}
-     * @private
-     */
-    this.lastUuid_;
-
-    /**
      * @type {boolean}
      * @private
      */
@@ -86,12 +76,12 @@ gmf.lidarProfile.Loader = class {
      * @type {ol.geom.LineString}
      * @private
      */
-    this.line;
+    this.line_;
 
     /**
      * @type {gmf.lidarProfile.Utils}
      */
-    this.utils = new gmf.lidarProfile.Utils(this.manager_.options, this.profilePoints);
+    this.utils = new gmf.lidarProfile.Utils(this.manager_.options);
   }
 
 
@@ -112,7 +102,7 @@ gmf.lidarProfile.Loader = class {
   * @param {ol.geom.LineString} line that defines the profile
   */
   setLine(line) {
-    this.line = line;
+    this.line_ = line;
   }
 
   /**
@@ -151,16 +141,16 @@ gmf.lidarProfile.Loader = class {
     }
 
     d3.select('#lidarError').style('visibility', 'hidden');
-    this.manager_.options.pytreeLinestring = this.utils.getPytreeLinestring(this.line);
+    this.manager_.options.pytreeLinestring = this.utils.getPytreeLinestring(this.line_);
 
     let profileLine;
     let maxLODWith;
     if (distanceOffset == 0) {
       profileLine = this.manager_.options.pytreeLinestring;
-      maxLODWith = this.utils.getNiceLOD(this.line.getLength());
+      maxLODWith = this.utils.getNiceLOD(this.line_.getLength());
     } else {
       const domain = this.manager_.plot.scaleX['domain']();
-      const clip = this.utils.clipLineByMeasure(this.line, domain[0], domain[1]);
+      const clip = this.utils.clipLineByMeasure(this.line_, domain[0], domain[1]);
       profileLine = '';
       for (let i = 0; i < clip.clippedLine.length; i++) {
         profileLine += `{${clip.clippedLine[i][0]},${clip.clippedLine[i][1]}},`;
@@ -170,10 +160,7 @@ gmf.lidarProfile.Loader = class {
 
     }
 
-    const uuid = this.utils.UUID();
-    this.lastUuid_ = uuid;
     let lastLOD = false;
-
     d3.select('#lodInfo').html('');
     this.manager_.options.profileConfig.pointSum = 0;
     let profileWidth = 0;
@@ -187,13 +174,13 @@ gmf.lidarProfile.Loader = class {
 
     for (let i = 0; i < maxLODWith.maxLOD; i++) {
       if (i == 0) {
-        this.queryPytree_(this.manager_.options, minLOD, this.manager_.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot, uuid);
+        this.queryPytree_(this.manager_.options, minLOD, this.manager_.options.profileConfig.initialLOD, i, profileLine, distanceOffset, lastLOD, profileWidth, resetPlot);
         i += this.manager_.options.profileConfig.initialLOD - 1;
       } else if (i < maxLODWith.maxLOD - 1) {
-        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false);
       } else {
         lastLOD = true;
-        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false, uuid);
+        this.queryPytree_(this.manager_.options, minLOD + i, minLOD + i + 1, i, profileLine, distanceOffset, lastLOD, profileWidth, false);
       }
     }
   }
@@ -210,10 +197,9 @@ gmf.lidarProfile.Loader = class {
    * @param {boolean} lastLOD the deepest level to retrieve for this profile
    * @param {number} width the width of the profile
    * @param {boolean} resetPlot wether to reset d3 plot or not, used for first LOD
-   * @param {string} uuid the unique identifier of the current profile requests cycle
    * @private
    */
-  queryPytree_(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot, uuid) {
+  queryPytree_(options, minLOD, maxLOD, iter, coordinates, distanceOffset, lastLOD, width, resetPlot) {
     if (this.manager_.options.profileConfig.debug) {
       let html = d3.select('#lodInfo').html();
       html += `Loading LOD: ${minLOD}-${maxLOD}...<br>`;
@@ -237,7 +223,7 @@ gmf.lidarProfile.Loader = class {
       }
       this.processBuffer_(response.data, iter, distanceOffset, lastLOD, resetPlot);
     }, (response) => {
-      console.log(response);
+      console.error(response);
     });
   }
 
@@ -367,7 +353,7 @@ gmf.lidarProfile.Loader = class {
       }
     }
 
-    const rangeX = [0, this.line.getLength()];
+    const rangeX = [0, this.line_.getLength()];
 
     // TODO fix z offset issue in Pytree!
 
@@ -395,7 +381,7 @@ gmf.lidarProfile.Loader = class {
   updateData() {
     const domainX = this.manager_.plot.scaleX['domain']();
     const domainY = this.manager_.plot.scaleY['domain']();
-    const clip = this.utils.clipLineByMeasure(this.line, domainX[0], domainX[1]);
+    const clip = this.utils.clipLineByMeasure(this.line_, domainX[0], domainX[1]);
 
     this.lidarBuffer.getSource().clear();
     this.lidarBuffer.getSource().addFeature(clip.bufferGeom);

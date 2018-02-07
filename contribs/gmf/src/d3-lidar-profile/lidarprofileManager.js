@@ -1,6 +1,6 @@
 goog.provide('gmf.lidarProfile.Manager');
 
-goog.require('gmf.lidarProfile.Loader')
+goog.require('gmf.lidarProfile.Loader');
 goog.require('gmf.lidarProfile.Measure');
 goog.require('gmf.lidarProfile.Plot');
 
@@ -8,11 +8,7 @@ goog.require('gmf.lidarProfile.Plot');
 gmf.lidarProfile.Manager = class {
 
   /**
-   * FIXME sitn mentions
    * FIXME Object types
-   * FIXME private
-   * FIXME .bind(this)
-   * FIXME console.log
    * Provides a service to manage a D3js component to be used to draw an lidar point cloud profile chart.
    * Requires access to a Pytree webservice: https://github.com/sitn/pytree
    *
@@ -52,7 +48,6 @@ gmf.lidarProfile.Manager = class {
 
     /**
      * @type {Object}
-     * @export
      */
     this.options = null;
   }
