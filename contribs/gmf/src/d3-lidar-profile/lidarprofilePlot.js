@@ -186,7 +186,7 @@ gmf.lidarProfile.Plot = class {
 
     d3.select('svg#profileSVG')
       .on('mousemove', () => {
-        this.pointHighlight.bind(this);
+        this.pointHighlight.bind(this)();
       });
 
 
@@ -218,7 +218,7 @@ gmf.lidarProfile.Plot = class {
 
 
   /**
-   * FIXME
+   * FIXME description
    */
   zoomEnd() {
     const ctx = d3.select('#profileCanvas')
@@ -229,7 +229,7 @@ gmf.lidarProfile.Plot = class {
 
 
   /**
-   * FIXME
+   * FIXME description
    */
   zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'mousemove') {
