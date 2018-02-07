@@ -173,7 +173,7 @@ gmf.lidarProfile.Loader = class {
     for (let i = 0; i < maxLODWith.maxLOD; i++) {
       if (i == 0) {
         this.queryPytree_(minLOD, this.manager_.options.profileConfig.server.initialLOD, i, pytreeLinestring, distanceOffset, lastLOD, profileWidth, resetPlot);
-        i += this.manager_.options.profileConfig.initialLOD - 1;
+        i += this.manager_.options.profileConfig.server.initialLOD - 1;
       } else if (i < maxLODWith.maxLOD - 1) {
         this.queryPytree_(minLOD + i, minLOD + i + 1, i, pytreeLinestring, distanceOffset, lastLOD, profileWidth, false);
       } else {
@@ -204,7 +204,7 @@ gmf.lidarProfile.Loader = class {
     }
 
     const pointCloudName = this.manager_.options.profileConfig.server.default_point_cloud;
-    const hurl = `${this.manager_.options.pytreeLidarProfileJsonUrl_}/get_profile?minLOD=${minLOD}
+    const hurl = `${this.manager_.options.pytreeLidarProfileJsonUrl}/get_profile?minLOD=${minLOD}
       &maxLOD=${maxLOD}&width=${width}&coordinates=${coordinates}&pointCloud=${pointCloudName}&attributes='`;
 
     this.manager_.$http.get(hurl, {

@@ -110,19 +110,11 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileManager, gmfLidarProf
   this.measureActive = false;
 
   /**
-   * Tolerance distance to highlight on the profile
-   * @type {number}
+   * selected options
+   * @type {lidarProfileServer.ConfigPointAttributes|undefined}
    * @export
    */
-  this.profileHighlight;
-
-  /**
-   * The list of available attributes for this Pytree dataset
-   * @type {gmfx.lidarPointAttributeList}
-   * @export
-   */
-  this.pointAttributes;
-
+  this.selectOption;
 
   // Watch the line to update the profileData (data for the chart).
   $scope.$watch(
@@ -143,7 +135,6 @@ gmf.LidarPanelController = function($scope, gmfLidarProfileManager, gmfLidarProf
   this.tool = new ngeo.ToolActivate(this, 'active');
   this.ngeoToolActivateMgr_.registerTool('mapTools', this.tool, false);
 
-
   $scope.$watch(
     () => this.active,
     (newValue, oldValue) => {
@@ -163,9 +154,7 @@ gmf.LidarPanelController.prototype.$onInit = function() {
   this.gmfLidarProfileConfig.initProfileConfig().then((resp) => {
     this.ready = true;
     this.profile.loader.setMap(this.map);
-    const clientConfig = this.gmfLidarProfileConfig.profileConfig.client;
-    this.pointAttributes = clientConfig.pointAttributes;
-    this.pointAttributes.selectedOption = clientConfig.pointAttributes.selectedOption;
+    this.selectedOption = this.gmfLidarProfileConfig.profileConfig.pointAttributes.selectedOption;
   });
 };
 
@@ -222,7 +211,7 @@ gmf.LidarPanelController.prototype.getClassification = function() {
 /**
  * Get the avalaible point attributes for this dataset
  * @export
- * @return {gmfx.lidarPointAttributeList} this.pointAttributes
+ * @return {Array.<lidarProfileServer.ConfigPointAttributes>|undefined} this.pointAttributes
  */
 gmf.LidarPanelController.prototype.getPointAttributes = function() {
   return this.gmfLidarProfileConfig.profileConfig.client.pointAttributes.availableOptions;
@@ -231,7 +220,7 @@ gmf.LidarPanelController.prototype.getPointAttributes = function() {
 /**
  * Get the selected point attribute
  * @export
- * @return {lidarProfileServer.ConfigPointAttribute} this.pointAttributes
+ * @return {lidarProfileServer.ConfigPointAttributes|undefined} this.pointAttributes
  */
 gmf.LidarPanelController.prototype.getSelectedAttribute = function() {
   return this.gmfLidarProfileConfig.profileConfig.client.pointAttributes.selectedOption;
@@ -262,7 +251,7 @@ gmf.LidarPanelController.prototype.getWidth = function() {
 /**
  * Sets the visible classification in the profile
  * @export
- * @param {lidarProfileServer.ConfigPointAttribute} classification selected value
+ * @param {lidarProfileServer.ConfigClassification} classification selected value
  * @param {number} key of the classification code
  */
 gmf.LidarPanelController.prototype.setClassification = function(classification, key) {

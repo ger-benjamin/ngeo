@@ -182,12 +182,13 @@ gmf.lidarProfile.Utils = class {
    */
   getNiceLOD(span) {
     let maxLOD = 0;
-    let width;
+    let width = 0;
     const levels = this.options_.profileConfig.server.max_levels;
     for (const key in levels) {
-      if (span < key && levels[key].max > maxLOD) {
-        maxLOD = levels[key].max;
-        width = levels[key].width;
+      const level = parseInt(key, 10);
+      if (span < level && levels[level].max > maxLOD) {
+        maxLOD = levels[level].max;
+        width = levels[level].width;
       }
     }
     return {
@@ -410,7 +411,7 @@ gmf.lidarProfile.Utils = class {
       if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
 
         const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
-        const cClassif = this.options_.profileConfig.server.classification_colors[d.classification[i].toString()];
+        const cClassif = this.options_.profileConfig.server.classification_colors[d.classification[i]];
         if (cClassif && cClassif.visible == 1) {
 
           hP.push({

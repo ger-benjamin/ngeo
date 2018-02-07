@@ -269,7 +269,7 @@ gmf.lidarProfile.Plot = class {
     const svg = d3.select('svg#profileSVG');
     const pointSize = this.manager_.options.profileConfig.server.point_size;
     const margin = this.manager_.options.profileConfig.client.margin;
-    const tolerance = this.manager_.options.profileConfig.client.tolerance;
+    const tolerance = this.manager_.options.profileConfig.client.tolerance || 0;
 
     const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
 
@@ -291,9 +291,12 @@ gmf.lidarProfile.Plot = class {
         .attr('r', pointSize + 1)
         .style('fill', 'orange');
 
+      const pClassification = p.classification || -1;
+      const pointClassification = this.manager_.options.profileConfig.server.classification_colors[pClassification] || {};
+
       const html = `Distance: ${Math.round(10 * p.distance) / 10}<br>
       Altitude: ${Math.round(10 * p.altitude) / 10}<br>
-      Classification: ${this.manager_.options.profileConfig.server.classification_colors[p.classification].name}<br>
+      Classification: ${pointClassification.name}<br>
       Intensity: ${p.intensity}<br>`;
 
       d3.select('#profileInfo')
@@ -305,16 +308,15 @@ gmf.lidarProfile.Plot = class {
 
       this.manager_.loader.cartoHighlight.setElement(el);
       this.manager_.loader.cartoHighlight.setPosition([p.coords[0], p.coords[1]]);
-      const classifColor = this.manager_.options.profileConfig.server.classification_colors[p.classification].color;
       this.manager_.loader.lidarPointHighlight.getSource().clear();
       const lidarPointGeom = new ol.geom.Point([p.coords[0], p.coords[1]]);
       const lidarPointFeature = new ol.Feature(lidarPointGeom);
-      if (typeof (classifColor) !== undefined) {
+      if (typeof (pointClassification.color) !== undefined) {
 
         lidarPointFeature.setStyle(new ol.style.Style({
           image: new ol.style.Circle({
             fill: new ol.style.Fill({
-              color: `rgba(${classifColor}, 1)`
+              color: `rgba(${pointClassification.color}, 1)`
             }),
             radius: 3
           })
@@ -346,7 +348,7 @@ gmf.lidarProfile.Plot = class {
 
   /**
   * Show/Hide classes in the profile
-  * @param {lidarProfileServer.ConfigPointAttribute} classification value as defined in the Pytree classification_colors
+  * @param {lidarProfileServer.ConfigClassifications} classification value as defined in the Pytree classification_colors
   *     configuration
   * @param {string} material  value as defined in Pytree attribute configuration
   * @export
