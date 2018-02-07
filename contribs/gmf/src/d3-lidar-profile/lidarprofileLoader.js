@@ -97,19 +97,19 @@ gmf.lidarProfile.Loader = class {
 
 
   /**
-  * Set the line for the profile
-  * @export
-  * @param {ol.geom.LineString} line that defines the profile
-  */
+   * Set the line for the profile
+   * @param {ol.geom.LineString} line that defines the profile
+   * @export
+   */
   setLine(line) {
     this.line_ = line;
   }
 
   /**
-  * Set the map for the ol.layer.Vector layers
-  * @export
-  * @param {ol.Map} map of the desktop app
-  */
+   * Set the map for the ol.layer.Vector layers
+   * @param {ol.Map} map of the desktop app
+   * @export
+   */
   setMap(map) {
     this.cartoHighlight.setMap(map);
     this.lidarPointHighlight.setMap(map);
@@ -119,12 +119,12 @@ gmf.lidarProfile.Loader = class {
 
 
   /**
-  * Load profile data (lidar points) by succesive Levels Of Details using asynchronous requests
-  * @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
-  * @param {boolean} resetPlot wether to reset d3 plot or not
-  * @param {number} minLOD minimum level of detail
-  * @export
-  */
+   * Load profile data (lidar points) by succesive Levels Of Details using asynchronous requests
+   * @param {number} distanceOffset the left side of d3 profile domain at current zoom and pan configuration
+   * @param {boolean} resetPlot wether to reset d3 plot or not
+   * @param {number} minLOD minimum level of detail
+   * @export
+   */
   getProfileByLOD(distanceOffset, resetPlot, minLOD) {
     // FIXME
     this.profilePoints = {
@@ -295,8 +295,8 @@ gmf.lidarProfile.Loader = class {
     }
 
     /**
-    * @type {gmfx.LidarProfilePoints}
-    */
+     * @type {gmfx.LidarProfilePoints}
+     */
     const points = {
       distance: [],
       altitude: [],
@@ -373,12 +373,19 @@ gmf.lidarProfile.Loader = class {
     }
   }
 
-
   /**
    * Update the profile data according to d3 chart zoom and pan level
+   * The update will wait on a 200ms pause on the actions of users before to do the update.
    * @export
    */
   updateData() {
+    this.manager_.ngeoDebounce(this.updateData_.bind(this), 200, true)();
+  }
+
+  /**
+   * @private
+   */
+  updateData_() {
     const domainX = this.manager_.plot.scaleX['domain']();
     const domainY = this.manager_.plot.scaleY['domain']();
     const clip = this.utils.clipLineByMeasure(this.line_, domainX[0], domainX[1]);

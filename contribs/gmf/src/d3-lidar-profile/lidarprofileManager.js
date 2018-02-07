@@ -3,6 +3,7 @@ goog.provide('gmf.lidarProfile.Manager');
 goog.require('gmf.lidarProfile.Loader');
 goog.require('gmf.lidarProfile.Measure');
 goog.require('gmf.lidarProfile.Plot');
+goog.require('ngeo.Debounce');
 
 
 gmf.lidarProfile.Manager = class {
@@ -14,16 +15,22 @@ gmf.lidarProfile.Manager = class {
    *
    * @struct
    * @param {angular.$http} $http Angular http service.
+   * @param {ngeo.Debounce} ngeoDebounce ngeo debounce service
    * @ngInject
    * @ngdoc service
    * @ngname gmflidarProfileManager
    */
-  constructor($http) {
+  constructor($http, ngeoDebounce) {
 
     /**
      * @type {angular.$http}
      */
     this.$http = $http;
+
+    /**
+     * @type {ngeo.Debounce}
+     */
+    this.ngeoDebounce = ngeoDebounce;
 
     /**
      * @type {?angular.$q.Promise}
