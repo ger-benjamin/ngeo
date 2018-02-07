@@ -6,12 +6,12 @@ gmf.lidarProfile.Utils = class {
   /**
    * FIXME missing description
    * @struct
-   * @param {Object} options to be defined in gmfx
+   * @param {gmf.lidarProfile.Config} options Instance of gmf.lidarProfile.Config
    */
   constructor(options) {
 
     /**
-     * @type {Object}
+     * @type {gmf.lidarProfile.Config} Instance of gmf.lidarProfile.Config
      * @export
      */
     this.options_ = options;
@@ -81,10 +81,10 @@ gmf.lidarProfile.Utils = class {
     });
 
     let profileWidth;
-    if (this.options_.profileConfig.autoWidth) {
+    if (this.options_.profileConfig.client.autoWidth) {
       profileWidth = this.getNiceLOD(clippedLine.getLength()).width;
     } else {
-      profileWidth = this.options_.profileConfig.profilWidth;
+      profileWidth = this.options_.profileConfig.server.width;
     }
     const feat = new ol.Feature({
       geometry: clippedLine
@@ -183,7 +183,7 @@ gmf.lidarProfile.Utils = class {
   getNiceLOD(span) {
     let maxLOD = 0;
     let width;
-    const levels = this.options_.profileConfig.maxLevels;
+    const levels = this.options_.profileConfig.server.max_levels;
     for (const key in levels) {
       if (span < key && levels[key].max > maxLOD) {
         maxLOD = levels[key].max;
@@ -230,7 +230,7 @@ gmf.lidarProfile.Utils = class {
     this.exportImage_ = new Image();
 
     this.exportImage_.onload = function() {
-      const margin = this.options_.profileConfig.margin;
+      const margin = this.options_.profileConfig.client.margin;
       const canvas = document.createElement('canvas');
 
       canvas.style.display = 'none';
@@ -410,7 +410,7 @@ gmf.lidarProfile.Utils = class {
       if (sx(d.distance[i]) < xs + tol && sx(d.distance[i]) > xs - tol && sy(d.altitude[i]) < ys + tol && sy(d.altitude[i]) > ys - tol) {
 
         const pDistance =  Math.sqrt(Math.pow((sx(d.distance[i]) - xs), 2) + Math.pow((sy(d.altitude[i]) - ys), 2));
-        const cClassif = this.options_.profileConfig.classification[d.classification[i].toString()];
+        const cClassif = this.options_.profileConfig.server.classification_colors[d.classification[i].toString()];
         if (cClassif && cClassif.visible == 1) {
 
           hP.push({

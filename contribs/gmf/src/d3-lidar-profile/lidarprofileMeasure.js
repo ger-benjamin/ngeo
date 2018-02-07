@@ -66,7 +66,7 @@ gmf.lidarProfile.Measure = class {
    */
   measureHeigt() {
     const canvasCoordinates = d3.mouse(d3.select('#profileCanvas').node());
-    const margin = this.manager_.options.profileConfig.margin;
+    const margin = this.manager_.options.profileConfig.client.margin;
     const svgCoordinates = d3.mouse(d3.select('svg#profileSVG').node());
     const xs = svgCoordinates[0];
     const ys = svgCoordinates[1];

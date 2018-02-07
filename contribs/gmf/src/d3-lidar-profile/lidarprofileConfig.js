@@ -31,59 +31,67 @@ gmf.lidarProfile.Config = class {
     this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
 
     /**
-     * @type {Object}
+     * @type {gmfx.LidarProfileClientConfig}
      */
-    this.profileConfig = {
+    const clientConfig = {
+      autoWidth: true,
       margin: {
         'left': 40,
         'top': 10,
         'right': 200,
         'bottom': 40
       },
-      tolerance: 5,
-      configLoaded: false,
       pointAttributes: {},
-      pointAttributesRaw: null,
-      classification: null
+      pointSum: 0,
+      tolerance: 5
+    };
+
+    /**
+     * @type {gmfx.LidarProfileConfig}
+     */
+    this.profileConfig = {
+      client: clientConfig,
+      server: {},
+      loaded: false
     };
   }
 
 
   /**
    * Initialize the service variables from Pytree profile_config_gmf2 route
+   * @return {angular.$http.HttpPromise} configuration values
    * @export
-   * @return {Object} configuration values
    */
   initProfileConfig() {
     return this.$http_.get(`${this.pytreeLidarProfileJsonUrl_}/profile_config_gmf2`).then((resp) => {
 
-      this.profileConfig.classification = resp.data['classification_colors'];
-      this.profileConfig.profilWidth = resp.data['width'];
-      this.profileConfig.autoWidth = true;
-      this.profileConfig.minLOD = resp.data['minLOD'];
-      this.profileConfig.initialLOD = resp.data['initialLOD'];
-      this.profileConfig.pointSize = resp.data['point_size'];
-      this.profileConfig.maxLevels = resp.data['max_levels'];
-      this.profileConfig.maxPoints = resp.data['max_point_number'];
-      this.profileConfig.pointSum = 0;
-      this.profileConfig.defaultAttribute = resp.data['default_attribute'];
-      this.profileConfig.defaultPointCloud = resp.data['default_point_cloud'];
-      this.profileConfig.defaultColor = resp.data['default_color'];
-      this.profileConfig.pointClouds = resp.data['pointclouds'];
-      this.profileConfig.pointAttributesRaw = resp.data['point_attributes'];
-      this.profileConfig.defaultPointAttribute = resp.data['default_point_attribute'];
-      this.profileConfig.debug = resp.data['debug'];
+      const config = {};
+      config.classification_colors = resp.data['classification_colors'];
+      config.width = resp.data['width'];
+      config.minLOD = resp.data['minLOD'];
+      config.initialLOD = resp.data['initialLOD'];
+      config.point_size = resp.data['point_size'];
+      config.max_levels = resp.data['max_levels'];
+      config.max_points_number = resp.data['max_point_number'];
+      config.default_attribute = resp.data['default_attribute'];
+      config.default_point_cloud = resp.data['default_point_cloud'];
+      config.default_color = resp.data['default_color'];
+      config.pointclouds = resp.data['pointclouds'];
+      config.point_attributes = resp.data['point_attributes'];
+      config.default_point_attribute = resp.data['default_point_attribute'];
+      config.debug = resp.data['debug'];
+      this.profileConfig.server = /** @type {lidarProfileServer.Config} */ (config);
 
       const attr = [];
-      for (const key in this.profileConfig.pointAttributesRaw) {
-        if (this.profileConfig.pointAttributesRaw[key].visible == 1) {
-          attr.push(this.profileConfig.pointAttributesRaw[key]);
+      for (const key in config.point_attributes) {
+        if (config.point_attributes[key].visible == 1) {
+          attr.push(config.point_attributes[key]);
         }
       }
 
-      const selectedMat = this.profileConfig.pointAttributesRaw[this.profileConfig.defaultPointAttribute];
+      const selectedMat = config.point_attributes[config.default_point_attribute];
 
-      this.profileConfig.pointAttributes = {
+      this.profileConfig.client.pointAttributes = {
         availableOptions: attr,
         selectedOption: selectedMat
       };

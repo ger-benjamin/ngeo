@@ -80,12 +80,6 @@ gmf.LidarProfileController = function($scope, $http, pytreeLidarProfileJsonUrl, 
   this.pytreeLidarProfileJsonUrl_ = pytreeLidarProfileJsonUrl;
 
   /**
-   * @type {gmf.lidarProfile.Config}
-   * @private
-   */
-  this.gmfLidarProfileConfig_ = gmfLidarProfileConfig;
-
-  /**
    * @type {ol.Map}
    * @private
    */

@@ -9,7 +9,6 @@ goog.require('ngeo.Debounce');
 gmf.lidarProfile.Manager = class {
 
   /**
-   * FIXME Object types
    * Provides a service to manage a D3js component to be used to draw an lidar point cloud profile chart.
    * Requires access to a Pytree webservice: https://github.com/sitn/pytree
    *
@@ -54,13 +53,13 @@ gmf.lidarProfile.Manager = class {
     this.measure = null;
 
     /**
-     * @type {Object}
+     * @type {gmf.lidarProfile.Config}
      */
     this.options = null;
   }
 
   /**
-   * @param {Object} options from pytree
+   * @param {gmf.lidarProfile.Config} options Instance of gmf.lidarProfile.Config
    */
   init(options) {
     this.options = options;
