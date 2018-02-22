@@ -77,12 +77,13 @@ gmf.LidarPanelController_ = class {
 
     /**
      * @type {boolean}
+     * @export
      */
     this.ready = false;
 
     /**
      * @type {gmf.lidarProfile.Config}
-     * @private_
+     * @private
      */
     this.profileConfig_ = gmfLidarProfileConfig;
 
