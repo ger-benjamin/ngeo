@@ -208,9 +208,9 @@ gmf.LidarPanelController_ = class {
   clearAll() {
     this.line = null;
     this.profile.setLine(null);
+    this.profile.cartoHighlight.setPosition(undefined);
     this.clearMeasure();
     this.resetPlot();
-    this.profile.cartoHighlight.setPosition(undefined);
   }
 
 
@@ -241,7 +241,9 @@ gmf.LidarPanelController_ = class {
    */
   resetPlot() {
     this.profile.clearBuffer();
-    this.profile.getProfileByLOD(0, true, 0);
+    if (this.line) {
+      this.profile.getProfileByLOD(0, true, 0);
+    }
   }
 
 
