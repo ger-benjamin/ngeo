@@ -10,10 +10,8 @@ goog.require('gmf.lidarPanelComponent');
 goog.require('gmf.lidarProfileComponent');
 /** @suppress {extraRequire} */
 goog.require('ngeo.proj.EPSG2056');
-goog.require('ol.Collection');
 goog.require('ol.Map');
 goog.require('ol.View');
-goog.require('ol.interaction.Draw');
 goog.require('ol.layer.Tile');
 goog.require('ol.source.OSM');
 
@@ -59,38 +57,6 @@ gmfapp.MainController = function($scope) {
       zoom: 3
     })
   });
-
-  /**
-   * @type {ol.Collection.<ol.Feature>}
-   */
-  const features = new ol.Collection();
-
-  /**
-   * Draw line interaction.
-   * @type {ol.interaction.Draw}
-   * @export
-   */
-  this.drawLine = new ol.interaction.Draw(
-    /** @type {olx.interaction.DrawOptions} */ ({
-      type: 'LineString',
-      features
-    }));
-
-  this.drawLine.setActive(false);
-  this.map.addInteraction(this.drawLine);
-
-  /**
-   * Toggle activation of the draw line interaction.
-   * @export
-   */
-  this.toggleDrawLineActive = function() {
-    if (this.drawLine.getActive()) {
-      this.drawLine.setActive(false);
-      this.profileLine = null; // To reset the profile.
-    } else {
-      this.drawLine.setActive(true);
-    }
-  };
 };
 
 

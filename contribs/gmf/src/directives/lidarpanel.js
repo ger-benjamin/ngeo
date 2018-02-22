@@ -3,7 +3,10 @@ goog.provide('gmf.lidarPanelComponent');
 goog.require('gmf');
 goog.require('gmf.lidarProfile.Config');
 goog.require('gmf.lidarProfile.Manager');
+/** @suppress {extraRequire} */
+goog.require('ngeo.btngroupDirective');
 goog.require('ngeo.CsvDownload');
+goog.require('ngeo.ToolActivateMgr');
 goog.require('ngeo.ToolActivate');
 goog.require('ol.geom.LineString');
 
@@ -201,7 +204,6 @@ gmf.LidarPanelController_ = class {
   }
 
   /**
-   * FIXME
    * Clear the LIDAR profile tool.
    * @export
    */
